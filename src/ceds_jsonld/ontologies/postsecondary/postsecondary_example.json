@@ -1,0 +1,44 @@
+{
+  "@context": "postsecondary_context.json",
+  "@id": "urn:ceds:postsecondary:7001",
+  "@type": "PostsecondaryInstitution",
+  "hasOrganizationTitle": {
+    "@type": "OrganizationTitle",
+    "hasName": "University of Michigan",
+    "hasShortNameOfInstitution": "U-M"
+  },
+  "hasOrganizationIdentification": [
+    {
+      "@type": "OrganizationIdentification",
+      "hasOrganizationIdentifier": "7001",
+      "hasOrganizationIdentificationSystem": "OrganizationIdentificationSystem_SEA"
+    },
+    {
+      "@type": "OrganizationIdentification",
+      "hasOrganizationIdentifier": "MI-7001",
+      "hasOrganizationIdentificationSystem": "OrganizationIdentificationSystem_IPEDS"
+    }
+  ],
+  "hasLocation": {
+    "@type": "Location",
+    "hasLocationAddress": {
+      "@type": "LocationAddress",
+      "hasAddressStreetNumberAndName": "503 Thompson St",
+      "hasCity": "Ann Arbor",
+      "hasStateAbbreviation": "StateAbbreviation_MI",
+      "hasPostalCode": "48109",
+      "hasAddressCountyName": "Washtenaw"
+    },
+    "hasLocale": "Locale_CityMidsize"
+  },
+  "hasOrganizationOperationalDetail": {
+    "@type": "OrganizationOperationalDetail",
+    "hasOperationalStatus": "OperationalStatus_Open"
+  },
+  "hasCarnegieBasicClassification": "CarnegieBasicClassification_DoctoralUniversitiesVeryHighResearchActivity",
+  "hasLevelOfInstitution": "LevelOfInstitution_FourYearOrAbove",
+  "hasOrganizationWebsite": {
+    "@type": "OrganizationWebsite",
+    "hasWebsiteAddress": "https://umich.edu"
+  }
+}

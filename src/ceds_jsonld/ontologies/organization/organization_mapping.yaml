@@ -1,0 +1,156 @@
+# Organization Shape — Declarative Field Mapping Configuration
+# Drives FieldMapper + JSONLDBuilder to produce JSON-LD from source data
+# See .github/instructions/yaml-mapping.instructions.md for schema docs
+
+shape: OrganizationShape
+context_url: "https://cepi-dev.state.mi.us/ontology/context-organization.json"
+context_file: organization_context.json
+base_uri: "cepi:organization/"
+id_source: OrgId
+id_transform: int_clean
+
+type: Organization
+
+properties:
+  hasOrganizationTitle:
+    type: OrganizationTitle
+    cardinality: single
+    fields:
+      NameOfInstitution:
+        source: OrgName
+        target: NameOfInstitution
+        datatype: "xsd:string"
+      OrganizationName:
+        source: OrgName
+        target: OrganizationName
+        datatype: "xsd:string"
+        optional: true
+      ShortNameOfOrganization:
+        source: OrgShortName
+        target: ShortNameOfOrganization
+        datatype: "xsd:string"
+        optional: true
+
+  hasOrganizationIdentification:
+    type: OrganizationIdentification
+    cardinality: multiple
+    split_on: "|"
+    fields:
+      OrganizationIdentifier:
+        source: OrgIdentifiers
+        target: OrganizationIdentifier
+        datatype: "xsd:token"
+      hasOrganizationIdentificationSystem:
+        source: OrgIdentificationSystems
+        target: hasOrganizationIdentificationSystem
+        optional: true
+      hasOrganizationIdentifierType:
+        source: OrgIdentifierTypes
+        target: hasOrganizationIdentifierType
+        optional: true
+      IPEDSIdentifier:
+        source: IPEDSId
+        target: IPEDSIdentifier
+        datatype: "xsd:string"
+        optional: true
+
+  hasLocation:
+    type: Location
+    cardinality: multiple
+    split_on: ";"
+    fields:
+      hasAddressTypeForOrganization:
+        source: AddressTypes
+        target: hasAddressTypeForOrganization
+        optional: true
+      AddressStreetNumberAndName:
+        source: AddressStreets
+        target: AddressStreetNumberAndName
+        datatype: "xsd:string"
+        optional: true
+      AddressApartmentRoomOrSuiteNumber:
+        source: AddressApts
+        target: AddressApartmentRoomOrSuiteNumber
+        datatype: "xsd:string"
+        optional: true
+      AddressCity:
+        source: AddressCities
+        target: AddressCity
+        datatype: "xsd:string"
+        optional: true
+      hasStateAbbreviation:
+        source: AddressStates
+        target: hasStateAbbreviation
+        optional: true
+      AddressPostalCode:
+        source: AddressZips
+        target: AddressPostalCode
+        datatype: "xsd:string"
+        optional: true
+      AddressCountyName:
+        source: AddressCounties
+        target: AddressCountyName
+        datatype: "xsd:string"
+        optional: true
+      Latitude:
+        source: Latitudes
+        target: Latitude
+        datatype: "xsd:decimal"
+        transform: decimal_clean
+        optional: true
+      Longitude:
+        source: Longitudes
+        target: Longitude
+        datatype: "xsd:decimal"
+        transform: decimal_clean
+        optional: true
+      XLocation:
+        source: XLocations
+        target: XLocation
+        datatype: "xsd:decimal"
+        transform: decimal_clean
+        optional: true
+      YLocation:
+        source: YLocations
+        target: YLocation
+        datatype: "xsd:decimal"
+        transform: decimal_clean
+        optional: true
+
+  hasOrganizationOperationalDetail:
+    type: OrganizationOperationalDetail
+    cardinality: single
+    fields:
+      hasOrganizationOperationalStatus:
+        source: OperationalStatus
+        target: hasOrganizationOperationalStatus
+        optional: true
+      OperationalStatusEffectiveDate:
+        source: OperationalStatusDate
+        target: OperationalStatusEffectiveDate
+        datatype: "xsd:date"
+        transform: date_format
+        optional: true
+
+  hasOrganizationWebsite:
+    type: OrganizationWebsite
+    cardinality: single
+    fields:
+      WebSiteAddress:
+        source: WebsiteURL
+        target: WebSiteAddress
+        datatype: "xsd:anyURI"
+        optional: true
+
+record_status_defaults:
+  type: RecordStatus
+  RecordStartDateTime:
+    value: "1900-01-01T00:00:00"
+    datatype: "xsd:dateTime"
+  RecordEndDateTime:
+    value: "9999-12-31T00:00:00"
+    datatype: "xsd:dateTime"
+
+data_collection_defaults:
+  type: DataCollection
+  value_id: "http://example.org/dataCollection/default"

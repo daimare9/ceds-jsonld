@@ -1,0 +1,272 @@
+@prefix ceds:  <http://ceds.ed.gov/terms#> .
+@prefix cepi:  <http://cepi-dev.state.mi.us/> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh:    <http://www.w3.org/ns/shacl#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+
+# ──────────────────────────────────────────────────────────
+# Facility SHACL Shape  (CEDS Class C200123)
+# ──────────────────────────────────────────────────────────
+# Defines the constraints for Facility entities within the
+# CEDS ontology. Includes FacilityLease and
+# BuildingSpaceUtilization sub-shapes, and CEPI extensions
+# for education institution type and service provider type.
+# ──────────────────────────────────────────────────────────
+
+# ═══════════════════════════════════════════════════════════
+# Root Shape — Facility
+# ═══════════════════════════════════════════════════════════
+
+ceds:FacilityShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:targetClass ceds:C200123 ;
+    sh:property ceds:hasOrganizationTitle_FacShape ,
+                ceds:hasOrganizationIdentification_FacShape ,
+                ceds:hasLocation_FacShape ,
+                ceds:hasBuildingUseTypeShape ,
+                ceds:hasFacilityLease_FacShape ,
+                ceds:hasFacilityOwnershipIndicatorShape ,
+                ceds:hasOrganizationTypeShape ,
+                ceds:hasBuildingSpaceUtilization_FacShape ,
+                ceds:hasOrganizationWebsite_FacShape ,
+                cepi:hasEducationInstitutionTypeShape ,
+                cepi:hasServiceProviderTypeShape .
+
+# ═══════════════════════════════════════════════════════════
+# Facility-specific Property Shapes
+# ═══════════════════════════════════════════════════════════
+
+ceds:hasBuildingUseTypeShape a sh:PropertyShape ;
+    sh:path ceds:P001206 ;
+    sh:in ( ceds:NI001206127856 ceds:NI001206127846 ceds:NI001206127865
+            ceds:NI001206127848 ceds:NI001206127849 ceds:NI001206127862
+            ceds:NI001206127851 ceds:NI001206127858 ceds:NI001206127866
+            ceds:NI001206127860 ceds:NI001206127861 ceds:NI001206127850
+            ceds:NI001206127855 ceds:NI001206127854 ceds:NI001206127859
+            ceds:NI001206127867 ceds:NI001206127847 ceds:NI001206127852
+            ceds:NI001206127863 ceds:NI001206127853 ceds:NI001206127857
+            ceds:NI001206127864
+            cepi:NI001206127869 cepi:NI001206127870 cepi:NI001206127868
+            cepi:NI001206100002 cepi:NI001206127871 ) ;
+    sh:maxCount 1 ;
+    sh:minCount 0 .
+
+ceds:hasFacilityLease_FacShape a sh:PropertyShape ;
+    sh:path ceds:P600020 ;
+    sh:class ceds:C200133 ;
+    sh:node ceds:FacilityLeaseShape ;
+    sh:maxCount 1 .
+
+ceds:hasFacilityOwnershipIndicatorShape a sh:PropertyShape ;
+    sh:path ceds:P001906 ;
+    sh:in ( ceds:NI001906100001 ceds:NI001906100002
+            cepi:NI001906100001 ) ;
+    sh:maxCount 1 .
+
+ceds:hasOrganizationTypeShape a sh:PropertyShape ;
+    sh:path ceds:P001156 ;
+    sh:in ( ceds:NI001156173078 ceds:NI001156173062 ceds:NI001156173068
+            ceds:NI001156173057 ceds:NI001156173067 ceds:NI001156173071
+            ceds:NI001156173056 ceds:NI001156173059 ceds:NI001156173070
+            ceds:NI001156173054 ceds:NI001156173064 ceds:NI001156173080
+            ceds:NI001156173069 ceds:NI001156173058 ceds:NI001156173079
+            ceds:NI001156173060 ceds:NI001156173055 ceds:NI001156173074
+            ceds:NI001156173053 ceds:NI001156173066 ceds:NI001156173072
+            ceds:NI001156173082 ceds:NI001156173065 ceds:NI001156173051
+            ceds:NI001156173077 ceds:NI001156173061 ceds:NI001156173075
+            ceds:NI001156173073 ceds:NI001156173063 ceds:NI001156173076
+            ceds:NI001156173081 ceds:NI001156173052
+            cepi:NI000239100005 cepi:NI000239100003 cepi:NI001156100001
+            cepi:NI000239100004 cepi:NI000239100001 ) ;
+    sh:maxCount 1 .
+
+ceds:hasBuildingSpaceUtilization_FacShape a sh:PropertyShape ;
+    sh:path ceds:P600004 ;
+    sh:class ceds:C200059 ;
+    sh:node ceds:BuildingSpaceUtilizationShape ;
+    sh:maxCount 1 .
+
+# ═══════════════════════════════════════════════════════════
+# CEPI Extension Property Shapes
+# ═══════════════════════════════════════════════════════════
+
+cepi:hasEducationInstitutionTypeShape a sh:PropertyShape ;
+    sh:path cepi:P200045 ;
+    sh:in ( cepi:NI200045000001 ) ;
+    sh:maxCount 1 .
+
+cepi:hasServiceProviderTypeShape a sh:PropertyShape ;
+    sh:path cepi:P200046 ;
+    sh:in ( cepi:NI200046000002 cepi:NI200046000001 ) ;
+    sh:maxCount 1 .
+
+# ═══════════════════════════════════════════════════════════
+# Sub-Shape — FacilityLease (C200133)
+# ═══════════════════════════════════════════════════════════
+
+ceds:FacilityLeaseShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:targetClass ceds:C200133 ;
+    sh:property ceds:hasFacilityLeaseTypeShape ,
+                cepi:hasFacilityLeaseOwnershipTypeShape .
+
+ceds:hasFacilityLeaseTypeShape a sh:PropertyShape ;
+    sh:path ceds:P001207 ;
+    sh:maxCount 1 .
+
+cepi:hasFacilityLeaseOwnershipTypeShape a sh:PropertyShape ;
+    sh:path cepi:P200051 ;
+    sh:in ( cepi:NI200051000001 cepi:NI200051000004 cepi:NI200051000002
+            cepi:NI200051000005 cepi:NI200051000003 ) ;
+    sh:maxCount 1 .
+
+# ═══════════════════════════════════════════════════════════
+# Sub-Shape — BuildingSpaceUtilization (C200059)
+# ═══════════════════════════════════════════════════════════
+
+ceds:BuildingSpaceUtilizationShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:targetClass ceds:C200059 ;
+    sh:property ceds:hasBuildingCommunityUseSpaceTypeShape .
+
+ceds:hasBuildingCommunityUseSpaceTypeShape a sh:PropertyShape ;
+    sh:path ceds:P001797 ;
+    sh:maxCount 1 .
+
+# ═══════════════════════════════════════════════════════════
+# Shared — Organization Title / Identification links
+# ═══════════════════════════════════════════════════════════
+
+ceds:hasOrganizationTitle_FacShape a sh:PropertyShape ;
+    sh:path ceds:P600479 ;
+    sh:class ceds:C200246 ;
+    sh:node ceds:OrganizationTitleShape ;
+    sh:maxCount 1 ;
+    sh:minCount 1 .
+
+ceds:hasOrganizationIdentification_FacShape a sh:PropertyShape ;
+    sh:path ceds:P600502 ;
+    sh:class ceds:C200252 ;
+    sh:node ceds:OrganizationIdentificationShape ;
+    sh:minCount 1 .
+
+ceds:hasLocation_FacShape a sh:PropertyShape ;
+    sh:path ceds:P600299 ;
+    sh:class ceds:C200237 ;
+    sh:node ceds:LocationShape .
+
+ceds:hasOrganizationWebsite_FacShape a sh:PropertyShape ;
+    sh:path ceds:P600518 ;
+    sh:class ceds:C200273 ;
+    sh:node ceds:OrganizationWebsiteShape ;
+    sh:maxCount 1 .
+
+# ═══════════════════════════════════════════════════════════
+# Shared Node Shapes — OrganizationTitle (C200246)
+# ═══════════════════════════════════════════════════════════
+
+ceds:OrganizationTitleShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:targetClass ceds:C200246 ;
+    sh:property ceds:hasNameShape ,
+                ceds:hasShortNameOfInstitutionShape .
+
+ceds:hasNameShape a sh:PropertyShape ;
+    sh:path ceds:P000204 ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:minCount 1 .
+
+ceds:hasShortNameOfInstitutionShape a sh:PropertyShape ;
+    sh:path ceds:P000279 ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 .
+
+# ═══════════════════════════════════════════════════════════
+# Shared Node Shapes — OrganizationIdentification (C200252)
+# ═══════════════════════════════════════════════════════════
+
+ceds:OrganizationIdentificationShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:targetClass ceds:C200252 ;
+    sh:property ceds:hasOrganizationIdentifierShape ,
+                ceds:hasOrganizationIdentificationSystemShape .
+
+ceds:hasOrganizationIdentifierShape a sh:PropertyShape ;
+    sh:path ceds:P000827 ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:minCount 1 .
+
+ceds:hasOrganizationIdentificationSystemShape a sh:PropertyShape ;
+    sh:path ceds:P000827system ;
+    sh:maxCount 1 .
+
+# ═══════════════════════════════════════════════════════════
+# Shared Node Shapes — Location / LocationAddress
+# ═══════════════════════════════════════════════════════════
+
+ceds:LocationShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:targetClass ceds:C200237 ;
+    sh:property ceds:hasLocationAddressShape_loc ,
+                ceds:hasLocaleShape .
+
+ceds:hasLocationAddressShape_loc a sh:PropertyShape ;
+    sh:path ceds:P600471 ;
+    sh:class ceds:C200238 ;
+    sh:node ceds:LocationAddressShape .
+
+ceds:hasLocaleShape a sh:PropertyShape ;
+    sh:path ceds:P000191 ;
+    sh:maxCount 1 .
+
+ceds:LocationAddressShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:targetClass ceds:C200238 ;
+    sh:property ceds:hasAddressStreetNumberAndNameShape ,
+                ceds:hasCityShape ,
+                ceds:hasStateAbbreviationShape ,
+                ceds:hasPostalCodeShape .
+
+ceds:hasAddressStreetNumberAndNameShape a sh:PropertyShape ;
+    sh:path ceds:P000269 ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 .
+
+ceds:hasCityShape a sh:PropertyShape ;
+    sh:path ceds:P000040 ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 .
+
+ceds:hasStateAbbreviationShape a sh:PropertyShape ;
+    sh:path ceds:P000267 ;
+    sh:maxCount 1 .
+
+ceds:hasPostalCodeShape a sh:PropertyShape ;
+    sh:path ceds:P000214 ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 .
+
+# ═══════════════════════════════════════════════════════════
+# Shared Node Shapes — OrganizationWebsite (C200273)
+# ═══════════════════════════════════════════════════════════
+
+ceds:OrganizationWebsiteShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:targetClass ceds:C200273 ;
+    sh:property ceds:hasWebsiteAddressShape .
+
+ceds:hasWebsiteAddressShape a sh:PropertyShape ;
+    sh:path ceds:P000704 ;
+    sh:datatype xsd:anyURI ;
+    sh:maxCount 1 .

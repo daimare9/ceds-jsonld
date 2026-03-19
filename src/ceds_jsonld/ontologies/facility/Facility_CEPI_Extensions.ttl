@@ -1,0 +1,76 @@
+@prefix cepi:  <http://cepi-dev.state.mi.us/> .
+@prefix ceds:  <http://ceds.ed.gov/terms#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh:    <http://www.w3.org/ns/shacl#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+
+# ──────────────────────────────────────────────────────────
+# Facility — CEPI Extensions
+# ──────────────────────────────────────────────────────────
+# Michigan-specific extensions for Facility entities.
+# Adds education institution type, service provider type,
+# and facility lease ownership type.
+# ──────────────────────────────────────────────────────────
+
+# ═══════════════════════════════════════════════════════════
+# CEPI Extension Named Individuals — BuildingUseType
+# ═══════════════════════════════════════════════════════════
+
+cepi:NI001206127869 a ceds:P001206 ;
+    rdfs:label "BuildingUseType_AdministrationBuilding"@en .
+
+cepi:NI001206127870 a ceds:P001206 ;
+    rdfs:label "BuildingUseType_MaintenanceBuilding"@en .
+
+cepi:NI001206127868 a ceds:P001206 ;
+    rdfs:label "BuildingUseType_TransportationFacility"@en .
+
+cepi:NI001206100002 a ceds:P001206 ;
+    rdfs:label "BuildingUseType_StorageFacility"@en .
+
+cepi:NI001206127871 a ceds:P001206 ;
+    rdfs:label "BuildingUseType_Other"@en .
+
+# ═══════════════════════════════════════════════════════════
+# CEPI Extension Named Individuals — FacilityOwnershipIndicator
+# ═══════════════════════════════════════════════════════════
+
+cepi:NI001906100001 a ceds:P001906 ;
+    rdfs:label "FacilityOwnershipIndicator_Unknown"@en .
+
+# ═══════════════════════════════════════════════════════════
+# CEPI Extension Named Individuals — FacilityLeaseOwnershipType
+# ═══════════════════════════════════════════════════════════
+
+cepi:NI200051000001 a cepi:P200051 ;
+    rdfs:label "FacilityLeaseOwnershipType_Owned"@en .
+
+cepi:NI200051000002 a cepi:P200051 ;
+    rdfs:label "FacilityLeaseOwnershipType_Leased"@en .
+
+cepi:NI200051000003 a cepi:P200051 ;
+    rdfs:label "FacilityLeaseOwnershipType_LeasePurchase"@en .
+
+cepi:NI200051000004 a cepi:P200051 ;
+    rdfs:label "FacilityLeaseOwnershipType_DonatedOrFree"@en .
+
+cepi:NI200051000005 a cepi:P200051 ;
+    rdfs:label "FacilityLeaseOwnershipType_Other"@en .
+
+# ═══════════════════════════════════════════════════════════
+# CEPI Extension Named Individuals — EducationInstitutionType
+# ═══════════════════════════════════════════════════════════
+
+cepi:NI200045000001 a cepi:P200045 ;
+    rdfs:label "EducationInstitutionType_PublicSchool"@en .
+
+# ═══════════════════════════════════════════════════════════
+# CEPI Extension Named Individuals — ServiceProviderType
+# ═══════════════════════════════════════════════════════════
+
+cepi:NI200046000001 a cepi:P200046 ;
+    rdfs:label "ServiceProviderType_SchoolDistrict"@en .
+
+cepi:NI200046000002 a cepi:P200046 ;
+    rdfs:label "ServiceProviderType_CharterSchoolAuthorizer"@en .

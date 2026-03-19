@@ -1,0 +1,84 @@
+@prefix cepi: <http://cepi-dev.state.mi.us/> .
+@prefix ceds: <http://ceds.ed.gov/terms#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix schema: <https://schema.org/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+# ── CEPI Extension Properties for K12School ────────────────────────────────
+
+cepi:P200047 a owl:ObjectProperty ;
+    rdfs:label "hasChildNutritionPrograms" ;
+    skos:definition "Child Nutrition Programs available at the school." ;
+    schema:domainIncludes ceds:C200199 .
+
+cepi:P200026 a owl:ObjectProperty ;
+    rdfs:label "hasActivelyEducatingStudents" ;
+    skos:definition "Whether the school is actively educating students." ;
+    schema:domainIncludes ceds:C200199 .
+
+cepi:P200021 a owl:ObjectProperty ;
+    rdfs:label "hasInternationalBaccalaureateProgram" ;
+    skos:definition "Whether the school offers an International Baccalaureate program." ;
+    schema:domainIncludes ceds:C200203 .
+
+cepi:P200016 a owl:ObjectProperty ;
+    rdfs:label "hasPercentageOfStudentsInNationalHonorsSociety" ;
+    skos:definition "Percentage range of students in the National Honors Society." ;
+    schema:domainIncludes ceds:C200203 .
+
+cepi:P200015 a owl:ObjectProperty ;
+    rdfs:label "hasSchoolOfExcellenceStatus" ;
+    skos:definition "School of Excellence conversion or new status." ;
+    schema:domainIncludes ceds:C200203 .
+
+cepi:P200028 a owl:ObjectProperty ;
+    rdfs:label "hasStrictDisciplineAcademy" ;
+    skos:definition "Whether the school is a Strict Discipline Academy." ;
+    schema:domainIncludes ceds:C200203 .
+
+cepi:P200029 a owl:ObjectProperty ;
+    rdfs:label "hasStudentAccessToRecess" ;
+    skos:definition "Whether students have access to recess." ;
+    schema:domainIncludes ceds:C200203 .
+
+cepi:P200018 a owl:ObjectProperty ;
+    rdfs:label "hasStudentMentorshipProgram" ;
+    skos:definition "Whether the school has a student mentorship program." ;
+    schema:domainIncludes ceds:C200203 .
+
+cepi:P200030 a owl:ObjectProperty ;
+    rdfs:label "hasUrbanHighSchoolAcademy" ;
+    skos:definition "Whether the school is an Urban High School Academy." ;
+    schema:domainIncludes ceds:C200203 .
+
+cepi:P200056 a owl:DatatypeProperty ;
+    rdfs:label "TitleIStatusEffectiveDate" ;
+    skos:definition "Effective date of the Title I status for K12 programs." ;
+    schema:domainIncludes ceds:C200198 ;
+    rdfs:range xsd:date .
+
+cepi:P200054 a owl:ObjectProperty ;
+    rdfs:label "hasSatTestCenterIndicator" ;
+    skos:definition "Whether the school is an SAT test center." ;
+    schema:domainIncludes ceds:C200252 .
+
+
+# ── CEPI Named Individuals ─────────────────────────────────────────────────
+
+cepi:NI200028100001 a cepi:C200028 ; skos:prefLabel "Yes" .
+cepi:NI200028100002 a cepi:C200028 ; skos:prefLabel "No" .
+
+cepi:NI200029100001 a cepi:C200029 ; skos:prefLabel "Yes" .
+cepi:NI200029100002 a cepi:C200029 ; skos:prefLabel "No" .
+
+cepi:NI200030100001 a cepi:C200030 ; skos:prefLabel "Yes" .
+cepi:NI200030100002 a cepi:C200030 ; skos:prefLabel "No" .
+
+cepi:NI000026100001 a cepi:C200026 ; skos:prefLabel "Yes" .
+cepi:NI000026100002 a cepi:C200026 ; skos:prefLabel "No" .
+
+cepi:NI200054000001 a cepi:C200054 ; skos:prefLabel "No" .
+cepi:NI200054000002 a cepi:C200054 ; skos:prefLabel "Yes" .

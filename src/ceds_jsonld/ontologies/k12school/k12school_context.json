@@ -1,0 +1,178 @@
+{
+    "@context": {
+        "@vocab": "http://ceds.ed.gov/terms#",
+        "@base": "http://cepi-dev.state.mi.us/",
+        "cepi":  "http://cepi-dev.state.mi.us/",
+        "ceds":  "http://ceds.ed.gov/terms#",
+        "xsd":   "http://www.w3.org/2001/XMLSchema#",
+        "rdf":   "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        "rdfs":  "http://www.w3.org/2000/01/rdf-schema#",
+
+        "K12School":                   "ceds:C200199",
+        "K12SchoolStatus":             "ceds:C200203",
+        "K12ProgramOrService":         "ceds:C200198",
+        "SchoolOperationalDetail":     "ceds:C200397",
+        "CharterSchoolManagementOrganization": "ceds:C200379",
+        "CredentialAward":             "ceds:C200079",
+        "CharterSchoolContract":       "cepi:C000012",
+        "CharterSchoolContractAmendment": "cepi:C000014",
+        "OrganizationTitle":           "ceds:C200246",
+        "OrganizationIdentification":  "ceds:C200252",
+        "Location":                    "ceds:C200237",
+        "LocationAddress":             "ceds:C200238",
+        "OrganizationWebsite":         "ceds:C200273",
+
+        "hasK12SchoolStatus":          "ceds:P600264",
+        "hasK12ProgramOrService":      "ceds:P600257",
+        "hasSchoolOperationalDetail":  "ceds:P600552",
+        "hasOrganizationTitle":        "ceds:P600479",
+        "hasOrganizationIdentification": "ceds:P600502",
+        "hasLocation":                 "ceds:P600299",
+        "hasLocationAddress":          "ceds:P600471",
+        "hasOrganizationWebsite":      "ceds:P600518",
+        "hasCredentialAward":          "ceds:P600360",
+        "hasCharterSchoolContractAmendment": "cepi:P200077",
+
+        "NameOfInstitution":           "ceds:P000054",
+        "OrganizationName":            "ceds:P000159",
+        "ShortNameOfOrganization":     "ceds:P000013",
+        "OrganizationIdentifier":      "ceds:P000057",
+        "AddressStreetNumberAndName":  "ceds:P000148",
+        "AddressCity":                 "ceds:P000019",
+        "AddressPostalCode":           "ceds:P000080",
+        "AddressApartmentRoomOrSuiteNumber": "ceds:P000010",
+        "AddressCountyName":           "ceds:P000021",
+        "Latitude":                    "ceds:P000096",
+        "Longitude":                   "ceds:P000100",
+        "WebSiteAddress":              "ceds:P000218",
+        "RecordStartDateTime":         "ceds:P001917",
+        "RecordEndDateTime":           "ceds:P001918",
+        "CredentialAwardStartDate":    "ceds:P000179",
+        "CredentialAwardEndDate":      "ceds:P000180",
+        "CharterSchoolContractApprovalDate":  "ceds:P001287",
+        "CharterSchoolContractIdNumber":      "ceds:P001286",
+        "CharterSchoolContractRenewalDate":   "ceds:P001285",
+        "TitleIStatusEffectiveDate":   "cepi:P200056",
+        "CharterSchoolContractAmendmentDate": "cepi:P200089",
+        "CharterSchoolContractAmendmentTopic": "cepi:P200090",
+        "XLocation":                   "cepi:P200043",
+        "YLocation":                   "cepi:P200044",
+
+        "HasGradesOffered": {
+            "@id": "ceds:P000131",
+            "@type": "@vocab"
+        },
+        "hasGradeLevelsApproved": {
+            "@id": "ceds:P001926",
+            "@type": "@vocab"
+        },
+        "hasAdministrativeFundingControl": {
+            "@id": "ceds:P000015",
+            "@type": "@vocab"
+        },
+        "hasCareerCluster": {
+            "@id": "ceds:P001288",
+            "@type": "@vocab"
+        },
+        "hasCharterSchoolManagementOrganizationType": {
+            "@id": "ceds:P001289",
+            "@type": "@vocab"
+        },
+        "hasIncreasedLearningTimeType": {
+            "@id": "ceds:P000164",
+            "@type": "@vocab"
+        },
+        "hasSchoolType": {
+            "@id": "ceds:P001172",
+            "@type": "@vocab"
+        },
+        "hasSchoolOperationalStatus": {
+            "@id": "ceds:P001174",
+            "@type": "@vocab"
+        },
+        "hasAlternativeSchoolFocusType": {
+            "@id": "ceds:P000015",
+            "@type": "@vocab"
+        },
+        "hasNationalSchoolLunchProgramStatus": {
+            "@id": "ceds:P000178",
+            "@type": "@vocab"
+        },
+        "hasVirtualSchoolStatus": {
+            "@id": "ceds:P001264",
+            "@type": "@vocab"
+        },
+        "hasTitleIProgramType": {
+            "@id": "ceds:P001290",
+            "@type": "@vocab"
+        },
+        "hasOrganizationType": {
+            "@id": "ceds:P001156",
+            "@type": "@vocab"
+        },
+        "hasOrganizationIdentificationSystem": {
+            "@id": "ceds:P000827",
+            "@type": "@vocab"
+        },
+        "hasOrganizationIdentifierType": {
+            "@id": "ceds:P001573",
+            "@type": "@vocab"
+        },
+        "hasStateAbbreviation": {
+            "@id": "ceds:P000165",
+            "@type": "@vocab"
+        },
+        "hasCountyANSICode": {
+            "@id": "ceds:P000020",
+            "@type": "@vocab"
+        },
+        "hasAddressTypeForOrganization": {
+            "@id": "ceds:P000018",
+            "@type": "@vocab"
+        },
+        "hasLocale": {
+            "@id": "cepi:P200057",
+            "@type": "@vocab"
+        },
+        "hasSatTestCenterIndicator": {
+            "@id": "cepi:P200054",
+            "@type": "@vocab"
+        },
+        "hasChildNutritionPrograms": {
+            "@id": "cepi:P200047",
+            "@type": "@vocab"
+        },
+        "hasActivelyEducatingStudents": {
+            "@id": "cepi:P200026",
+            "@type": "@vocab"
+        },
+        "hasInternationalBaccalaureateProgram": {
+            "@id": "cepi:P200021",
+            "@type": "@vocab"
+        },
+        "hasPercentageOfStudentsInNationalHonorsSociety": {
+            "@id": "cepi:P200016",
+            "@type": "@vocab"
+        },
+        "hasSchoolOfExcellenceStatus": {
+            "@id": "cepi:P200015",
+            "@type": "@vocab"
+        },
+        "hasStrictDisciplineAcademy": {
+            "@id": "cepi:P200028",
+            "@type": "@vocab"
+        },
+        "hasStudentAccessToRecess": {
+            "@id": "cepi:P200029",
+            "@type": "@vocab"
+        },
+        "hasStudentMentorshipProgram": {
+            "@id": "cepi:P200018",
+            "@type": "@vocab"
+        },
+        "hasUrbanHighSchoolAcademy": {
+            "@id": "cepi:P200030",
+            "@type": "@vocab"
+        }
+    }
+}

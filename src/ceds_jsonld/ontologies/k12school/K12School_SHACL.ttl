@@ -1,0 +1,444 @@
+@prefix ceds: <http://ceds.ed.gov/terms#> .
+@prefix cepi: <http://cepi-dev.state.mi.us/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+# ── Top-level K12School NodeShape ───────────────────────────────────────────
+ceds:K12SchoolShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:property ceds:HasGradesOfferedShape,
+        ceds:hasAdministrativeFundingControlShape,
+        ceds:hasCareerClusterShape,
+        ceds:hasCharterSchoolManagementOrganizationTypeShape,
+        ceds:hasGradeLevelsApprovedShape,
+        ceds:hasIncreasedLearningTimeTypeShape,
+        ceds:hasK12ProgramOrServiceShape,
+        ceds:hasK12SchoolStatusShape,
+        ceds:hasSchoolOperationalDetailShape,
+        ceds:hasSchoolTypeShape,
+        cepi:hasChildNutritionProgramsShape,
+        cepi:hasActivelyEducatingStudentsShape,
+        ceds:hasOrganizationTitleShape,
+        ceds:hasOrganizationIdentificationShape,
+        ceds:hasLocationShape,
+        ceds:hasOrganizationWebsiteShape,
+        ceds:hasOrganizationTypeShape,
+        ceds:RecordStartDateTimeShape,
+        ceds:RecordEndDateTimeShape,
+        cepi:hasLocaleShape ;
+    sh:targetClass ceds:C200199 .
+
+# ── K12-specific sub-shapes ────────────────────────────────────────────────
+ceds:K12SchoolStatusShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:property ceds:hasAlternativeSchoolFocusTypeShape,
+        ceds:hasNationalSchoolLunchProgramStatusShape,
+        ceds:hasVirtualSchoolStatusShape,
+        cepi:hasInternationalBaccalaureateProgramShape,
+        cepi:hasPercentageOfStudentsInNationalHonorsSocietyShape,
+        cepi:hasSchoolOfExcellenceStatusShape,
+        cepi:hasStrictDisciplineAcademyShape,
+        cepi:hasStudentAccessToRecessShape,
+        cepi:hasStudentMentorshipProgramShape,
+        cepi:hasUrbanHighSchoolAcademyShape ;
+    sh:targetClass ceds:C200203 .
+
+ceds:K12ProgramOrServiceShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:property ceds:hasTitleIProgramTypeShape,
+        cepi:TitleIStatusEffectiveDateShape ;
+    sh:targetClass ceds:C200198 .
+
+ceds:SchoolOperationalDetailShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:property ceds:hasSchoolOperationalStatusShape ;
+    sh:targetClass ceds:C200397 .
+
+ceds:CharterSchoolManagementOrganizationShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:property ceds:hasCharterSchoolManagementOrganizationTypeShape,
+        ceds:hasCredentialAwardShape,
+        ceds:hasK12ProgramOrServiceShape ;
+    sh:targetClass ceds:C200379 .
+
+ceds:CredentialAwardShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:property ceds:CredentialAwardStartDateShape,
+        ceds:CredentialAwardEndDateShape ;
+    sh:targetClass ceds:C200079 .
+
+cepi:CharterSchoolContractShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:property ceds:CharterSchoolContractApprovalDateShape,
+        ceds:CharterSchoolContractIdNumberShape,
+        ceds:CharterSchoolContractRenewalDateShape,
+        cepi:hasCharterSchoolContractAmendmentShape ;
+    sh:targetClass cepi:C000012 .
+
+cepi:CharterSchoolContractAmendmentShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:property cepi:CharterSchoolContractAmendmentDateShape,
+        cepi:CharterSchoolContractAmendmentTopicShape ;
+    sh:targetClass cepi:C000014 .
+
+# ── Shared shapes referenced from base Organization ────────────────────────
+ceds:OrganizationTitleShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:property ceds:NameOfInstitutionShape,
+        ceds:OrganizationNameShape,
+        ceds:ShortNameOfOrganizationShape,
+        ceds:RecordStartDateTimeShape,
+        ceds:RecordEndDateTimeShape ;
+    sh:targetClass ceds:C200246 .
+
+ceds:OrganizationIdentificationShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:property ceds:OrganizationIdentifierShape,
+        ceds:hasOrganizationIdentificationSystemShape,
+        ceds:hasOrganizationIdentifierTypeShape,
+        cepi:hasSatTestCenterIndicatorShape ;
+    sh:targetClass ceds:C200252 .
+
+ceds:LocationShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:property ceds:hasLocationAddressShape ;
+    sh:targetClass ceds:C200237 .
+
+ceds:LocationAddressShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:property ceds:AddressStreetNumberAndNameShape,
+        ceds:AddressApartmentRoomOrSuiteNumberShape,
+        ceds:AddressCityShape,
+        ceds:AddressCountyNameShape,
+        ceds:AddressPostalCodeShape,
+        ceds:LatitudeShape,
+        ceds:LongitudeShape,
+        ceds:RecordStartDateTimeShape,
+        ceds:RecordEndDateTimeShape,
+        ceds:hasStateAbbreviationShape,
+        ceds:hasCountyANSICodeShape,
+        ceds:hasAddressTypeForOrganizationShape,
+        cepi:XLocationShape,
+        cepi:YLocationShape ;
+    sh:targetClass ceds:C200238 .
+
+ceds:OrganizationWebsiteShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:property ceds:WebSiteAddressShape ;
+    sh:targetClass ceds:C200273 .
+
+
+# ── Object Property Shapes ──────────────────────────────────────────────────
+ceds:hasK12SchoolStatusShape a sh:PropertyShape ;
+    sh:class ceds:C200203 ;
+    sh:node ceds:K12SchoolStatusShape ;
+    sh:path ceds:P600264 .
+
+ceds:hasK12ProgramOrServiceShape a sh:PropertyShape ;
+    sh:class ceds:C200198 ;
+    sh:node ceds:K12ProgramOrServiceShape ;
+    sh:path ceds:P600257 .
+
+ceds:hasSchoolOperationalDetailShape a sh:PropertyShape ;
+    sh:class ceds:C200397 ;
+    sh:node ceds:SchoolOperationalDetailShape ;
+    sh:path ceds:P600552 .
+
+ceds:hasOrganizationTitleShape a sh:PropertyShape ;
+    sh:class ceds:C200246 ;
+    sh:node ceds:OrganizationTitleShape ;
+    sh:path ceds:P600479 .
+
+ceds:hasOrganizationIdentificationShape a sh:PropertyShape ;
+    sh:class ceds:C200252 ;
+    sh:node ceds:OrganizationIdentificationShape ;
+    sh:path ceds:P600502 .
+
+ceds:hasLocationShape a sh:PropertyShape ;
+    sh:class ceds:C200237 ;
+    sh:node ceds:LocationShape ;
+    sh:path ceds:P600299 .
+
+ceds:hasLocationAddressShape a sh:PropertyShape ;
+    sh:class ceds:C200238 ;
+    sh:node ceds:LocationAddressShape ;
+    sh:path ceds:P600471 .
+
+ceds:hasOrganizationWebsiteShape a sh:PropertyShape ;
+    sh:class ceds:C200273 ;
+    sh:node ceds:OrganizationWebsiteShape ;
+    sh:path ceds:P600518 .
+
+ceds:hasCredentialAwardShape a sh:PropertyShape ;
+    sh:class ceds:C200079 ;
+    sh:node ceds:CredentialAwardShape ;
+    sh:path ceds:P600360 .
+
+cepi:hasCharterSchoolContractAmendmentShape a sh:PropertyShape ;
+    sh:class cepi:C000014 ;
+    sh:node cepi:CharterSchoolContractAmendmentShape ;
+    sh:path cepi:P200077 .
+
+
+# ── Datatype Property Shapes ────────────────────────────────────────────────
+ceds:NameOfInstitutionShape a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:minCount 1 ;
+    sh:path ceds:P000054 .
+
+ceds:OrganizationNameShape a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:path ceds:P000159 .
+
+ceds:ShortNameOfOrganizationShape a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:path ceds:P000013 .
+
+ceds:OrganizationIdentifierShape a sh:PropertyShape ;
+    sh:datatype xsd:token ;
+    sh:path ceds:P000057 .
+
+ceds:AddressStreetNumberAndNameShape a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:path ceds:P000148 .
+
+ceds:AddressCityShape a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:path ceds:P000019 .
+
+ceds:AddressPostalCodeShape a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:path ceds:P000080 .
+
+ceds:AddressApartmentRoomOrSuiteNumberShape a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:path ceds:P000010 .
+
+ceds:AddressCountyNameShape a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:path ceds:P000021 .
+
+ceds:LatitudeShape a sh:PropertyShape ;
+    sh:datatype xsd:decimal ;
+    sh:path ceds:P000096 .
+
+ceds:LongitudeShape a sh:PropertyShape ;
+    sh:datatype xsd:decimal ;
+    sh:path ceds:P000100 .
+
+ceds:WebSiteAddressShape a sh:PropertyShape ;
+    sh:datatype xsd:anyURI ;
+    sh:path ceds:P000218 .
+
+ceds:RecordStartDateTimeShape a sh:PropertyShape ;
+    sh:datatype xsd:dateTime ;
+    sh:path ceds:P001917 .
+
+ceds:RecordEndDateTimeShape a sh:PropertyShape ;
+    sh:datatype xsd:dateTime ;
+    sh:path ceds:P001918 .
+
+ceds:CredentialAwardStartDateShape a sh:PropertyShape ;
+    sh:datatype xsd:date ;
+    sh:path ceds:P000179 .
+
+ceds:CredentialAwardEndDateShape a sh:PropertyShape ;
+    sh:datatype xsd:date ;
+    sh:path ceds:P000180 .
+
+ceds:CharterSchoolContractApprovalDateShape a sh:PropertyShape ;
+    sh:datatype xsd:date ;
+    sh:path ceds:P001287 .
+
+ceds:CharterSchoolContractIdNumberShape a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:path ceds:P001286 .
+
+ceds:CharterSchoolContractRenewalDateShape a sh:PropertyShape ;
+    sh:datatype xsd:date ;
+    sh:path ceds:P001285 .
+
+cepi:TitleIStatusEffectiveDateShape a sh:PropertyShape ;
+    sh:datatype xsd:date ;
+    sh:path cepi:P200056 .
+
+cepi:CharterSchoolContractAmendmentDateShape a sh:PropertyShape ;
+    sh:datatype xsd:date ;
+    sh:path cepi:P200089 .
+
+cepi:CharterSchoolContractAmendmentTopicShape a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:path cepi:P200090 .
+
+cepi:XLocationShape a sh:PropertyShape ;
+    sh:datatype xsd:decimal ;
+    sh:path cepi:P200043 .
+
+cepi:YLocationShape a sh:PropertyShape ;
+    sh:datatype xsd:decimal ;
+    sh:path cepi:P200044 .
+
+
+# ── Named-individual Property Shapes ─────────────────────────────────────────
+ceds:HasGradesOfferedShape a sh:PropertyShape ;
+    sh:in ( ceds:NI002175181504 ceds:NI002175181505 ceds:NI002175181506 ceds:NI002175181507
+            ceds:NI002175181508 ceds:NI002175181509 ceds:NI002175181510 ceds:NI002175181511
+            ceds:NI002175181512 ceds:NI002175181513 ceds:NI002175181514 ceds:NI002175181515
+            ceds:NI002175181516 ceds:NI002175181517 ceds:NI002175181518 ceds:NI002175181519
+            ceds:NI002175181520 ceds:NI002175181521 ceds:NI002175181522 ceds:NI002175181523
+            ceds:NI002175181524 ceds:NI002175181525 ceds:NI002175181526 ceds:NI002175181527
+            cepi:NI002175100001 cepi:NI002175100002 cepi:NI001301000001 ) ;
+    sh:path ceds:P000131 .
+
+ceds:hasGradeLevelsApprovedShape a sh:PropertyShape ;
+    sh:in ( ceds:NI002175181504 ceds:NI002175181505 ceds:NI002175181506 ceds:NI002175181507
+            ceds:NI002175181508 ceds:NI002175181509 ceds:NI002175181510 ceds:NI002175181511
+            ceds:NI002175181512 ceds:NI002175181513 ceds:NI002175181514 ceds:NI002175181515
+            ceds:NI002175181516 ceds:NI002175181517 ceds:NI002175181518 ceds:NI002175181519
+            ceds:NI002175181520 ceds:NI002175181521 ceds:NI002175181522 ceds:NI002175181523
+            ceds:NI002175181524 ceds:NI002175181525 ceds:NI002175181526 ceds:NI002175181527
+            cepi:NI002175100001 cepi:NI002175100002 cepi:NI001301000001 ) ;
+    sh:path ceds:P001926 .
+
+ceds:hasAdministrativeFundingControlShape a sh:PropertyShape ;
+    sh:path ceds:P000015 .
+
+ceds:hasCareerClusterShape a sh:PropertyShape ;
+    sh:in ( ceds:NI001288114466 ceds:NI001288114628 ceds:NI001288114437 ceds:NI001288113587
+            ceds:NI001288114252 ceds:NI001288113764 ceds:NI001288114291 ceds:NI001288113874
+            ceds:NI001288114079 ceds:NI001288114648 ceds:NI001288114416 ceds:NI001288114211
+            ceds:NI001288114331 ceds:NI001288114605 ceds:NI001288114389 ceds:NI001288114313
+            cepi:NI001288114651 cepi:NI001288114649 cepi:NI001288114650 ) ;
+    sh:path ceds:P001288 .
+
+ceds:hasCharterSchoolManagementOrganizationTypeShape a sh:PropertyShape ;
+    sh:path ceds:P001289 .
+
+ceds:hasIncreasedLearningTimeTypeShape a sh:PropertyShape ;
+    sh:in ( ceds:NI000164151728 ceds:NI000164151729 ceds:NI000164151730 ceds:NI000164151731
+            ceds:NI000164151732 ceds:NI000164151733 ceds:NI000164151734 ceds:NI000164151735
+            ceds:NI000164151736 cepi:NI000164151733 ) ;
+    sh:path ceds:P000164 .
+
+ceds:hasSchoolTypeShape a sh:PropertyShape ;
+    sh:path ceds:P001172 .
+
+ceds:hasSchoolOperationalStatusShape a sh:PropertyShape ;
+    sh:path ceds:P001174 .
+
+ceds:hasAlternativeSchoolFocusTypeShape a sh:PropertyShape ;
+    sh:in ( ceds:NI000015115574 ceds:NI000015115371 ceds:NI000015115163
+            cepi:NI000015100001 cepi:NI000015100002 cepi:NI000015100003 ) ;
+    sh:path ceds:P000015 .
+
+ceds:hasNationalSchoolLunchProgramStatusShape a sh:PropertyShape ;
+    sh:path ceds:P000178 .
+
+ceds:hasVirtualSchoolStatusShape a sh:PropertyShape ;
+    sh:path ceds:P001264 .
+
+ceds:hasTitleIProgramTypeShape a sh:PropertyShape ;
+    sh:path ceds:P001290 .
+
+ceds:hasOrganizationTypeShape a sh:PropertyShape ;
+    sh:in ( ceds:NI001156173051 ceds:NI001156173052 ceds:NI001156173053 ceds:NI001156173054
+            ceds:NI001156173055 ceds:NI001156173056 ceds:NI001156173057 ceds:NI001156173058
+            ceds:NI001156173059 ceds:NI001156173060 ceds:NI001156173061 ceds:NI001156173062
+            ceds:NI001156173063 ceds:NI001156173064 ceds:NI001156173065 ceds:NI001156173066
+            ceds:NI001156173067 ceds:NI001156173068 ceds:NI001156173069 ceds:NI001156173070
+            ceds:NI001156173071 ceds:NI001156173072 ceds:NI001156173073 ceds:NI001156173074
+            ceds:NI001156173075 ceds:NI001156173076 ceds:NI001156173077 ceds:NI001156173078
+            ceds:NI001156173079 ceds:NI001156173080 ceds:NI001156173081 ceds:NI001156173082
+            cepi:NI001156100001 cepi:NI000239100001 cepi:NI000239100003
+            cepi:NI000239100004 cepi:NI000239100005 ) ;
+    sh:path ceds:P001156 .
+
+ceds:hasOrganizationIdentificationSystemShape a sh:PropertyShape ;
+    sh:in ( ceds:NI000827151963 ceds:NI000827151964 ceds:NI000827151965 ceds:NI000827151966
+            ceds:NI000827151967 ceds:NI000827151968 ceds:NI000827151969 ceds:NI000827151970
+            ceds:NI000827151971 ceds:NI000827151972 ceds:NI000827151973 ceds:NI000827151974
+            ceds:NI000827151975 ceds:NI000827151976 ceds:NI000827151980
+            cepi:NI000827151981 cepi:NI000827100001 cepi:NI000827100002 ) ;
+    sh:path ceds:P000827 .
+
+ceds:hasOrganizationIdentifierTypeShape a sh:PropertyShape ;
+    sh:path ceds:P001573 .
+
+ceds:hasStateAbbreviationShape a sh:PropertyShape ;
+    sh:path ceds:P000165 .
+
+ceds:hasCountyANSICodeShape a sh:PropertyShape ;
+    sh:path ceds:P000020 .
+
+ceds:hasAddressTypeForOrganizationShape a sh:PropertyShape ;
+    sh:path ceds:P000018 .
+
+cepi:hasLocaleShape a sh:PropertyShape ;
+    sh:in ( cepi:NI002130000001 cepi:NI002130000002 cepi:NI002130000003
+            cepi:NI002130000004 cepi:NI002130000005 cepi:NI002130000006
+            cepi:NI002130000007 cepi:NI002130000008 cepi:NI002130000009
+            cepi:NI002130000010 cepi:NI002130000011 cepi:NI002130000012 ) ;
+    sh:path cepi:P200057 .
+
+cepi:hasSatTestCenterIndicatorShape a sh:PropertyShape ;
+    sh:in ( cepi:NI200054000001 cepi:NI200054000002 ) ;
+    sh:path cepi:P200054 .
+
+cepi:hasChildNutritionProgramsShape a sh:PropertyShape ;
+    sh:in ( cepi:NI200047000001 cepi:NI200047000002 cepi:NI200047000003
+            cepi:NI200047000004 cepi:NI200047000005 cepi:NI200047000006
+            cepi:NI200047000007 cepi:NI200047000008 cepi:NI200047000009
+            cepi:NI200047000010 cepi:NI200047000011 ) ;
+    sh:path cepi:P200047 .
+
+cepi:hasActivelyEducatingStudentsShape a sh:PropertyShape ;
+    sh:in ( cepi:NI000026100001 cepi:NI000026100002 ) ;
+    sh:path cepi:P200026 .
+
+cepi:hasInternationalBaccalaureateProgramShape a sh:PropertyShape ;
+    sh:in ( cepi:NI000021100001 cepi:NI000021100002 ) ;
+    sh:path cepi:P200021 .
+
+cepi:hasPercentageOfStudentsInNationalHonorsSocietyShape a sh:PropertyShape ;
+    sh:in ( cepi:NI000016100001 cepi:NI000016100002 cepi:NI000016100003
+            cepi:NI000016100004 cepi:NI000016100005 ) ;
+    sh:path cepi:P200016 .
+
+cepi:hasSchoolOfExcellenceStatusShape a sh:PropertyShape ;
+    sh:in ( cepi:NI200015000001 cepi:NI200015000002 ) ;
+    sh:path cepi:P200015 .
+
+cepi:hasStrictDisciplineAcademyShape a sh:PropertyShape ;
+    sh:in ( cepi:NI200028100001 cepi:NI200028100002 ) ;
+    sh:path cepi:P200028 .
+
+cepi:hasStudentAccessToRecessShape a sh:PropertyShape ;
+    sh:in ( cepi:NI200029100001 cepi:NI200029100002 ) ;
+    sh:path cepi:P200029 .
+
+cepi:hasStudentMentorshipProgramShape a sh:PropertyShape ;
+    sh:in ( cepi:NI000018100001 cepi:NI000018100002 ) ;
+    sh:path cepi:P200018 .
+
+cepi:hasUrbanHighSchoolAcademyShape a sh:PropertyShape ;
+    sh:in ( cepi:NI200030100001 cepi:NI200030100002 ) ;
+    sh:path cepi:P200030 .

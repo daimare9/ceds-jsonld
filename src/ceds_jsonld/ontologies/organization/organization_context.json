@@ -1,0 +1,114 @@
+{
+    "@context": {
+        "@vocab": "http://ceds.ed.gov/terms#",
+        "@base": "http://cepi-dev.state.mi.us/",
+        "rdf":   "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        "rdfs":  "http://www.w3.org/2000/01/rdf-schema#",
+        "xsd":   "http://www.w3.org/2001/XMLSchema#",
+        "owl":   "http://www.w3.org/2002/07/owl#",
+        "skos":  "http://www.w3.org/2004/02/skos/core#",
+        "cepi":  "http://cepi-dev.state.mi.us/",
+        "ceds":  "http://ceds.ed.gov/terms#",
+        "schema": "https://schema.org/",
+
+        "Organization":                "ceds:C200239",
+        "OrganizationTitle":           "ceds:C200246",
+        "OrganizationIdentification":  "ceds:C200252",
+        "Location":                    "ceds:C200237",
+        "LocationAddress":             "ceds:C200238",
+        "OrganizationOperationalDetail": "ceds:C200398",
+        "OrganizationRelationship":    "ceds:C200265",
+        "OrganizationService":         "ceds:C200270",
+        "OrganizationFederalAccountability": "ceds:C200250",
+        "OrganizationWebsite":         "ceds:C200273",
+        "RecordStatus":                "ceds:C200411",
+        "DataCollection":              "ceds:C200410",
+        "Locale":                      "cepi:C002130",
+
+        "hasOrganizationTitle":             "ceds:P600479",
+        "hasOrganizationIdentification":    "ceds:P600502",
+        "hasLocation":                      "ceds:P600299",
+        "hasLocationAddress":               "ceds:P600471",
+        "hasOrganizationOperationalDetail": "ceds:P600508",
+        "hasOrganizationRelationship":      "ceds:P600519",
+        "hasOrganizationService":           "ceds:P600527",
+        "hasOrganizationFederalAccountability": "ceds:P600482",
+        "hasOrganizationWebsite":           "ceds:P600518",
+        "hasRecordStatus":                  "ceds:P201001",
+        "hasDataCollection":                "ceds:P201003",
+        "CommittedByOrganization":          "ceds:P200999",
+
+        "NameOfInstitution":            "ceds:P000054",
+        "OrganizationName":             "ceds:P000159",
+        "ShortNameOfOrganization":      "ceds:P000013",
+        "OrganizationIdentifier":       "ceds:P000057",
+        "IPEDSIdentifier":              "ceds:P000061",
+        "AddressStreetNumberAndName":   "ceds:P000148",
+        "AddressApartmentRoomOrSuiteNumber": "ceds:P000010",
+        "AddressCity":                  "ceds:P000019",
+        "AddressCountyName":            "ceds:P000021",
+        "AddressPostalCode":            "ceds:P000080",
+        "Latitude":                     "ceds:P000096",
+        "Longitude":                    "ceds:P000100",
+        "WebSiteAddress":               "ceds:P000218",
+        "OperationalStatusEffectiveDate": "ceds:P001032",
+        "RecordStartDateTime":          "ceds:P001917",
+        "RecordEndDateTime":            "ceds:P001918",
+
+        "XLocation":                    "cepi:P200043",
+        "YLocation":                    "cepi:P200044",
+        "CivilDivision":                "cepi:P200059",
+        "StateHouseDistrict":           "cepi:P200042",
+        "StateSenateDistrict":          "cepi:P200041",
+        "UsCongressionalDistrict":      "cepi:P200040",
+
+        "hasOrganizationType": {
+            "@id": "ceds:P001156",
+            "@type": "@vocab"
+        },
+        "hasOrganizationIdentificationSystem": {
+            "@id": "ceds:P000827",
+            "@type": "@vocab"
+        },
+        "hasOrganizationIdentifierType": {
+            "@id": "ceds:P001573",
+            "@type": "@vocab"
+        },
+        "hasOrganizationOperationalStatus": {
+            "@id": "ceds:P001033",
+            "@type": "@vocab"
+        },
+        "hasOrganizationRelationshipType": {
+            "@id": "ceds:P001905",
+            "@type": "@vocab"
+        },
+        "hasStudentSupportServiceType": {
+            "@id": "ceds:P000255",
+            "@type": "@vocab"
+        },
+        "hasComprehensiveSupportAndImprovementStatus": {
+            "@id": "ceds:P002234",
+            "@type": "@vocab"
+        },
+        "hasTargetedSupportAndImprovementStatus": {
+            "@id": "ceds:P002235",
+            "@type": "@vocab"
+        },
+        "hasStateAbbreviation": {
+            "@id": "ceds:P000165",
+            "@type": "@vocab"
+        },
+        "hasCountyANSICode": {
+            "@id": "ceds:P000020",
+            "@type": "@vocab"
+        },
+        "hasAddressTypeForOrganization": {
+            "@id": "ceds:P000018",
+            "@type": "@vocab"
+        },
+        "hasLocale": {
+            "@id": "cepi:P200057",
+            "@type": "@vocab"
+        }
+    }
+}

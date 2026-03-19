@@ -1,0 +1,154 @@
+# K12School Shape — Declarative Field Mapping Configuration
+# Extends base Organization with K12-specific properties
+
+shape: K12SchoolShape
+context_url: "https://cepi-dev.state.mi.us/ontology/context-k12school.json"
+context_file: k12school_context.json
+base_uri: "cepi:school/"
+id_source: SchoolId
+id_transform: int_clean
+
+type: K12School
+
+properties:
+  hasOrganizationTitle:
+    type: OrganizationTitle
+    cardinality: single
+    fields:
+      NameOfInstitution:
+        source: SchoolName
+        target: NameOfInstitution
+        datatype: "xsd:string"
+      ShortNameOfOrganization:
+        source: ShortName
+        target: ShortNameOfOrganization
+        datatype: "xsd:string"
+        optional: true
+
+  hasOrganizationIdentification:
+    type: OrganizationIdentification
+    cardinality: multiple
+    split_on: "|"
+    fields:
+      OrganizationIdentifier:
+        source: SchoolIdentifiers
+        target: OrganizationIdentifier
+        datatype: "xsd:token"
+      hasOrganizationIdentificationSystem:
+        source: IdentificationSystems
+        target: hasOrganizationIdentificationSystem
+        optional: true
+
+  hasLocation:
+    type: Location
+    cardinality: single
+    fields:
+      AddressStreetNumberAndName:
+        source: AddressStreet
+        target: AddressStreetNumberAndName
+        datatype: "xsd:string"
+        optional: true
+      AddressCity:
+        source: City
+        target: AddressCity
+        datatype: "xsd:string"
+        optional: true
+      hasStateAbbreviation:
+        source: State
+        target: hasStateAbbreviation
+        optional: true
+      AddressPostalCode:
+        source: Zip
+        target: AddressPostalCode
+        datatype: "xsd:string"
+        optional: true
+      Latitude:
+        source: Latitude
+        target: Latitude
+        datatype: "xsd:decimal"
+        transform: decimal_clean
+        optional: true
+      Longitude:
+        source: Longitude
+        target: Longitude
+        datatype: "xsd:decimal"
+        transform: decimal_clean
+        optional: true
+
+  hasK12SchoolStatus:
+    type: K12SchoolStatus
+    cardinality: single
+    fields:
+      hasAlternativeSchoolFocusType:
+        source: AltSchoolFocusType
+        target: hasAlternativeSchoolFocusType
+        optional: true
+      hasNationalSchoolLunchProgramStatus:
+        source: NationalSchoolLunchStatus
+        target: hasNationalSchoolLunchProgramStatus
+        optional: true
+      hasVirtualSchoolStatus:
+        source: VirtualSchoolStatus
+        target: hasVirtualSchoolStatus
+        optional: true
+      hasStrictDisciplineAcademy:
+        source: StrictDisciplineAcademy
+        target: hasStrictDisciplineAcademy
+        optional: true
+      hasStudentAccessToRecess:
+        source: StudentAccessToRecess
+        target: hasStudentAccessToRecess
+        optional: true
+
+  hasSchoolOperationalDetail:
+    type: SchoolOperationalDetail
+    cardinality: single
+    fields:
+      hasSchoolOperationalStatus:
+        source: SchoolOperationalStatus
+        target: hasSchoolOperationalStatus
+        optional: true
+
+  HasGradesOffered:
+    source: GradesOffered
+    target: HasGradesOffered
+    cardinality: multiple
+    multi_value_split: ","
+    optional: true
+
+  hasGradeLevelsApproved:
+    source: GradeLevelsApproved
+    target: hasGradeLevelsApproved
+    cardinality: multiple
+    multi_value_split: ","
+    optional: true
+
+  hasChildNutritionPrograms:
+    source: ChildNutritionPrograms
+    target: hasChildNutritionPrograms
+    cardinality: multiple
+    multi_value_split: ","
+    optional: true
+
+  hasOrganizationWebsite:
+    type: OrganizationWebsite
+    cardinality: single
+    fields:
+      WebSiteAddress:
+        source: WebsiteURL
+        target: WebSiteAddress
+        datatype: "xsd:anyURI"
+        optional: true
+
+record_status_defaults:
+  type: RecordStatus
+  RecordStartDateTime:
+    value: "1900-01-01T00:00:00"
+    datatype: "xsd:dateTime"
+  RecordEndDateTime:
+    value: "9999-12-31T00:00:00"
+    datatype: "xsd:dateTime"
+
+data_collection_defaults:
+  type: DataCollection
+  value_id: "http://example.org/dataCollection/default"

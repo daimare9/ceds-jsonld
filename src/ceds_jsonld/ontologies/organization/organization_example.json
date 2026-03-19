@@ -1,0 +1,97 @@
+{
+    "@context": "https://cepi-dev.state.mi.us/ontology/context-organization.json",
+    "@type": "Organization",
+    "@id": "http://cepi-dev.state.mi.us/organization/5000",
+
+    "hasOrganizationType": "OrganizationType_K12School",
+
+    "hasOrganizationTitle": {
+        "@type": "OrganizationTitle",
+        "NameOfInstitution": "Lincoln Elementary School",
+        "OrganizationName": "Lincoln Elementary School",
+        "ShortNameOfOrganization": "Lincoln Elem",
+        "RecordStartDateTime": {
+            "@value": "1900-01-01T00:00:00",
+            "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
+        },
+        "RecordEndDateTime": {
+            "@value": "9999-12-31T00:00:00",
+            "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
+        }
+    },
+
+    "hasOrganizationIdentification": [
+        {
+            "@type": "OrganizationIdentification",
+            "OrganizationIdentifier": "5000",
+            "hasOrganizationIdentificationSystem": "OrganizationIdentificationSystem_SEA"
+        },
+        {
+            "@type": "OrganizationIdentification",
+            "OrganizationIdentifier": "MI-5000",
+            "hasOrganizationIdentificationSystem": "OrganizationIdentificationSystem_NCES"
+        }
+    ],
+
+    "hasLocation": [
+        {
+            "@type": "Location",
+            "hasLocationAddress": {
+                "@type": "LocationAddress",
+                "hasAddressTypeForOrganization": "AddressTypeForOrganization_Physical",
+                "AddressStreetNumberAndName": "123 Main St",
+                "AddressApartmentRoomOrSuiteNumber": "Suite 1",
+                "AddressCity": "Detroit",
+                "hasStateAbbreviation": "StateAbbreviation_MI",
+                "AddressPostalCode": "48201",
+                "AddressCountyName": "Wayne",
+                "Latitude": "42.3314",
+                "Longitude": "-83.0458"
+            },
+            "RecordStartDateTime": {
+                "@value": "1900-01-01T00:00:00",
+                "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
+            },
+            "RecordEndDateTime": {
+                "@value": "9999-12-31T00:00:00",
+                "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
+            }
+        },
+        {
+            "@type": "Location",
+            "hasLocationAddress": {
+                "@type": "LocationAddress",
+                "hasAddressTypeForOrganization": "AddressTypeForOrganization_Mailing",
+                "AddressStreetNumberAndName": "PO Box 100",
+                "AddressCity": "Detroit",
+                "hasStateAbbreviation": "StateAbbreviation_MI",
+                "AddressPostalCode": "48201",
+                "AddressCountyName": "Wayne"
+            },
+            "RecordStartDateTime": {
+                "@value": "1900-01-01T00:00:00",
+                "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
+            },
+            "RecordEndDateTime": {
+                "@value": "9999-12-31T00:00:00",
+                "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
+            }
+        }
+    ],
+
+    "hasOrganizationOperationalDetail": {
+        "@type": "OrganizationOperationalDetail",
+        "hasOrganizationOperationalStatus": "OrganizationOperationalStatus_Open",
+        "OperationalStatusEffectiveDate": {
+            "@value": "2020-09-01",
+            "@type": "http://www.w3.org/2001/XMLSchema#date"
+        }
+    },
+
+    "hasOrganizationWebsite": {
+        "@type": "OrganizationWebsite",
+        "WebSiteAddress": "https://lincoln.detroit.k12.mi.us"
+    },
+
+    "hasLocale": "Locale_CityLarge"
+}

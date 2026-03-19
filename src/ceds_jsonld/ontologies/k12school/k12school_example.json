@@ -1,0 +1,76 @@
+{
+    "@context": "https://cepi-dev.state.mi.us/ontology/context-k12school.json",
+    "@type": "K12School",
+    "@id": "http://cepi-dev.state.mi.us/school/4830",
+
+    "hasOrganizationTitle": {
+        "@type": "OrganizationTitle",
+        "NameOfInstitution": "Rochester Hills Elementary",
+        "ShortNameOfOrganization": "RH Elem"
+    },
+
+    "hasOrganizationIdentification": [
+        {
+            "@type": "OrganizationIdentification",
+            "OrganizationIdentifier": "4830",
+            "hasOrganizationIdentificationSystem": "OrganizationIdentificationSystem_SEA"
+        },
+        {
+            "@type": "OrganizationIdentification",
+            "OrganizationIdentifier": "MI-4830",
+            "hasOrganizationIdentificationSystem": "OrganizationIdentificationSystem_NCES"
+        }
+    ],
+
+    "hasLocation": {
+        "@type": "Location",
+        "hasLocationAddress": {
+            "@type": "LocationAddress",
+            "AddressStreetNumberAndName": "123 Main St",
+            "AddressCity": "Rochester Hills",
+            "hasStateAbbreviation": "StateAbbreviation_MI",
+            "AddressPostalCode": "48309",
+            "Latitude": "42.6586",
+            "Longitude": "-83.1499"
+        }
+    },
+
+    "hasK12SchoolStatus": {
+        "@type": "K12SchoolStatus",
+        "hasStrictDisciplineAcademy": "StrictDisciplineAcademy_No",
+        "hasStudentAccessToRecess": "StudentAccessToRecess_1"
+    },
+
+    "hasSchoolOperationalDetail": {
+        "@type": "SchoolOperationalDetail",
+        "hasSchoolOperationalStatus": "SchoolOperationalStatus_Open"
+    },
+
+    "HasGradesOffered": [
+        "GradeLevel_KG",
+        "GradeLevel_01",
+        "GradeLevel_02",
+        "GradeLevel_03",
+        "GradeLevel_04",
+        "GradeLevel_05"
+    ],
+
+    "hasGradeLevelsApproved": [
+        "GradeLevel_KG",
+        "GradeLevel_01",
+        "GradeLevel_02",
+        "GradeLevel_03",
+        "GradeLevel_04",
+        "GradeLevel_05"
+    ],
+
+    "hasChildNutritionPrograms": [
+        "ChildNutritionPrograms_NSLP",
+        "ChildNutritionPrograms_SBP"
+    ],
+
+    "hasOrganizationWebsite": {
+        "@type": "OrganizationWebsite",
+        "WebSiteAddress": "https://rhelm.rochester.k12.mi.us"
+    }
+}
