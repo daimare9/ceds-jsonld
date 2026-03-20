@@ -1,0 +1,152 @@
+# Facility Mapping Configuration
+# Maps source data fields to CEDS Facility JSON-LD structure
+# Reference: Facility_SHACL.ttl (ceds:C200123)
+
+shape: Facility
+context_url: "https://ceds.ed.gov/context/facility.jsonld"
+context_file: facility_context.json
+base_uri: "urn:ceds:facility:{FacilityId}"
+
+id_source: FacilityId
+id_transform: strip_whitespace
+
+type: Facility
+
+properties:
+  # ── Organization Title (C200246) — required single ────────
+  hasOrganizationTitle:
+    type: object
+    cardinality: single
+    fields:
+      - source: FacilityName
+        target: hasName
+        datatype: string
+        optional: false
+      - source: FacilityShortName
+        target: hasShortNameOfInstitution
+        datatype: string
+        optional: true
+
+  # ── Organization Identification (C200252) — multiple ──────
+  hasOrganizationIdentification:
+    type: object
+    cardinality: multiple
+    split_on: "|"
+    fields:
+      - source: FacilityIdentifiers
+        target: hasOrganizationIdentifier
+        datatype: string
+        optional: false
+      - source: FacilityIdentificationSystems
+        target: hasOrganizationIdentificationSystem
+        datatype: named_individual
+        optional: true
+
+  # ── Location (C200237) — single ───────────────────────────
+  hasLocation:
+    type: object
+    cardinality: single
+    fields:
+      - source: AddressStreet
+        target: hasLocationAddress.hasAddressStreetNumberAndName
+        datatype: string
+        optional: true
+      - source: City
+        target: hasLocationAddress.hasCity
+        datatype: string
+        optional: true
+      - source: State
+        target: hasLocationAddress.hasStateAbbreviation
+        datatype: named_individual
+        optional: true
+      - source: Zip
+        target: hasLocationAddress.hasPostalCode
+        datatype: string
+        optional: true
+      - source: Locale
+        target: hasLocale
+        datatype: named_individual
+        optional: true
+
+  # ── Building Use Type — single named individual ───────────
+  hasBuildingUseType:
+    type: named_individual
+    cardinality: single
+    fields:
+      - source: BuildingUseType
+        target: hasBuildingUseType
+        datatype: named_individual
+        optional: true
+
+  # ── Facility Lease (C200133) — optional single ────────────
+  hasFacilityLease:
+    type: object
+    cardinality: single
+    fields:
+      - source: FacilityLeaseType
+        target: hasFacilityLeaseType
+        datatype: named_individual
+        optional: true
+      - source: FacilityLeaseOwnershipType
+        target: hasFacilityLeaseOwnershipType
+        datatype: named_individual
+        optional: true
+
+  # ── Facility Ownership Indicator — single NI ──────────────
+  hasFacilityOwnershipIndicator:
+    type: named_individual
+    cardinality: single
+    fields:
+      - source: FacilityOwnershipIndicator
+        target: hasFacilityOwnershipIndicator
+        datatype: named_individual
+        optional: true
+
+  # ── Organization Type — single named individual ───────────
+  hasOrganizationType:
+    type: named_individual
+    cardinality: single
+    fields:
+      - source: OrganizationType
+        target: hasOrganizationType
+        datatype: named_individual
+        optional: true
+
+  # ── Building Space Utilization (C200059) — optional ───────
+  hasBuildingSpaceUtilization:
+    type: object
+    cardinality: single
+    fields:
+      - source: BuildingCommunityUseSpaceType
+        target: hasBuildingCommunityUseSpaceType
+        datatype: named_individual
+        optional: true
+
+  # ── CEPI Extensions ───────────────────────────────────────
+  hasEducationInstitutionType:
+    type: named_individual
+    cardinality: single
+    fields:
+      - source: EducationInstitutionType
+        target: hasEducationInstitutionType
+        datatype: named_individual
+        optional: true
+
+  hasServiceProviderType:
+    type: named_individual
+    cardinality: single
+    fields:
+      - source: ServiceProviderType
+        target: hasServiceProviderType
+        datatype: named_individual
+        optional: true
+
+  # ── Organization Website (C200273) — optional single ──────
+  hasOrganizationWebsite:
+    type: object
+    cardinality: single
+    fields:
+      - source: WebsiteURL
+        target: hasWebsiteAddress
+        datatype: uri
+        optional: true

@@ -1,0 +1,174 @@
+{
+  "@context": {
+    "@vocab": "http://ceds.ed.gov/terms#",
+    "@base": "urn:ceds:facility:",
+    "ceds": "http://ceds.ed.gov/terms#",
+    "cepi": "http://cepi-dev.state.mi.us/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+
+    "Facility": "ceds:C200123",
+    "FacilityLease": "ceds:C200133",
+    "BuildingSpaceUtilization": "ceds:C200059",
+
+    "OrganizationTitle": "ceds:C200246",
+    "OrganizationIdentification": "ceds:C200252",
+    "Location": "ceds:C200237",
+    "LocationAddress": "ceds:C200238",
+    "OrganizationWebsite": "ceds:C200273",
+
+    "hasOrganizationTitle": {
+      "@id": "ceds:P600479",
+      "@type": "@id"
+    },
+    "hasOrganizationIdentification": {
+      "@id": "ceds:P600502",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "hasLocation": {
+      "@id": "ceds:P600299",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "hasOrganizationWebsite": {
+      "@id": "ceds:P600518",
+      "@type": "@id"
+    },
+
+    "hasBuildingUseType": {
+      "@id": "ceds:P001206",
+      "@type": "@vocab"
+    },
+    "hasFacilityLease": {
+      "@id": "ceds:P600020",
+      "@type": "@id"
+    },
+    "hasFacilityOwnershipIndicator": {
+      "@id": "ceds:P001906",
+      "@type": "@vocab"
+    },
+    "hasOrganizationType": {
+      "@id": "ceds:P001156",
+      "@type": "@vocab"
+    },
+    "hasBuildingSpaceUtilization": {
+      "@id": "ceds:P600004",
+      "@type": "@id"
+    },
+    "hasEducationInstitutionType": {
+      "@id": "cepi:P200045",
+      "@type": "@vocab"
+    },
+    "hasServiceProviderType": {
+      "@id": "cepi:P200046",
+      "@type": "@vocab"
+    },
+
+    "hasFacilityLeaseType": {
+      "@id": "ceds:P001207",
+      "@type": "@vocab"
+    },
+    "hasFacilityLeaseOwnershipType": {
+      "@id": "cepi:P200051",
+      "@type": "@vocab"
+    },
+
+    "hasBuildingCommunityUseSpaceType": {
+      "@id": "ceds:P001797",
+      "@type": "@vocab"
+    },
+
+    "hasName": {
+      "@id": "ceds:P000204",
+      "@type": "xsd:string"
+    },
+    "hasShortNameOfInstitution": {
+      "@id": "ceds:P000279",
+      "@type": "xsd:string"
+    },
+
+    "hasOrganizationIdentifier": {
+      "@id": "ceds:P000827",
+      "@type": "xsd:string"
+    },
+    "hasOrganizationIdentificationSystem": {
+      "@id": "ceds:P000827system",
+      "@type": "@vocab"
+    },
+
+    "hasLocationAddress": {
+      "@id": "ceds:P600471",
+      "@type": "@id"
+    },
+    "hasLocale": {
+      "@id": "ceds:P000191",
+      "@type": "@vocab"
+    },
+    "hasAddressStreetNumberAndName": {
+      "@id": "ceds:P000269",
+      "@type": "xsd:string"
+    },
+    "hasCity": {
+      "@id": "ceds:P000040",
+      "@type": "xsd:string"
+    },
+    "hasStateAbbreviation": {
+      "@id": "ceds:P000267",
+      "@type": "@vocab"
+    },
+    "hasPostalCode": {
+      "@id": "ceds:P000214",
+      "@type": "xsd:string"
+    },
+
+    "hasWebsiteAddress": {
+      "@id": "ceds:P000704",
+      "@type": "xsd:anyURI"
+    },
+
+    "BuildingUseType_School": "ceds:NI001206127856",
+    "BuildingUseType_Dormitory": "ceds:NI001206127846",
+    "BuildingUseType_Library": "ceds:NI001206127865",
+    "BuildingUseType_Gymnasium": "ceds:NI001206127848",
+    "BuildingUseType_Cafeteria": "ceds:NI001206127849",
+    "BuildingUseType_Auditorium": "ceds:NI001206127862",
+    "BuildingUseType_Office": "ceds:NI001206127851",
+    "BuildingUseType_Laboratory": "ceds:NI001206127858",
+    "BuildingUseType_Warehouse": "ceds:NI001206127866",
+    "BuildingUseType_Classroom": "ceds:NI001206127860",
+    "BuildingUseType_Workshop": "ceds:NI001206127861",
+    "BuildingUseType_MediaCenter": "ceds:NI001206127850",
+    "BuildingUseType_PerformingArtsCenter": "ceds:NI001206127855",
+    "BuildingUseType_RecreationCenter": "ceds:NI001206127854",
+    "BuildingUseType_Stadium": "ceds:NI001206127859",
+    "BuildingUseType_SwimmingPool": "ceds:NI001206127867",
+    "BuildingUseType_MusicRoom": "ceds:NI001206127847",
+    "BuildingUseType_ArtRoom": "ceds:NI001206127852",
+    "BuildingUseType_ScienceLab": "ceds:NI001206127863",
+    "BuildingUseType_ComputerLab": "ceds:NI001206127853",
+    "BuildingUseType_IndoorTrack": "ceds:NI001206127857",
+    "BuildingUseType_TechnologyCenter": "ceds:NI001206127864",
+    "BuildingUseType_AdministrationBuilding": "cepi:NI001206127869",
+    "BuildingUseType_MaintenanceBuilding": "cepi:NI001206127870",
+    "BuildingUseType_TransportationFacility": "cepi:NI001206127868",
+    "BuildingUseType_StorageFacility": "cepi:NI001206100002",
+    "BuildingUseType_Other": "cepi:NI001206127871",
+
+    "FacilityOwnershipIndicator_Yes": "ceds:NI001906100001",
+    "FacilityOwnershipIndicator_No": "ceds:NI001906100002",
+    "FacilityOwnershipIndicator_Unknown": "cepi:NI001906100001",
+
+    "FacilityLeaseOwnershipType_Owned": "cepi:NI200051000001",
+    "FacilityLeaseOwnershipType_Leased": "cepi:NI200051000002",
+    "FacilityLeaseOwnershipType_LeasePurchase": "cepi:NI200051000003",
+    "FacilityLeaseOwnershipType_DonatedOrFree": "cepi:NI200051000004",
+    "FacilityLeaseOwnershipType_Other": "cepi:NI200051000005",
+
+    "EducationInstitutionType_PublicSchool": "cepi:NI200045000001",
+    "ServiceProviderType_SchoolDistrict": "cepi:NI200046000001",
+    "ServiceProviderType_CharterSchoolAuthorizer": "cepi:NI200046000002",
+
+    "OrganizationIdentificationSystem_SEA": "ceds:NI000827system_SEA",
+    "OrganizationIdentificationSystem_NCES": "ceds:NI000827system_NCES"
+  }
+}

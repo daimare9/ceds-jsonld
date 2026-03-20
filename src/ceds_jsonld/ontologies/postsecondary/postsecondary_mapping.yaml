@@ -1,0 +1,112 @@
+# PostSecondary Institution Mapping Configuration
+# Maps source data fields to CEDS PostsecondaryInstitution JSON-LD structure
+# Reference: PostSecondaryInstitution_SHACL.ttl (ceds:C200329)
+
+shape: PostsecondaryInstitution
+context_url: "https://ceds.ed.gov/context/postsecondary.jsonld"
+context_file: postsecondary_context.json
+base_uri: "urn:ceds:postsecondary:{InstitutionId}"
+
+id_source: InstitutionId
+id_transform: strip_whitespace
+
+type: PostsecondaryInstitution
+
+properties:
+  # ── Organization Title (C200246) — required single ────────
+  hasOrganizationTitle:
+    type: object
+    cardinality: single
+    fields:
+      - source: InstitutionName
+        target: hasName
+        datatype: string
+        optional: false
+      - source: InstitutionShortName
+        target: hasShortNameOfInstitution
+        datatype: string
+        optional: true
+
+  # ── Organization Identification (C200252) — multiple ──────
+  hasOrganizationIdentification:
+    type: object
+    cardinality: multiple
+    split_on: "|"
+    fields:
+      - source: InstitutionIdentifiers
+        target: hasOrganizationIdentifier
+        datatype: string
+        optional: false
+      - source: InstitutionIdentificationSystems
+        target: hasOrganizationIdentificationSystem
+        datatype: named_individual
+        optional: true
+
+  # ── Location (C200237) — single ───────────────────────────
+  hasLocation:
+    type: object
+    cardinality: single
+    fields:
+      - source: AddressStreet
+        target: hasLocationAddress.hasAddressStreetNumberAndName
+        datatype: string
+        optional: true
+      - source: City
+        target: hasLocationAddress.hasCity
+        datatype: string
+        optional: true
+      - source: State
+        target: hasLocationAddress.hasStateAbbreviation
+        datatype: named_individual
+        optional: true
+      - source: Zip
+        target: hasLocationAddress.hasPostalCode
+        datatype: string
+        optional: true
+      - source: County
+        target: hasLocationAddress.hasAddressCountyName
+        datatype: string
+        optional: true
+      - source: Locale
+        target: hasLocale
+        datatype: named_individual
+        optional: true
+
+  # ── Organization Operational Detail (C200398) — single ────
+  hasOrganizationOperationalDetail:
+    type: object
+    cardinality: single
+    fields:
+      - source: OperationalStatus
+        target: hasOperationalStatus
+        datatype: named_individual
+        optional: true
+
+  # ── Postsecondary-specific Properties ─────────────────────
+  hasCarnegieBasicClassification:
+    type: named_individual
+    cardinality: single
+    fields:
+      - source: CarnegieClassification
+        target: hasCarnegieBasicClassification
+        datatype: named_individual
+        optional: true
+
+  hasLevelOfInstitution:
+    type: named_individual
+    cardinality: single
+    fields:
+      - source: LevelOfInstitution
+        target: hasLevelOfInstitution
+        datatype: named_individual
+        optional: true
+
+  # ── Organization Website (C200273) — optional single ──────
+  hasOrganizationWebsite:
+    type: object
+    cardinality: single
+    fields:
+      - source: WebsiteURL
+        target: hasWebsiteAddress
+        datatype: uri
+        optional: true

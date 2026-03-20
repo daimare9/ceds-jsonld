@@ -1,0 +1,36 @@
+{
+  "@context": "facility_context.json",
+  "@id": "urn:ceds:facility:8001",
+  "@type": "Facility",
+  "hasOrganizationTitle": {
+    "@type": "OrganizationTitle",
+    "hasName": "Lincoln Elementary Building",
+    "hasShortNameOfInstitution": "Lincoln Elem"
+  },
+  "hasOrganizationIdentification": [
+    {
+      "@type": "OrganizationIdentification",
+      "hasOrganizationIdentifier": "8001",
+      "hasOrganizationIdentificationSystem": "OrganizationIdentificationSystem_SEA"
+    }
+  ],
+  "hasLocation": {
+    "@type": "Location",
+    "hasLocationAddress": {
+      "@type": "LocationAddress",
+      "hasAddressStreetNumberAndName": "100 Main St",
+      "hasCity": "Detroit",
+      "hasStateAbbreviation": "StateAbbreviation_MI",
+      "hasPostalCode": "48201"
+    },
+    "hasLocale": "Locale_CityLarge"
+  },
+  "hasBuildingUseType": "BuildingUseType_School",
+  "hasFacilityLease": {
+    "@type": "FacilityLease",
+    "hasFacilityLeaseOwnershipType": "FacilityLeaseOwnershipType_Owned"
+  },
+  "hasFacilityOwnershipIndicator": "FacilityOwnershipIndicator_Yes",
+  "hasEducationInstitutionType": "EducationInstitutionType_PublicSchool",
+  "hasServiceProviderType": "ServiceProviderType_SchoolDistrict"
+}

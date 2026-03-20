@@ -1,0 +1,210 @@
+@prefix ceds: <http://ceds.ed.gov/terms#> .
+@prefix cepi: <http://cepi-dev.state.mi.us/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+# ── Top-level LEA NodeShape ─────────────────────────────────────────────────
+ceds:LocalEducationAgencyShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:property ceds:RecordStartDateTimeShape,
+        ceds:RecordEndDateTimeShape,
+        ceds:hasLEAOperationalDetailShape,
+        ceds:hasLocalEducationAgencyTypeShape,
+        ceds:hasPublicSchoolChoiceImplementationStatusShape,
+        ceds:hasOrganizationTitleShape,
+        ceds:hasOrganizationIdentificationShape,
+        ceds:hasLocationShape,
+        ceds:hasOrganizationWebsiteShape,
+        ceds:hasOrganizationTypeShape,
+        cepi:hasLocaleShape ;
+    sh:targetClass ceds:C200188 .
+
+# ── LEA-specific sub-shapes ────────────────────────────────────────────────
+ceds:LEAOperationalDetailShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:property ceds:hasLEAOperationalStatusShape ;
+    sh:targetClass ceds:C200396 .
+
+# ── Shared shapes from Organization ────────────────────────────────────────
+ceds:OrganizationTitleShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:property ceds:NameOfInstitutionShape,
+        ceds:OrganizationNameShape,
+        ceds:ShortNameOfOrganizationShape,
+        ceds:RecordStartDateTimeShape,
+        ceds:RecordEndDateTimeShape ;
+    sh:targetClass ceds:C200246 .
+
+ceds:OrganizationIdentificationShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:property ceds:OrganizationIdentifierShape,
+        ceds:hasOrganizationIdentificationSystemShape,
+        ceds:hasOrganizationIdentifierTypeShape ;
+    sh:targetClass ceds:C200252 .
+
+ceds:LocationShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:property ceds:hasLocationAddressShape ;
+    sh:targetClass ceds:C200237 .
+
+ceds:LocationAddressShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:property ceds:AddressStreetNumberAndNameShape,
+        ceds:AddressCityShape,
+        ceds:AddressPostalCodeShape,
+        ceds:hasStateAbbreviationShape,
+        ceds:AddressCountyNameShape,
+        ceds:LatitudeShape,
+        ceds:LongitudeShape,
+        cepi:XLocationShape,
+        cepi:YLocationShape ;
+    sh:targetClass ceds:C200238 .
+
+ceds:OrganizationWebsiteShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:property ceds:WebSiteAddressShape ;
+    sh:targetClass ceds:C200273 .
+
+
+# ── Object Property Shapes ──────────────────────────────────────────────────
+ceds:hasLEAOperationalDetailShape a sh:PropertyShape ;
+    sh:class ceds:C200396 ;
+    sh:node ceds:LEAOperationalDetailShape ;
+    sh:path ceds:P600551 .
+
+ceds:hasOrganizationTitleShape a sh:PropertyShape ;
+    sh:class ceds:C200246 ;
+    sh:node ceds:OrganizationTitleShape ;
+    sh:path ceds:P600479 .
+
+ceds:hasOrganizationIdentificationShape a sh:PropertyShape ;
+    sh:class ceds:C200252 ;
+    sh:node ceds:OrganizationIdentificationShape ;
+    sh:path ceds:P600502 .
+
+ceds:hasLocationShape a sh:PropertyShape ;
+    sh:class ceds:C200237 ;
+    sh:node ceds:LocationShape ;
+    sh:path ceds:P600299 .
+
+ceds:hasLocationAddressShape a sh:PropertyShape ;
+    sh:class ceds:C200238 ;
+    sh:node ceds:LocationAddressShape ;
+    sh:path ceds:P600471 .
+
+ceds:hasOrganizationWebsiteShape a sh:PropertyShape ;
+    sh:class ceds:C200273 ;
+    sh:node ceds:OrganizationWebsiteShape ;
+    sh:path ceds:P600518 .
+
+
+# ── Datatype Property Shapes ──────────────────────────────────────────────
+ceds:NameOfInstitutionShape a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:minCount 1 ;
+    sh:path ceds:P000054 .
+
+ceds:OrganizationNameShape a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:path ceds:P000159 .
+
+ceds:ShortNameOfOrganizationShape a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:path ceds:P000013 .
+
+ceds:OrganizationIdentifierShape a sh:PropertyShape ;
+    sh:datatype xsd:token ;
+    sh:path ceds:P000057 .
+
+ceds:AddressStreetNumberAndNameShape a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:path ceds:P000148 .
+
+ceds:AddressCityShape a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:path ceds:P000019 .
+
+ceds:AddressPostalCodeShape a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:path ceds:P000080 .
+
+ceds:AddressCountyNameShape a sh:PropertyShape ;
+    sh:datatype xsd:string ;
+    sh:path ceds:P000021 .
+
+ceds:LatitudeShape a sh:PropertyShape ;
+    sh:datatype xsd:decimal ;
+    sh:path ceds:P000096 .
+
+ceds:LongitudeShape a sh:PropertyShape ;
+    sh:datatype xsd:decimal ;
+    sh:path ceds:P000100 .
+
+ceds:WebSiteAddressShape a sh:PropertyShape ;
+    sh:datatype xsd:anyURI ;
+    sh:path ceds:P000218 .
+
+ceds:RecordStartDateTimeShape a sh:PropertyShape ;
+    sh:datatype xsd:dateTime ;
+    sh:path ceds:P001917 .
+
+ceds:RecordEndDateTimeShape a sh:PropertyShape ;
+    sh:datatype xsd:dateTime ;
+    sh:path ceds:P001918 .
+
+cepi:XLocationShape a sh:PropertyShape ;
+    sh:datatype xsd:decimal ;
+    sh:path cepi:P200043 .
+
+cepi:YLocationShape a sh:PropertyShape ;
+    sh:datatype xsd:decimal ;
+    sh:path cepi:P200044 .
+
+
+# ── Named-individual Property Shapes ─────────────────────────────────────
+ceds:hasLEAOperationalStatusShape a sh:PropertyShape ;
+    sh:path ceds:P001175 .
+
+ceds:hasLocalEducationAgencyTypeShape a sh:PropertyShape ;
+    sh:path ceds:P001176 .
+
+ceds:hasPublicSchoolChoiceImplementationStatusShape a sh:PropertyShape ;
+    sh:path ceds:P001291 .
+
+ceds:hasOrganizationTypeShape a sh:PropertyShape ;
+    sh:in ( ceds:NI001156173051 ceds:NI001156173052 ceds:NI001156173053 ceds:NI001156173054
+            ceds:NI001156173055 ceds:NI001156173056 ceds:NI001156173057 ceds:NI001156173058
+            cepi:NI001156100001 cepi:NI000239100001 ) ;
+    sh:path ceds:P001156 .
+
+ceds:hasOrganizationIdentificationSystemShape a sh:PropertyShape ;
+    sh:in ( ceds:NI000827151963 ceds:NI000827151964 ceds:NI000827151965 ceds:NI000827151966
+            ceds:NI000827151967 ceds:NI000827151968 ceds:NI000827151969 ceds:NI000827151970
+            cepi:NI000827151981 cepi:NI000827100001 cepi:NI000827100002 ) ;
+    sh:path ceds:P000827 .
+
+ceds:hasOrganizationIdentifierTypeShape a sh:PropertyShape ;
+    sh:path ceds:P001573 .
+
+ceds:hasStateAbbreviationShape a sh:PropertyShape ;
+    sh:path ceds:P000165 .
+
+cepi:hasLocaleShape a sh:PropertyShape ;
+    sh:in ( cepi:NI002130000001 cepi:NI002130000002 cepi:NI002130000003
+            cepi:NI002130000004 cepi:NI002130000005 cepi:NI002130000006
+            cepi:NI002130000007 cepi:NI002130000008 cepi:NI002130000009
+            cepi:NI002130000010 cepi:NI002130000011 cepi:NI002130000012 ) ;
+    sh:path cepi:P200057 .

@@ -1,0 +1,95 @@
+# LEA Shape — Declarative Field Mapping Configuration
+
+shape: LocalEducationAgencyShape
+context_url: "https://cepi-dev.state.mi.us/ontology/context-lea.json"
+context_file: lea_context.json
+base_uri: "cepi:lea/"
+id_source: LEAId
+id_transform: int_clean
+
+type: LocalEducationAgency
+
+properties:
+  hasOrganizationTitle:
+    type: OrganizationTitle
+    cardinality: single
+    fields:
+      NameOfInstitution:
+        source: LEAName
+        target: NameOfInstitution
+        datatype: "xsd:string"
+      ShortNameOfOrganization:
+        source: LEAShortName
+        target: ShortNameOfOrganization
+        datatype: "xsd:string"
+        optional: true
+
+  hasOrganizationIdentification:
+    type: OrganizationIdentification
+    cardinality: multiple
+    split_on: "|"
+    fields:
+      OrganizationIdentifier:
+        source: LEAIdentifiers
+        target: OrganizationIdentifier
+        datatype: "xsd:token"
+      hasOrganizationIdentificationSystem:
+        source: LEAIdentificationSystems
+        target: hasOrganizationIdentificationSystem
+        optional: true
+
+  hasLocation:
+    type: Location
+    cardinality: single
+    fields:
+      AddressStreetNumberAndName:
+        source: AddressStreet
+        target: AddressStreetNumberAndName
+        datatype: "xsd:string"
+        optional: true
+      AddressCity:
+        source: City
+        target: AddressCity
+        datatype: "xsd:string"
+        optional: true
+      hasStateAbbreviation:
+        source: State
+        target: hasStateAbbreviation
+        optional: true
+      AddressPostalCode:
+        source: Zip
+        target: AddressPostalCode
+        datatype: "xsd:string"
+        optional: true
+
+  hasLEAOperationalDetail:
+    type: LEAOperationalDetail
+    cardinality: single
+    fields:
+      hasLEAOperationalStatus:
+        source: LEAOperationalStatus
+        target: hasLEAOperationalStatus
+        optional: true
+
+  hasOrganizationWebsite:
+    type: OrganizationWebsite
+    cardinality: single
+    fields:
+      WebSiteAddress:
+        source: WebsiteURL
+        target: WebSiteAddress
+        datatype: "xsd:anyURI"
+        optional: true
+
+record_status_defaults:
+  type: RecordStatus
+  RecordStartDateTime:
+    value: "1900-01-01T00:00:00"
+    datatype: "xsd:dateTime"
+  RecordEndDateTime:
+    value: "9999-12-31T00:00:00"
+    datatype: "xsd:dateTime"
+
+data_collection_defaults:
+  type: DataCollection
+  value_id: "http://example.org/dataCollection/default"

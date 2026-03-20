@@ -4,7 +4,7 @@
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![CI](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml/badge.svg)](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml)
-[![Tests: 680 passed](https://img.shields.io/badge/tests-680%20passed-brightgreen.svg)](tests/)
+[![Tests: 727 passed](https://img.shields.io/badge/tests-727%20passed-brightgreen.svg)](tests/)
 [![Coverage: 88%](https://img.shields.io/badge/coverage-88%25-yellowgreen.svg)]()
 
 **Python library for converting education data into standards-compliant JSON-LD documents backed by the [CEDS ontology](https://ceds.ed.gov/).**
@@ -115,7 +115,7 @@ A **shape** is a self-contained definition of a data collection type. The Person
 | `person_mapping.yaml` | Field mapping — how your source columns map to JSON-LD properties |
 | `person_sample.csv` | Sample data for testing |
 
-The library ships with the **Person** shape. Additional shapes (Organization, K-12 Enrollment, Staff, etc.) follow the same pattern.
+The library ships with six shapes: **Person**, **Organization**, **LEA**, **K-12 School**, **Facility**, and **Post-Secondary Institution**. Additional shapes (Enrollment, Staff, etc.) follow the same pattern.
 
 ### The Pipeline
 
@@ -745,6 +745,8 @@ JSON serialization uses [orjson](https://github.com/ijl/orjson) (Rust-backed, ~1
 | 8 — Publishing | ✅ Complete | Open source on PyPI, GitHub Actions CI/CD, monthly releases. |
 | Pre-1.0 Stabilization | ✅ Complete | Bug fixes (#2–#30), transform hardening, validation improvements. **557 tests**. |
 | 0.10.0 — Native Adapters | ✅ Complete | 6 new adapters (Sheets, Snowflake, BigQuery, Databricks, Canvas, OneRoster) + 2 SIS factory functions. **680 tests**. |
+| 0.10.1–0.10.2 — Patch Fixes | ✅ Complete | Adapter bug fixes, IRI sanitization, transform hardening. **727 tests**. |
+| 0.11.0 — Organization Shapes | ✅ Complete | 5 new shapes: Organization, LEA, K-12 School, Facility, Post-Secondary Institution. |
 
 See [ROADMAP.md](ROADMAP.md) for the full plan.
 

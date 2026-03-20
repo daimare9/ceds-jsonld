@@ -1,0 +1,90 @@
+@prefix cepi: <http://cepi-dev.state.mi.us/> .
+@prefix ceds: <http://ceds.ed.gov/terms#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix schema: <https://schema.org/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+# ── CEPI Extension Properties ─────────────────────────────────────────────────
+
+cepi:P200043 a owl:DatatypeProperty ;
+    rdfs:label "XLocation" ;
+    skos:definition "X-coordinate (easting) for a location, expressed as a decimal." ;
+    schema:domainIncludes ceds:C200238 ;
+    rdfs:range xsd:decimal .
+
+cepi:P200044 a owl:DatatypeProperty ;
+    rdfs:label "YLocation" ;
+    skos:definition "Y-coordinate (northing) for a location, expressed as a decimal." ;
+    schema:domainIncludes ceds:C200238 ;
+    rdfs:range xsd:decimal .
+
+cepi:P200040 a owl:DatatypeProperty ;
+    rdfs:label "UsCongressionalDistrict" ;
+    skos:definition "US Congressional District identifier for a location address." ;
+    schema:domainIncludes ceds:C200238 ;
+    rdfs:range xsd:string .
+
+cepi:P200041 a owl:DatatypeProperty ;
+    rdfs:label "StateSenateDistrict" ;
+    skos:definition "State Senate District identifier for a location address." ;
+    schema:domainIncludes ceds:C200238 ;
+    rdfs:range xsd:string .
+
+cepi:P200042 a owl:DatatypeProperty ;
+    rdfs:label "StateHouseDistrict" ;
+    skos:definition "State House District identifier for a location address." ;
+    schema:domainIncludes ceds:C200238 ;
+    rdfs:range xsd:string .
+
+cepi:P200059 a owl:DatatypeProperty ;
+    rdfs:label "CivilDivision" ;
+    skos:definition "Civil division (township, city, village) for a location address." ;
+    schema:domainIncludes ceds:C200238 ;
+    rdfs:range xsd:string .
+
+cepi:P200057 a owl:ObjectProperty ;
+    rdfs:label "hasLocale" ;
+    skos:definition "NCES locale classification for the organization." ;
+    schema:domainIncludes ceds:C200239 ;
+    rdfs:range cepi:C002130 .
+
+
+# ── CEPI Locale Named Individuals ─────────────────────────────────────────────
+cepi:NI002130000001 a cepi:C002130 ;
+    skos:prefLabel "Rural Remote" .
+
+cepi:NI002130000002 a cepi:C002130 ;
+    skos:prefLabel "Rural Distant" .
+
+cepi:NI002130000003 a cepi:C002130 ;
+    skos:prefLabel "Rural Fringe" .
+
+cepi:NI002130000004 a cepi:C002130 ;
+    skos:prefLabel "Town Remote" .
+
+cepi:NI002130000005 a cepi:C002130 ;
+    skos:prefLabel "Town Distant" .
+
+cepi:NI002130000006 a cepi:C002130 ;
+    skos:prefLabel "Town Fringe" .
+
+cepi:NI002130000007 a cepi:C002130 ;
+    skos:prefLabel "Suburban Small" .
+
+cepi:NI002130000008 a cepi:C002130 ;
+    skos:prefLabel "Suburban Midsize" .
+
+cepi:NI002130000009 a cepi:C002130 ;
+    skos:prefLabel "Suburban Large" .
+
+cepi:NI002130000010 a cepi:C002130 ;
+    skos:prefLabel "City Small" .
+
+cepi:NI002130000011 a cepi:C002130 ;
+    skos:prefLabel "City Midsize" .
+
+cepi:NI002130000012 a cepi:C002130 ;
+    skos:prefLabel "City Large" .

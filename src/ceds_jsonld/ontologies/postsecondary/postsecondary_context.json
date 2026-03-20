@@ -1,0 +1,159 @@
+{
+  "@context": {
+    "@vocab": "http://ceds.ed.gov/terms#",
+    "@base": "urn:ceds:postsecondary:",
+    "ceds": "http://ceds.ed.gov/terms#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+
+    "PostsecondaryInstitution": "ceds:C200329",
+
+    "OrganizationTitle": "ceds:C200246",
+    "OrganizationIdentification": "ceds:C200252",
+    "Location": "ceds:C200237",
+    "LocationAddress": "ceds:C200238",
+    "OrganizationOperationalDetail": "ceds:C200398",
+    "OrganizationWebsite": "ceds:C200273",
+
+    "hasOrganizationTitle": {
+      "@id": "ceds:P600479",
+      "@type": "@id"
+    },
+    "hasOrganizationIdentification": {
+      "@id": "ceds:P600502",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "hasLocation": {
+      "@id": "ceds:P600299",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "hasOrganizationOperationalDetail": {
+      "@id": "ceds:P600508",
+      "@type": "@id"
+    },
+    "hasOrganizationWebsite": {
+      "@id": "ceds:P600518",
+      "@type": "@id"
+    },
+
+    "hasCarnegieBasicClassification": {
+      "@id": "ceds:P000039",
+      "@type": "@vocab"
+    },
+    "hasLevelOfInstitution": {
+      "@id": "ceds:P000170",
+      "@type": "@vocab"
+    },
+
+    "hasName": {
+      "@id": "ceds:P000204",
+      "@type": "xsd:string"
+    },
+    "hasShortNameOfInstitution": {
+      "@id": "ceds:P000279",
+      "@type": "xsd:string"
+    },
+
+    "hasOrganizationIdentifier": {
+      "@id": "ceds:P000827",
+      "@type": "xsd:string"
+    },
+    "hasOrganizationIdentificationSystem": {
+      "@id": "ceds:P000827system",
+      "@type": "@vocab"
+    },
+
+    "hasLocationAddress": {
+      "@id": "ceds:P600471",
+      "@type": "@id"
+    },
+    "hasLocale": {
+      "@id": "ceds:P000191",
+      "@type": "@vocab"
+    },
+    "hasAddressStreetNumberAndName": {
+      "@id": "ceds:P000269",
+      "@type": "xsd:string"
+    },
+    "hasCity": {
+      "@id": "ceds:P000040",
+      "@type": "xsd:string"
+    },
+    "hasStateAbbreviation": {
+      "@id": "ceds:P000267",
+      "@type": "@vocab"
+    },
+    "hasPostalCode": {
+      "@id": "ceds:P000214",
+      "@type": "xsd:string"
+    },
+    "hasCountryCode": {
+      "@id": "ceds:P000050",
+      "@type": "@vocab"
+    },
+    "hasAddressCountyName": {
+      "@id": "ceds:P001066",
+      "@type": "xsd:string"
+    },
+
+    "hasOperationalStatus": {
+      "@id": "ceds:P000174",
+      "@type": "@vocab"
+    },
+    "hasOperationalStatusEffectiveDate": {
+      "@id": "ceds:P001049",
+      "@type": "xsd:date"
+    },
+
+    "hasWebsiteAddress": {
+      "@id": "ceds:P000704",
+      "@type": "xsd:anyURI"
+    },
+
+    "CarnegieBasicClassification_DoctoralUniversitiesVeryHighResearchActivity": "ceds:NI000039127551",
+    "CarnegieBasicClassification_DoctoralUniversitiesHighResearchActivity": "ceds:NI000039127552",
+    "CarnegieBasicClassification_DoctoralUniversitiesModerateResearchActivity": "ceds:NI000039127553",
+    "CarnegieBasicClassification_MasterCollegesUniversitiesLargerPrograms": "ceds:NI000039127554",
+    "CarnegieBasicClassification_MasterCollegesUniversitiesMediumPrograms": "ceds:NI000039127555",
+    "CarnegieBasicClassification_MasterCollegesUniversitiesSmallerPrograms": "ceds:NI000039127556",
+    "CarnegieBasicClassification_BaccalaureateCollegesArtsAndSciencesFocus": "ceds:NI000039127557",
+    "CarnegieBasicClassification_BaccalaureateCollegesDiverseFields": "ceds:NI000039127558",
+    "CarnegieBasicClassification_BaccalaureateDiverseAssociatesDominant": "ceds:NI000039127559",
+    "CarnegieBasicClassification_AssociatesCollegesHighTransferHighTraditional": "ceds:NI000039127560",
+    "CarnegieBasicClassification_AssociatesCollegesHighTransferMixed": "ceds:NI000039127561",
+    "CarnegieBasicClassification_AssociatesCollegesHighTransferHighNontraditional": "ceds:NI000039127562",
+    "CarnegieBasicClassification_AssociatesCollegesMixedTransferVocational": "ceds:NI000039127563",
+    "CarnegieBasicClassification_AssociatesCollegesHighVocational": "ceds:NI000039127564",
+    "CarnegieBasicClassification_SpecialFocusTwoYearHealthProfessions": "ceds:NI000039127565",
+    "CarnegieBasicClassification_SpecialFocusTwoYearTechnicalProfessions": "ceds:NI000039127566",
+    "CarnegieBasicClassification_SpecialFocusTwoYearArtsDesign": "ceds:NI000039127567",
+    "CarnegieBasicClassification_SpecialFocusTwoYearOther": "ceds:NI000039127568",
+    "CarnegieBasicClassification_SpecialFocusFourYearFaithRelated": "ceds:NI000039127569",
+    "CarnegieBasicClassification_SpecialFocusFourYearMedical": "ceds:NI000039127570",
+    "CarnegieBasicClassification_SpecialFocusFourYearOtherHealth": "ceds:NI000039127571",
+    "CarnegieBasicClassification_SpecialFocusFourYearEngineering": "ceds:NI000039127572",
+    "CarnegieBasicClassification_SpecialFocusFourYearOtherTechnology": "ceds:NI000039127573",
+    "CarnegieBasicClassification_SpecialFocusFourYearBusiness": "ceds:NI000039127574",
+    "CarnegieBasicClassification_SpecialFocusFourYearArtsMusic": "ceds:NI000039127575",
+    "CarnegieBasicClassification_SpecialFocusFourYearLaw": "ceds:NI000039127576",
+    "CarnegieBasicClassification_SpecialFocusFourYearOther": "ceds:NI000039127577",
+    "CarnegieBasicClassification_TribalColleges": "ceds:NI000039127578",
+    "CarnegieBasicClassification_NotApplicable": "ceds:NI000039127579",
+
+    "LevelOfInstitution_FourYearOrAbove": "ceds:NI000170127589",
+    "LevelOfInstitution_AtLeastTwoButLessThanFourYears": "ceds:NI000170127590",
+    "LevelOfInstitution_LessThanTwoYears": "ceds:NI000170127591",
+    "LevelOfInstitution_NotApplicable": "ceds:NI000170127592",
+
+    "OrganizationIdentificationSystem_SEA": "ceds:NI000827system_SEA",
+    "OrganizationIdentificationSystem_NCES": "ceds:NI000827system_NCES",
+    "OrganizationIdentificationSystem_Federal": "ceds:NI000827system_Federal",
+    "OrganizationIdentificationSystem_IPEDS": "ceds:NI000827system_IPEDS",
+
+    "OperationalStatus_Open": "ceds:NI000174_Open",
+    "OperationalStatus_Closed": "ceds:NI000174_Closed",
+    "OperationalStatus_New": "ceds:NI000174_New",
+    "OperationalStatus_ChangedAgency": "ceds:NI000174_ChangedAgency"
+  }
+}

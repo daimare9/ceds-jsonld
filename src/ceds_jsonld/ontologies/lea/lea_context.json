@@ -1,0 +1,46 @@
+{
+    "@context": {
+        "@vocab": "http://ceds.ed.gov/terms#",
+        "@base": "http://cepi-dev.state.mi.us/",
+        "cepi": "http://cepi-dev.state.mi.us/",
+        "ceds": "http://ceds.ed.gov/terms#",
+        "xsd": "http://www.w3.org/2001/XMLSchema#",
+
+        "LocalEducationAgency": "ceds:C200188",
+        "LEAOperationalDetail": "ceds:C200396",
+        "OrganizationTitle": "ceds:C200246",
+        "OrganizationIdentification": "ceds:C200252",
+        "Location": "ceds:C200237",
+        "LocationAddress": "ceds:C200238",
+        "OrganizationWebsite": "ceds:C200273",
+
+        "hasLEAOperationalDetail": "ceds:P600551",
+        "hasOrganizationTitle": "ceds:P600479",
+        "hasOrganizationIdentification": "ceds:P600502",
+        "hasLocation": "ceds:P600299",
+        "hasLocationAddress": "ceds:P600471",
+        "hasOrganizationWebsite": "ceds:P600518",
+
+        "NameOfInstitution": "ceds:P000054",
+        "OrganizationName": "ceds:P000159",
+        "ShortNameOfOrganization": "ceds:P000013",
+        "OrganizationIdentifier": "ceds:P000057",
+        "AddressStreetNumberAndName": "ceds:P000148",
+        "AddressCity": "ceds:P000019",
+        "AddressPostalCode": "ceds:P000080",
+        "AddressCountyName": "ceds:P000021",
+        "Latitude": "ceds:P000096",
+        "Longitude": "ceds:P000100",
+        "WebSiteAddress": "ceds:P000218",
+        "RecordStartDateTime": "ceds:P001917",
+        "RecordEndDateTime": "ceds:P001918",
+
+        "hasLEAOperationalStatus": { "@id": "ceds:P001175", "@type": "@vocab" },
+        "hasLocalEducationAgencyType": { "@id": "ceds:P001176", "@type": "@vocab" },
+        "hasPublicSchoolChoiceImplementationStatus": { "@id": "ceds:P001291", "@type": "@vocab" },
+        "hasOrganizationType": { "@id": "ceds:P001156", "@type": "@vocab" },
+        "hasOrganizationIdentificationSystem": { "@id": "ceds:P000827", "@type": "@vocab" },
+        "hasStateAbbreviation": { "@id": "ceds:P000165", "@type": "@vocab" },
+        "hasLocale": { "@id": "cepi:P200057", "@type": "@vocab" }
+    }
+}

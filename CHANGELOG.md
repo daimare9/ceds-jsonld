@@ -17,6 +17,22 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ---
 
+## [0.11.0] — 2026-03-20
+
+### Summary
+
+Minor release adding five new organization shapes: Organization (base), LEA, K-12 School, Facility, and Post-Secondary Institution. Each shape includes SHACL constraints, JSON-LD context, mapping YAML, example output, and sample CSV data.
+
+### Added
+
+- **Organization** shape — base organization with identifiers, addresses, contact info, and CEPI extensions
+- **LEA** shape — Local Education Agency with NCES/state identifiers, operational status, and charter authorization
+- **K-12 School** shape — K-12 school with grade levels, Title I status, magnet/charter indicators, and accreditation
+- **Facility** shape — facility/building with capacity, condition, ownership, and geographic coordinates
+- **Post-Secondary Institution** shape — post-secondary institution with Carnegie classification, accreditation, and enrollment metrics
+
+---
+
 ## [0.10.2] — 2026-02-12
 
 ### Summary

@@ -1,0 +1,43 @@
+{
+  "@context": "lea_context.json",
+  "@id": "urn:ceds:lea:6001",
+  "@type": "LocalEducationAgency",
+  "hasOrganizationTitle": {
+    "@type": "OrganizationTitle",
+    "hasName": "Detroit Public Schools Community District",
+    "hasShortNameOfInstitution": "DPSCD"
+  },
+  "hasOrganizationIdentification": [
+    {
+      "@type": "OrganizationIdentification",
+      "hasOrganizationIdentifier": "6001",
+      "hasOrganizationIdentificationSystem": "OrganizationIdentificationSystem_SEA"
+    },
+    {
+      "@type": "OrganizationIdentification",
+      "hasOrganizationIdentifier": "MI-6001",
+      "hasOrganizationIdentificationSystem": "OrganizationIdentificationSystem_NCES"
+    }
+  ],
+  "hasLocation": {
+    "@type": "Location",
+    "hasLocationAddress": {
+      "@type": "LocationAddress",
+      "hasAddressStreetNumberAndName": "3011 W Grand Blvd Ste 14100",
+      "hasCity": "Detroit",
+      "hasStateAbbreviation": "StateAbbreviation_MI",
+      "hasPostalCode": "48202"
+    },
+    "hasLocale": "Locale_CityLarge"
+  },
+  "hasLEAOperationalDetail": {
+    "@type": "LEAOperationalDetail",
+    "hasLEAOperationalStatus": "LEAOperationalStatus_Open",
+    "hasLocalEducationAgencyType": "LocalEducationAgencyType_IndependentCharterDistrict",
+    "hasPublicSchoolChoiceImplementationStatus": null
+  },
+  "hasOrganizationWebsite": {
+    "@type": "OrganizationWebsite",
+    "hasWebsiteAddress": "https://www.detroitk12.org"
+  }
+}

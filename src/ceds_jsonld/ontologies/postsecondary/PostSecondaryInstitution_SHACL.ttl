@@ -1,0 +1,228 @@
+@prefix ceds:  <http://ceds.ed.gov/terms#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh:    <http://www.w3.org/ns/shacl#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+
+# ──────────────────────────────────────────────────────────
+# PostsecondaryInstitution SHACL Shape  (CEDS Class C200329)
+# ──────────────────────────────────────────────────────────
+# Defines the constraints for Postsecondary Institution
+# entities within the CEDS ontology. References shared
+# Organization shapes for title, identification, location,
+# operational detail, and website.
+# ──────────────────────────────────────────────────────────
+
+# ═══════════════════════════════════════════════════════════
+# Root Shape — PostsecondaryInstitution
+# ═══════════════════════════════════════════════════════════
+
+ceds:PostsecondaryInstitutionShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:targetClass ceds:C200329 ;
+    sh:property ceds:hasOrganizationTitle_PostSecShape ,
+                ceds:hasOrganizationIdentification_PostSecShape ,
+                ceds:hasLocation_PostSecShape ,
+                ceds:hasOrganizationOperationalDetail_PostSecShape ,
+                ceds:hasOrganizationWebsite_PostSecShape ,
+                ceds:hasCarnegieBasicClassificationShape ,
+                ceds:hasLevelOfInstitutionShape .
+
+# ═══════════════════════════════════════════════════════════
+# Postsecondary-specific Property Shapes
+# ═══════════════════════════════════════════════════════════
+
+ceds:hasCarnegieBasicClassificationShape a sh:PropertyShape ;
+    sh:path ceds:P000039 ;
+    sh:in ( ceds:NI000039127551 ceds:NI000039127552 ceds:NI000039127553
+            ceds:NI000039127554 ceds:NI000039127555 ceds:NI000039127556
+            ceds:NI000039127557 ceds:NI000039127558 ceds:NI000039127559
+            ceds:NI000039127560 ceds:NI000039127561 ceds:NI000039127562
+            ceds:NI000039127563 ceds:NI000039127564 ceds:NI000039127565
+            ceds:NI000039127566 ceds:NI000039127567 ceds:NI000039127568
+            ceds:NI000039127569 ceds:NI000039127570 ceds:NI000039127571
+            ceds:NI000039127572 ceds:NI000039127573 ceds:NI000039127574
+            ceds:NI000039127575 ceds:NI000039127576 ceds:NI000039127577
+            ceds:NI000039127578 ceds:NI000039127579 ceds:NI000039127580
+            ceds:NI000039127581 ceds:NI000039127582 ceds:NI000039127583 ) ;
+    sh:maxCount 1 ;
+    sh:minCount 0 .
+
+ceds:hasLevelOfInstitutionShape a sh:PropertyShape ;
+    sh:path ceds:P000170 ;
+    sh:in ( ceds:NI000170127589 ceds:NI000170127590
+            ceds:NI000170127591 ceds:NI000170127592 ) ;
+    sh:maxCount 1 ;
+    sh:minCount 0 .
+
+# ═══════════════════════════════════════════════════════════
+# Shared Organization Shapes — Property links from root
+# ═══════════════════════════════════════════════════════════
+
+ceds:hasOrganizationTitle_PostSecShape a sh:PropertyShape ;
+    sh:path ceds:P600479 ;
+    sh:class ceds:C200246 ;
+    sh:node ceds:OrganizationTitleShape ;
+    sh:maxCount 1 ;
+    sh:minCount 1 .
+
+ceds:hasOrganizationIdentification_PostSecShape a sh:PropertyShape ;
+    sh:path ceds:P600502 ;
+    sh:class ceds:C200252 ;
+    sh:node ceds:OrganizationIdentificationShape ;
+    sh:minCount 1 .
+
+ceds:hasLocation_PostSecShape a sh:PropertyShape ;
+    sh:path ceds:P600299 ;
+    sh:class ceds:C200237 ;
+    sh:node ceds:LocationShape .
+
+ceds:hasOrganizationOperationalDetail_PostSecShape a sh:PropertyShape ;
+    sh:path ceds:P600508 ;
+    sh:class ceds:C200398 ;
+    sh:node ceds:OrganizationOperationalDetailShape ;
+    sh:maxCount 1 .
+
+ceds:hasOrganizationWebsite_PostSecShape a sh:PropertyShape ;
+    sh:path ceds:P600518 ;
+    sh:class ceds:C200273 ;
+    sh:node ceds:OrganizationWebsiteShape ;
+    sh:maxCount 1 .
+
+# ═══════════════════════════════════════════════════════════
+# Shared Node Shapes — OrganizationTitle
+# ═══════════════════════════════════════════════════════════
+
+ceds:OrganizationTitleShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:targetClass ceds:C200246 ;
+    sh:property ceds:hasNameShape ,
+                ceds:hasShortNameOfInstitutionShape .
+
+ceds:hasNameShape a sh:PropertyShape ;
+    sh:path ceds:P000204 ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:minCount 1 .
+
+ceds:hasShortNameOfInstitutionShape a sh:PropertyShape ;
+    sh:path ceds:P000279 ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 .
+
+# ═══════════════════════════════════════════════════════════
+# Shared Node Shapes — OrganizationIdentification
+# ═══════════════════════════════════════════════════════════
+
+ceds:OrganizationIdentificationShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:targetClass ceds:C200252 ;
+    sh:property ceds:hasOrganizationIdentifierShape ,
+                ceds:hasOrganizationIdentificationSystemShape .
+
+ceds:hasOrganizationIdentifierShape a sh:PropertyShape ;
+    sh:path ceds:P000827 ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 ;
+    sh:minCount 1 .
+
+ceds:hasOrganizationIdentificationSystemShape a sh:PropertyShape ;
+    sh:path ceds:P000827system ;
+    sh:maxCount 1 .
+
+# ═══════════════════════════════════════════════════════════
+# Shared Node Shapes — Location / LocationAddress
+# ═══════════════════════════════════════════════════════════
+
+ceds:LocationShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:targetClass ceds:C200237 ;
+    sh:property ceds:hasLocationAddressShape_loc ,
+                ceds:hasLocaleShape .
+
+ceds:hasLocationAddressShape_loc a sh:PropertyShape ;
+    sh:path ceds:P600471 ;
+    sh:class ceds:C200238 ;
+    sh:node ceds:LocationAddressShape .
+
+ceds:hasLocaleShape a sh:PropertyShape ;
+    sh:path ceds:P000191 ;
+    sh:maxCount 1 .
+
+ceds:LocationAddressShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:targetClass ceds:C200238 ;
+    sh:property ceds:hasAddressStreetNumberAndNameShape ,
+                ceds:hasCityShape ,
+                ceds:hasStateAbbreviationShape ,
+                ceds:hasPostalCodeShape ,
+                ceds:hasCountryCodeShape ,
+                ceds:hasAddressCountyNameShape .
+
+ceds:hasAddressStreetNumberAndNameShape a sh:PropertyShape ;
+    sh:path ceds:P000269 ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 .
+
+ceds:hasCityShape a sh:PropertyShape ;
+    sh:path ceds:P000040 ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 .
+
+ceds:hasStateAbbreviationShape a sh:PropertyShape ;
+    sh:path ceds:P000267 ;
+    sh:maxCount 1 .
+
+ceds:hasPostalCodeShape a sh:PropertyShape ;
+    sh:path ceds:P000214 ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 .
+
+ceds:hasCountryCodeShape a sh:PropertyShape ;
+    sh:path ceds:P000050 ;
+    sh:maxCount 1 .
+
+ceds:hasAddressCountyNameShape a sh:PropertyShape ;
+    sh:path ceds:P001066 ;
+    sh:datatype xsd:string ;
+    sh:maxCount 1 .
+
+# ═══════════════════════════════════════════════════════════
+# Shared Node Shapes — OrganizationOperationalDetail
+# ═══════════════════════════════════════════════════════════
+
+ceds:OrganizationOperationalDetailShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:targetClass ceds:C200398 ;
+    sh:property ceds:hasOperationalStatusShape ,
+                ceds:hasOperationalStatusEffectiveDateShape .
+
+ceds:hasOperationalStatusShape a sh:PropertyShape ;
+    sh:path ceds:P000174 ;
+    sh:maxCount 1 .
+
+ceds:hasOperationalStatusEffectiveDateShape a sh:PropertyShape ;
+    sh:path ceds:P001049 ;
+    sh:datatype xsd:date ;
+    sh:maxCount 1 .
+
+# ═══════════════════════════════════════════════════════════
+# Shared Node Shapes — OrganizationWebsite
+# ═══════════════════════════════════════════════════════════
+
+ceds:OrganizationWebsiteShape a sh:NodeShape ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdf:id rdf:value rdfs:label ) ;
+    sh:targetClass ceds:C200273 ;
+    sh:property ceds:hasWebsiteAddressShape .
+
+ceds:hasWebsiteAddressShape a sh:PropertyShape ;
+    sh:path ceds:P000704 ;
+    sh:datatype xsd:anyURI ;
+    sh:maxCount 1 .
