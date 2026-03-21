@@ -347,9 +347,16 @@ def validate(
     "as_json",
     is_flag=True,
     default=False,
-    help="Output as JSON instead of human-readable text.",
+    help="Output as JSON (shorthand for --format json).",
 )
-def introspect(shacl_path: str, as_json: bool) -> None:
+@click.option(
+    "--format",
+    "fmt",
+    type=click.Choice(["text", "json", "markdown"], case_sensitive=False),
+    default=None,
+    help="Output format: text (default), json, or markdown.",
+)
+def introspect(shacl_path: str, as_json: bool, fmt: str | None) -> None:
     """Inspect a SHACL shape file and display its structure.
 
     Shows the shape tree including property names, datatypes, cardinalities,
@@ -360,17 +367,30 @@ def introspect(shacl_path: str, as_json: bool) -> None:
         ceds-jsonld introspect --shacl ontologies/person/Person_SHACL.ttl
 
         ceds-jsonld introspect --shacl Person_SHACL.ttl --json
+
+        ceds-jsonld introspect --shacl Person_SHACL.ttl --format markdown
     """
     from ceds_jsonld.introspector import SHACLIntrospector
+
+    # --json flag is shorthand for --format json
+    if as_json and fmt is None:
+        fmt = "json"
+    elif fmt is None:
+        fmt = "text"
 
     try:
         intro = SHACLIntrospector(shacl_path)
     except ShapeLoadError as exc:
         raise click.ClickException(str(exc)) from exc
 
-    if as_json:
+    if fmt == "json":
         data = intro.to_dict()
         click.echo(dumps(data, pretty=True).decode())
+    elif fmt == "markdown":
+        tree = intro.shape_tree()
+        # Try to auto-discover context for friendly name resolution
+        context = _find_sibling_context(shacl_path)
+        _print_markdown_table(tree, context)
     else:
         tree = intro.shape_tree()
         _print_shape_tree(tree, indent=0)
@@ -397,6 +417,84 @@ def _print_shape_tree(shape: Any, indent: int = 0) -> None:
 
     for _name, child in shape.children.items():
         _print_shape_tree(child, indent=indent + 1)
+
+
+def _find_sibling_context(shacl_path: str) -> dict[str, str] | None:
+    """Auto-discover a *_context.json file in the same directory as the SHACL file."""
+    import glob
+    import json as _json
+
+    parent = Path(shacl_path).parent
+    candidates = glob.glob(str(parent / "*_context.json"))
+    if not candidates:
+        return None
+    with open(candidates[0]) as f:
+        data = _json.load(f)
+    ctx = data.get("@context", data)
+    return ctx if isinstance(ctx, dict) else None
+
+
+def _collect_properties_flat(
+    shape: Any,
+    parent: str = "",
+    iri_to_name: dict[str, str] | None = None,
+) -> list[dict[str, str]]:
+    """Recursively collect properties into a flat list for markdown output."""
+    rows: list[dict[str, str]] = []
+    shape_label = parent or shape.local_name
+    lookup = iri_to_name or {}
+
+    for prop in shape.properties:
+        name = lookup.get(prop.path, prop.name or prop.path_local)
+        dtype = prop.datatype.split("#")[-1] if prop.datatype else "object"
+        required = "Yes" if prop.min_count and prop.min_count > 0 else ""
+        concept = ""
+        if prop.allowed_values:
+            vals = [v.split("/")[-1].split("#")[-1] for v in prop.allowed_values[:5]]
+            extra = ", ..." if len(prop.allowed_values) > 5 else ""
+            concept = ", ".join(vals) + extra
+
+        rows.append({
+            "Property": name,
+            "Sub-Shape": shape_label,
+            "Type": dtype,
+            "Required": required,
+            "Concept Scheme": concept,
+        })
+
+    for _name, child in shape.children.items():
+        rows.extend(_collect_properties_flat(child, parent=child.local_name, iri_to_name=lookup))
+
+    return rows
+
+
+def _print_markdown_table(
+    shape: Any,
+    context: dict[str, str] | None = None,
+) -> None:
+    """Print shape properties as a Markdown table."""
+    from ceds_jsonld.introspector import SHACLIntrospector
+
+    iri_to_name = SHACLIntrospector._build_iri_to_name(context) if context else None
+    rows = _collect_properties_flat(shape, iri_to_name=iri_to_name)
+    headers = ["Property", "Sub-Shape", "Type", "Required", "Concept Scheme"]
+
+    # Calculate column widths
+    widths = {h: len(h) for h in headers}
+    for row in rows:
+        for h in headers:
+            widths[h] = max(widths[h], len(row.get(h, "")))
+
+    # Header
+    header_line = "| " + " | ".join(h.ljust(widths[h]) for h in headers) + " |"
+    sep_line = "| " + " | ".join("-" * widths[h] for h in headers) + " |"
+    click.echo(header_line)
+    click.echo(sep_line)
+
+    # Rows
+    for row in rows:
+        line = "| " + " | ".join(row.get(h, "").ljust(widths[h]) for h in headers) + " |"
+        click.echo(line)
 
 
 # ---------------------------------------------------------------------------

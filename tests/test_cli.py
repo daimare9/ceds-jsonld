@@ -312,6 +312,21 @@ class TestIntrospect:
         )
         assert result.exit_code != 0
 
+    def test_markdown_output(self, runner: CliRunner) -> None:
+        result = runner.invoke(
+            cli,
+            [
+                "introspect",
+                "--shacl",
+                str(PERSON_SHACL),
+                "--format",
+                "markdown",
+            ],
+        )
+        assert result.exit_code == 0, result.output
+        assert "| Property" in result.output
+        assert "FirstName" in result.output
+
 
 # ---------------------------------------------------------------------------
 # generate-mapping
