@@ -17,9 +17,11 @@ from __future__ import annotations
 from ceds_jsonld.logging import get_logger
 from ceds_jsonld.registry import ShapeRegistry
 from ceds_jsonld.wizard.assembler import MappingAssembler, WizardResult
-from ceds_jsonld.wizard.collector import ShapeMetadataCollector
+from ceds_jsonld.wizard.collector import ShapeMetadataCollector, TargetProperty
+from ceds_jsonld.wizard.concept_matcher import ConceptValueMatcher, MatchCandidate
 from ceds_jsonld.wizard.engine import MatchingEngine
-from ceds_jsonld.wizard.profiler import ColumnProfiler
+from ceds_jsonld.wizard.heuristic import HeuristicMatcher
+from ceds_jsonld.wizard.profiler import ColumnProfile, ColumnProfiler
 
 _log = get_logger(__name__)
 
@@ -191,4 +193,16 @@ class MappingWizard:
             object.__setattr__(shape_def, "mapping_config", original_config)
 
 
-__all__: list[str] = ["MappingWizard", "WizardResult"]
+__all__: list[str] = [
+    "ColumnProfile",
+    "ColumnProfiler",
+    "ConceptValueMatcher",
+    "HeuristicMatcher",
+    "MappingAssembler",
+    "MappingWizard",
+    "MatchCandidate",
+    "MatchingEngine",
+    "ShapeMetadataCollector",
+    "TargetProperty",
+    "WizardResult",
+]
