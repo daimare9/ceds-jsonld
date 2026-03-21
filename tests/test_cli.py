@@ -266,6 +266,26 @@ class TestValidate:
         )
         assert result.exit_code != 0
 
+    def test_html_report(self, runner: CliRunner, sample_csv: Path, tmp_path: Path) -> None:
+        report_path = tmp_path / "report.html"
+        result = runner.invoke(
+            cli,
+            [
+                "validate",
+                "-s",
+                "person",
+                "-i",
+                str(sample_csv),
+                "--report",
+                str(report_path),
+            ],
+        )
+        assert result.exit_code == 0
+        assert report_path.exists()
+        html = report_path.read_text(encoding="utf-8")
+        assert "<html" in html
+        assert "PASSED" in html
+
 
 # ---------------------------------------------------------------------------
 # introspect
@@ -311,6 +331,21 @@ class TestIntrospect:
             ],
         )
         assert result.exit_code != 0
+
+    def test_markdown_output(self, runner: CliRunner) -> None:
+        result = runner.invoke(
+            cli,
+            [
+                "introspect",
+                "--shacl",
+                str(PERSON_SHACL),
+                "--format",
+                "markdown",
+            ],
+        )
+        assert result.exit_code == 0, result.output
+        assert "| Property" in result.output
+        assert "FirstName" in result.output
 
 
 # ---------------------------------------------------------------------------

@@ -253,6 +253,32 @@ log.info("pipeline.complete", records=1000, ssn="123-45-6789")
 # ssn is automatically redacted in log output
 ```
 
+### Mapping Wizard
+
+Auto-map source CSV/Excel columns to CEDS shape properties using a three-phase matching pipeline:
+
+```python
+from ceds_jsonld import MappingWizard
+
+wizard = MappingWizard()                        # use_llm=True by default
+result = wizard.suggest("students.csv", shape="person")
+
+# Review confidence scores
+for col, prop, score, method in result.confidence_report:
+    print(f"  {col} → {prop}  ({score:.0%} via {method})")
+
+# Save the generated YAML mapping
+result.save("person_mapping.yaml")
+```
+
+Or from the CLI:
+
+```bash
+ceds-jsonld map-wizard --input students.csv --shape person --output person_mapping.yaml
+```
+
+The wizard uses concept-value matching, heuristic name matching, and optional LLM-assisted resolution. Pass `--no-llm` to skip the LLM phase.
+
 ### Reading from Excel
 
 ```python
@@ -747,6 +773,7 @@ JSON serialization uses [orjson](https://github.com/ijl/orjson) (Rust-backed, ~1
 | 0.10.0 — Native Adapters | ✅ Complete | 6 new adapters (Sheets, Snowflake, BigQuery, Databricks, Canvas, OneRoster) + 2 SIS factory functions. **680 tests**. |
 | 0.10.1–0.10.2 — Patch Fixes | ✅ Complete | Adapter bug fixes, IRI sanitization, transform hardening. **727 tests**. |
 | 0.11.0 — Organization Shapes | ✅ Complete | 5 new shapes: Organization, LEA, K-12 School, Facility, Post-Secondary Institution. |
+| 2.0 — Mapping Wizard | ✅ Complete | AI-assisted `MappingWizard`, three-phase matching, HTML validation reports, introspect markdown. |
 
 See [ROADMAP.md](ROADMAP.md) for the full plan.
 
