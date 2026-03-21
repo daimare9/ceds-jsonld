@@ -632,6 +632,67 @@ def benchmark(shape: str, records: int, shapes_dir: str | None) -> None:
 
 
 # ---------------------------------------------------------------------------
+# map-wizard command
+# ---------------------------------------------------------------------------
+
+
+@cli.command("map-wizard")
+@click.option(
+    "-i", "--input", "input_path", required=True,
+    type=click.Path(exists=True), help="Path to input data file (CSV or Excel).",
+)
+@click.option("-s", "--shape", default=None, help="Shape name. Auto-detected if omitted.")
+@click.option(
+    "-o", "--output", "output_path", default=None,
+    type=click.Path(), help="Output YAML path. Prints to stdout if omitted.",
+)
+@click.option("--no-llm", is_flag=True, default=False, help="Heuristic-only mode (no LLM).")
+@click.option("--threshold", type=float, default=0.4, help="Minimum confidence threshold.")
+@click.option(
+    "--shapes-dir", type=click.Path(exists=True, file_okay=False),
+    default=None, help="Additional shapes directory.",
+)
+def map_wizard(
+    input_path: str,
+    shape: str | None,
+    output_path: str | None,
+    no_llm: bool,
+    threshold: float,
+    shapes_dir: str | None,
+) -> None:
+    """AI-assisted mapping wizard — auto-map columns to CEDS shapes."""
+    from ceds_jsonld.wizard import MappingWizard
+
+    wizard = MappingWizard(
+        use_llm=not no_llm,
+        heuristic_threshold=threshold,
+        shapes_dir=shapes_dir,
+    )
+
+    if shape is None:
+        click.echo("Detecting best shape...")
+        detected = wizard.detect_shape(input_path)
+        if not detected:
+            click.echo("Error: Could not detect a matching shape.", err=True)
+            raise SystemExit(1)
+        shape = detected[0][0]
+        click.echo(f"Detected shape: {shape} (score: {detected[0][1]:.2f})")
+
+    result = wizard.suggest(input_path, shape=shape)
+
+    if output_path:
+        result.save(output_path)
+        click.echo(f"Mapping saved to {output_path}")
+    else:
+        click.echo(result.yaml_text)
+
+    if result.unmapped_columns:
+        click.echo(f"\nUnmapped columns: {', '.join(result.unmapped_columns)}", err=True)
+    if result.unmapped_properties:
+        click.echo(f"Unmapped properties: {', '.join(result.unmapped_properties)}", err=True)
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
