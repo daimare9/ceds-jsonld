@@ -82,3 +82,22 @@ def test_import_from_top_level() -> None:
     from ceds_jsonld import MappingWizard as Wiz
 
     assert Wiz is not None
+
+
+class TestPreview:
+
+    @pytest.fixture()
+    def person_csv(self, tmp_path):
+        path = tmp_path / "people.csv"
+        with path.open("w", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=["FirstName", "LastName", "Birthdate"])
+            w.writeheader()
+            w.writerow({"FirstName": "Jane", "LastName": "Doe", "Birthdate": "1990-01-15"})
+            w.writerow({"FirstName": "John", "LastName": "Smith", "Birthdate": "1985-03-22"})
+        return str(path)
+
+    def test_preview_returns_docs(self, person_csv) -> None:
+        wizard = MappingWizard(use_llm=False)
+        result = wizard.suggest(person_csv, shape="person")
+        docs = wizard.preview(person_csv, result, count=2)
+        assert isinstance(docs, list)

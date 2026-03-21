@@ -142,5 +142,53 @@ class MappingWizard:
         scores.sort(key=lambda x: x[1], reverse=True)
         return scores
 
+    def preview(
+        self,
+        input_path: str,
+        result: WizardResult,
+        *,
+        count: int = 5,
+    ) -> list[dict]:
+        """Run a preview of the generated mapping through Pipeline.
+
+        Args:
+            input_path: Path to the same CSV/Excel file.
+            result: WizardResult from a previous ``suggest()`` call.
+            count: Max number of records to preview.
+
+        Returns:
+            List of JSON-LD document dicts.
+        """
+        from ceds_jsonld.adapters import CSVAdapter
+        from ceds_jsonld.pipeline import Pipeline
+
+        shape_name = result.mapping_config.get("shape", "")
+        if not shape_name:
+            return []
+
+        # Load the shape and temporarily override its mapping_config
+        shape_def = self._registry.load_shape(shape_name)
+        original_config = shape_def.mapping_config
+        object.__setattr__(shape_def, "mapping_config", result.mapping_config)
+
+        try:
+            adapter = CSVAdapter(input_path)
+            pipeline = Pipeline(
+                source=adapter,
+                shape=shape_name,
+                registry=self._registry,
+            )
+            docs: list[dict] = []
+            for doc in pipeline.stream():
+                docs.append(doc)
+                if len(docs) >= count:
+                    break
+            return docs
+        except Exception:
+            _log.warning("Preview failed", exc_info=True)
+            return []
+        finally:
+            object.__setattr__(shape_def, "mapping_config", original_config)
+
 
 __all__: list[str] = ["MappingWizard", "WizardResult"]
