@@ -76,3 +76,9 @@ class TestMappingWizardAutoDetect:
         assert len(detected) > 0
         # Person should be the top match
         assert detected[0][0] == "person"
+
+
+def test_import_from_top_level() -> None:
+    from ceds_jsonld import MappingWizard as Wiz
+
+    assert Wiz is not None
