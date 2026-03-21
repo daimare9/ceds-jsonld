@@ -274,6 +274,13 @@ def convert(
     default=0.01,
     help="SHACL sample rate in sample mode (default: 0.01 = 1%%).",
 )
+@click.option(
+    "--report",
+    "report_path",
+    type=click.Path(),
+    default=None,
+    help="Write an HTML validation report to this file.",
+)
 def validate(
     shape: str,
     input_path: str,
@@ -282,6 +289,7 @@ def validate(
     mode: str,
     shacl: bool,
     sample_rate: float,
+    report_path: str | None,
 ) -> None:
     """Validate data against a SHACL shape.
 
@@ -308,6 +316,13 @@ def validate(
         raise click.ClickException(str(exc)) from exc
 
     elapsed = time.perf_counter() - t0
+
+    if report_path:
+        from ceds_jsonld.report import generate_html_report
+
+        html = generate_html_report(result, shape=shape)
+        Path(report_path).write_text(html, encoding="utf-8")
+        click.echo(f"HTML report written to {report_path}")
 
     if result.conforms:
         click.secho(
