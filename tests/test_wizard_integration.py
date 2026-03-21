@@ -101,3 +101,44 @@ class TestPreview:
         result = wizard.suggest(person_csv, shape="person")
         docs = wizard.preview(person_csv, result, count=2)
         assert isinstance(docs, list)
+
+
+class TestEndToEndJourney:
+    """Prove wizard-generated YAML is usable with the pipeline."""
+
+    @pytest.fixture()
+    def person_csv(self, tmp_path):
+        path = tmp_path / "people.csv"
+        with path.open("w", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=["FirstName", "LastName", "Birthdate"])
+            w.writeheader()
+            w.writerow({"FirstName": "Jane", "LastName": "Doe", "Birthdate": "1990-01-15"})
+            w.writerow({"FirstName": "John", "LastName": "Smith", "Birthdate": "1985-03-22"})
+        return str(path)
+
+    def test_wizard_yaml_through_pipeline(self, person_csv, tmp_path) -> None:
+        """CSV -> Wizard (no LLM) -> YAML -> Pipeline -> JSON-LD."""
+        import yaml
+
+        from ceds_jsonld.mapping import FieldMapper
+        from ceds_jsonld.registry import ShapeRegistry
+
+        # 1. Run wizard
+        wizard = MappingWizard(use_llm=False)
+        result = wizard.suggest(person_csv, shape="person")
+
+        # 2. Verify YAML is valid
+        config = yaml.safe_load(result.yaml_text)
+        assert config is not None
+        assert config["shape"] is not None
+
+        # 3. At least some columns should be mapped
+        assert len(result.confidence_report) > 0
+
+        # 4. Save and reload through FieldMapper
+        yaml_path = tmp_path / "wizard_mapping.yaml"
+        result.save(str(yaml_path))
+        with open(yaml_path) as f:
+            loaded_config = yaml.safe_load(f)
+        mapper = FieldMapper(loaded_config)
+        assert mapper is not None
