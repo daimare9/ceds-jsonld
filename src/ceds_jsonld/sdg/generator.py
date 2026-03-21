@@ -2,8 +2,11 @@
 
 Generates fully valid, CEDS-conformant synthetic data for any registered shape.
 Uses concept scheme extraction from the ontology for enum properties, and
-fallback generators for literal properties. The LLM layer is an optional
-upgrade added in a later phase.
+a three-tier fallback for literal properties:
+
+1. **LLM generation** (optional) — produces realistic values via a local LLM.
+2. **File cache** — reuses previously generated LLM values from disk.
+3. **Deterministic fallback** — XSD-type-aware random generators.
 
 The generator produces flat dicts that match what a CSVAdapter would yield,
 making them directly usable with the existing Pipeline.
@@ -55,6 +58,9 @@ class SyntheticDataGenerator:
         *,
         seed: int | None = None,
         pool_size: int = 200,
+        use_llm: bool = False,
+        use_cache: bool = True,
+        llm_model: str | None = None,
     ) -> None:
         """Initialize the generator.
 
@@ -62,12 +68,24 @@ class SyntheticDataGenerator:
             registry: A ShapeRegistry with at least one shape loaded.
             seed: Random seed for reproducibility. If ``None``, non-deterministic.
             pool_size: Number of values to pre-generate per property pool.
+            use_llm: If ``True``, use LLM-powered value generation for literal
+                properties. Requires ``ceds-jsonld[sdg]`` extras. Default is
+                ``False`` (deterministic generators only).
+            use_cache: If ``True`` (default), cache LLM-generated values to disk
+                for reuse across runs. Only relevant when ``use_llm=True``.
+            llm_model: Model identifier for LLM generation. If ``None``, uses
+                the default model (Qwen/Qwen3-4B for transformers, qwen3:4b
+                for Ollama).
         """
         self._registry = registry
         self._seed = seed
         self._pool_size = pool_size
+        self._use_llm = use_llm
+        self._use_cache = use_cache
+        self._llm_model = llm_model
         self._fallback = FallbackGenerators(seed=seed)
         self._resolver: ConceptSchemeResolver | None = None
+        self._llm_gen: Any = None  # Lazy-initialized LLMValueGenerator
 
     def generate(
         self,
@@ -353,17 +371,74 @@ class SyntheticDataGenerator:
                         values=len(meta.allowed_values),
                     )
                 else:
-                    pools[source_col] = self._fallback.generate_pool(
-                        meta, count=self._pool_size,
-                    )
-                    _log.debug(
-                        "Fallback pool created",
-                        source=source_col,
-                        target=target,
-                        values=self._pool_size,
-                    )
+                    # Three-tier fallback: LLM → cache → deterministic
+                    llm_values = None
+                    if self._use_llm:
+                        llm_gen = self._get_llm_generator()
+                        if llm_gen is not None:
+                            llm_values = llm_gen.generate_values(
+                                meta,
+                                count=self._pool_size,
+                                shape_name=mapping_config.get("shape", ""),
+                                use_cache=self._use_cache,
+                            )
+
+                    if llm_values is not None:
+                        pools[source_col] = llm_values
+                        _log.debug(
+                            "LLM pool created",
+                            source=source_col,
+                            target=target,
+                            values=len(llm_values),
+                        )
+                    else:
+                        pools[source_col] = self._fallback.generate_pool(
+                            meta, count=self._pool_size,
+                        )
+                        _log.debug(
+                            "Fallback pool created",
+                            source=source_col,
+                            target=target,
+                            values=self._pool_size,
+                        )
 
         return pools
+
+    def _get_llm_generator(self) -> Any:
+        """Lazy-initialize the LLM value generator.
+
+        Returns ``None`` if LLM dependencies are not installed or no
+        backend is available.
+        """
+        if self._llm_gen is not None:
+            return self._llm_gen
+
+        try:
+            from ceds_jsonld.sdg.llm_generator import LLMValueGenerator
+        except ImportError:
+            _log.warning(
+                "LLM generation requested but dependencies not installed. "
+                "Install with: pip install ceds-jsonld[sdg]"
+            )
+            return None
+
+        if self._resolver is None:
+            return None
+
+        self._llm_gen = LLMValueGenerator(
+            ontology_graph=self._resolver._graph,
+            model=self._llm_model,
+        )
+
+        if not self._llm_gen.available:
+            _log.warning(
+                "No LLM backend available — falling back to deterministic generators. "
+                "Run Ollama or install ceds-jsonld[sdg] for LLM support."
+            )
+            self._llm_gen = None
+            return None
+
+        return self._llm_gen
 
     def _meta_from_field_config(
         self,
