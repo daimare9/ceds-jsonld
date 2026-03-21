@@ -109,7 +109,9 @@ class SyntheticDataGenerator:
         )
 
         # Build value pools for each source column
-        value_pools = self._build_value_pools(mapping_config, classified)
+        value_pools = self._build_value_pools(
+            mapping_config, classified, shape_def.context,
+        )
 
         # Assemble rows
         assembler = MappingAwareAssembler(
@@ -225,29 +227,93 @@ class SyntheticDataGenerator:
             )
         return self._resolver
 
+    @staticmethod
+    def _build_iri_to_context_name(context: dict[str, Any]) -> dict[str, str]:
+        """Build a reverse lookup from full property IRI → context name.
+
+        The JSON-LD context maps human names like ``hasSex`` to prefixed IRIs
+        like ``ceds:P000255``. This expands the prefixes and inverts the
+        mapping so we can go from a full IRI back to the target name that
+        the mapping YAML uses.
+        """
+        ctx = context.get("@context", context)
+
+        # Collect namespace prefixes first
+        prefixes: dict[str, str] = {}
+        for key, val in ctx.items():
+            if key.startswith("@"):
+                continue
+            if isinstance(val, str) and not ":" in val.split("//", 1)[-1]:
+                # This is a prefix definition (no colon in the path part)
+                # e.g. "ceds" -> "http://ceds.ed.gov/terms#"
+                prefixes[key] = val
+
+        # More reliable: prefixes are entries whose values are base IRIs
+        prefixes = {}
+        for key, val in ctx.items():
+            if key.startswith("@"):
+                continue
+            if isinstance(val, str) and (val.endswith("#") or val.endswith("/")):
+                prefixes[key] = val
+
+        def _expand(prefixed: str) -> str:
+            """Expand a prefixed IRI like ceds:P000255 to full IRI."""
+            if prefixed.startswith("http"):
+                return prefixed
+            if ":" in prefixed:
+                prefix, local = prefixed.split(":", 1)
+                if prefix in prefixes:
+                    return prefixes[prefix] + local
+            return prefixed
+
+        iri_to_name: dict[str, str] = {}
+        for key, val in ctx.items():
+            if key.startswith("@") or key in prefixes:
+                continue
+            if isinstance(val, str):
+                full_iri = _expand(val)
+                iri_to_name[full_iri] = key
+            elif isinstance(val, dict) and "@id" in val:
+                full_iri = _expand(str(val["@id"]))
+                iri_to_name[full_iri] = key
+
+        return iri_to_name
+
     def _build_value_pools(
         self,
         mapping_config: dict[str, Any],
         classified: dict[str, list[PropertyMetadata]],
+        context: dict[str, Any],
     ) -> dict[str, list[str]]:
         """Build value pools keyed by source column name.
 
-        Maps from SHACL property names back to source column names using
-        the mapping config, then creates a pool of values for each.
+        Uses the JSON-LD context to bridge SHACL property P-codes to the
+        target names used in the mapping YAML, ensuring concept properties
+        get their ontology-derived values instead of random strings.
 
         Args:
             mapping_config: The parsed mapping YAML.
             classified: Classified properties from ConceptSchemeResolver.
+            context: The shape's JSON-LD context dict.
 
         Returns:
             Dict mapping source column name → list of generated values.
         """
         pools: dict[str, list[str]] = {}
 
-        # Build a lookup: target name → PropertyMetadata
+        # Build IRI → context name lookup (e.g. "http://ceds.ed.gov/terms#P000255" → "hasSex")
+        iri_to_name = self._build_iri_to_context_name(context)
+
+        # Build a lookup: context target name → PropertyMetadata
+        # PropertyMetadata.name is a P-code (e.g. "P000255") and path_iri is the full IRI.
+        # We resolve the IRI to the context name for matching against mapping YAML targets.
         meta_by_target: dict[str, PropertyMetadata] = {}
         for sub_shape_props in classified.values():
             for meta in sub_shape_props:
+                context_name = iri_to_name.get(meta.path_iri)
+                if context_name:
+                    meta_by_target[context_name] = meta
+                # Also index by P-code as fallback
                 meta_by_target[meta.name] = meta
 
         # Walk the mapping config to find source columns and match them
@@ -265,12 +331,25 @@ class SyntheticDataGenerator:
                 if meta is None:
                     # Not classified (possibly structural) — use field config hints
                     meta = self._meta_from_field_config(field_name, field_cfg, prop_name)
+                elif meta.xsd_datatype is None and field_cfg.get("datatype"):
+                    # Enrich SHACL-classified meta with YAML datatype info
+                    enriched = self._meta_from_field_config(field_name, field_cfg, prop_name)
+                    meta = PropertyMetadata(
+                        name=meta.name,
+                        path_iri=meta.path_iri,
+                        category=meta.category,
+                        xsd_datatype=enriched.xsd_datatype,
+                        label=meta.label,
+                        parent_shape_name=meta.parent_shape_name,
+                        allowed_values=meta.allowed_values,
+                    )
 
                 if meta.category == "concept" and meta.allowed_values:
                     pools[source_col] = list(meta.allowed_values)
                     _log.debug(
                         "Concept pool created",
                         source=source_col,
+                        target=target,
                         values=len(meta.allowed_values),
                     )
                 else:
@@ -280,6 +359,7 @@ class SyntheticDataGenerator:
                     _log.debug(
                         "Fallback pool created",
                         source=source_col,
+                        target=target,
                         values=self._pool_size,
                     )
 

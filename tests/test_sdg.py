@@ -396,3 +396,59 @@ class TestRoundTrip:
         # All these sub-shapes should be present
         expected = {"hasPersonName", "hasPersonBirth", "hasPersonSexGender"}
         assert expected.issubset(set(doc.keys()))
+
+
+class TestValueQuality:
+    """Verify that generated values come from real ontology values, not random strings."""
+
+    def test_sex_values_from_ontology(self, registry):
+        """Sex column should only contain ontology concept values."""
+        gen = SyntheticDataGenerator(registry, seed=42)
+        rows = gen.generate("person", count=50)
+        valid_sex = {"Male", "Female", "NotSelected"}
+        sex_values = {row["Sex"] for row in rows}
+        assert sex_values.issubset(valid_sex), (
+            f"Sex values contain non-ontology strings: {sex_values - valid_sex}"
+        )
+
+    def test_race_values_from_ontology(self, registry):
+        """RaceEthnicity column values should come from ontology concepts."""
+        gen = SyntheticDataGenerator(registry, seed=42)
+        rows = gen.generate("person", count=50)
+        valid_race = {
+            "AmericanIndianOrAlaskaNative", "Asian",
+            "BlackOrAfricanAmerican", "DemographicRaceTwoOrMoreRaces",
+            "HispanicOrLatinoEthnicity",
+            "NativeHawaiianOrOtherPacificIslander",
+            "RaceAndEthnicityUnknown", "White",
+        }
+        for row in rows:
+            raw = row["RaceEthnicity"]
+            for instance in raw.split("|"):
+                for val in instance.split(","):
+                    val = val.strip()
+                    if val:
+                        assert val in valid_race, (
+                            f"Race value '{val}' is not a valid ontology concept"
+                        )
+
+    def test_birthdate_is_valid_iso_date(self, registry):
+        """Birthdate column should contain valid ISO 8601 dates."""
+        import re
+        gen = SyntheticDataGenerator(registry, seed=42)
+        rows = gen.generate("person", count=50)
+        date_pattern = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+        for row in rows:
+            bd = row["Birthdate"]
+            assert date_pattern.match(bd), (
+                f"Birthdate '{bd}' is not a valid ISO date"
+            )
+
+    def test_first_names_are_realistic(self, registry):
+        """FirstName should come from curated name list, not random strings."""
+        gen = SyntheticDataGenerator(registry, seed=42)
+        rows = gen.generate("person", count=50)
+        for row in rows:
+            name = row["FirstName"]
+            assert name.isalpha(), f"FirstName '{name}' contains non-alpha chars"
+            assert len(name) <= 20, f"FirstName '{name}' is suspiciously long"
