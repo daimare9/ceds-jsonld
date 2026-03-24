@@ -150,6 +150,8 @@ def write_json(obj: Any, path: str | Path, *, pretty: bool = True) -> int:
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_bytes(data)
         return len(data)
+    except SerializationError:
+        raise
     except Exception as exc:
         msg = f"Failed to write JSON to {path}: {exc}"
         raise SerializationError(msg) from exc

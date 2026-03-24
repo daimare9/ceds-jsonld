@@ -17,6 +17,20 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ---
 
+## [1.0.1] — 2026-03-24
+
+### Fixed
+
+- **Sanitization** — `sanitize_string_value` now strips DEL (U+007F) and C1 control characters
+  (U+0080–U+009F) in addition to C0 characters. Legacy copy-paste artifacts from student records
+  no longer corrupt downstream XML/RDF serialization (#50)
+- **Serializer** — `write_json` no longer double-wraps `SerializationError`, producing clear
+  single-prefix error messages instead of confusing nested "Failed to … Failed to …" output (#51)
+- **Wizard** — `_infer_type` in profiler now classifies all-NaN/Infinity columns as `'string'`
+  instead of `'float'`, preventing downstream validation errors (#47)
+
+---
+
 ## [1.0.0] — 2026-03-24
 
 ### Summary
