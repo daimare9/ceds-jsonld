@@ -164,7 +164,7 @@ class JSONLDBuilder:
         return nodes
 
     @staticmethod
-    def _typed_literal(value: Any, datatype: str) -> dict[str, str] | list[dict[str, str]] | None:
+    def _typed_literal(value: Any, datatype: str) -> dict[str, str] | list | str | None:
         """Wrap a value as a JSON-LD typed literal.
 
         Args:
@@ -173,19 +173,23 @@ class JSONLDBuilder:
 
         Returns:
             ``{"@type": datatype, "@value": value}``, a list of such dicts,
+            a plain string (when *datatype* is ``"xsd:string"``),
             or ``None`` if the value is ``None`` or non-finite.
         """
         if value is None:
             return None
         if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
             return None
+        is_string = datatype == "xsd:string"
         if isinstance(value, list):
-            clean = [
-                {"@type": datatype, "@value": str(v)}
+            clean: list = [
+                str(v) if is_string else {"@type": datatype, "@value": str(v)}
                 for v in value
                 if v is not None and not (isinstance(v, float) and (math.isnan(v) or math.isinf(v)))
             ]
             return clean or None
+        if is_string:
+            return str(value)
         return {"@type": datatype, "@value": str(value)}
 
     @staticmethod

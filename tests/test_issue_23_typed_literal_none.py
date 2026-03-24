@@ -62,4 +62,4 @@ class TestTypedLiteralNoneHandling:
     def test_list_with_nan_filters_nan(self) -> None:
         builder = _get_builder()
         result = builder._typed_literal([float("nan"), "hello", float("inf")], "xsd:string")
-        assert result == [{"@type": "xsd:string", "@value": "hello"}]
+        assert result == ["hello"]
