@@ -17,7 +17,38 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ---
 
-## [0.12.1] — 2026-03-24
+## [1.0.0] — 2026-03-24
+
+### Summary
+
+**First major release.** Promotes the library to v1.0.0 after 9 development phases. All core
+features — Shape Registry, 6 source adapters, YAML-driven field mapping, high-performance
+JSON-LD builder, SHACL validation, Cosmos DB loader, CLI, AI-assisted Mapping Wizard,
+Synthetic Data Generator, HTML reports, structured logging, and dead-letter queue — are
+production-ready. 886 tests passing.
+
+### Added
+
+- **Nested sub-properties** — YAML mapping configs now support recursive `properties` blocks,
+  enabling shapes like Organization → Location → LocationAddress at any nesting depth (#41)
+- **Array root `@type`** — Builder `root_types` parameter accepts a list, emitting `"@type": ["Person", "Student"]` (#42)
+- **Simplified `xsd:string`** — Typed literals with `xsd:string` datatype now emit plain string
+  values instead of `{"@value": "...", "@type": "xsd:string"}` (#43)
+
+### Fixed
+
+- **Wizard** — `printf`-style logging calls replaced with keyword-arg style to prevent crashes (#44)
+- **Wizard** — LLM confidence scores clamped to `[0, 1]`; columns with all `NaN`/`Infinity` values
+  now classified as `string` instead of `float` (#45, #47)
+- **Mypy** — 9 strict type errors fixed across wizard modules (#46)
+
+### Changed
+
+- Testing instructions updated with terminal output hazard rules to prevent stale-buffer misreads
+
+### Tests
+
+- 886 tests passing (up from 841 at v0.12.1)
 
 ### Fixed
 
