@@ -118,11 +118,11 @@ def _validate_response(
     for m in mappings:
         prop = m.get("target_property", "")
         if prop not in valid_properties:
-            _log.debug("Filtering hallucinated property: %s", prop)
+            _log.debug("Filtering hallucinated property", property=prop)
             continue
         transform = m.get("transform")
         if transform and transform not in valid_transforms:
-            _log.debug("Stripping hallucinated transform: %s", transform)
+            _log.debug("Stripping hallucinated transform", transform=transform)
             m["transform"] = None
         validated.append(m)
     return validated
@@ -244,7 +244,7 @@ class LLMMatcher:
             from ceds_jsonld.sdg.llm_generator import DEFAULT_MODEL
 
             model_name = self._model or DEFAULT_MODEL
-            _log.info("Loading model %s for mapping wizard...", model_name)
+            _log.info("Loading model for mapping wizard", model=model_name)
 
             tokenizer = AutoTokenizer.from_pretrained(model_name)
             model = AutoModelForCausalLM.from_pretrained(

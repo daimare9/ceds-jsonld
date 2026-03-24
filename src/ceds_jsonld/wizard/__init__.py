@@ -74,13 +74,13 @@ class MappingWizard:
         """
         # 1. Profile source columns
         columns = self._profiler.profile_from_csv(input_path)
-        _log.info("Profiled %d columns from %s", len(columns), input_path)
+        _log.info("Profiled columns", count=len(columns), path=input_path)
 
         # 2. Load shape and collect target properties
         shape_def = self._registry.load_shape(shape)
         collector = ShapeMetadataCollector(shape_def)
         targets = collector.collect()
-        _log.info("Collected %d target properties for shape '%s'", len(targets), shape)
+        _log.info("Collected target properties", count=len(targets), shape=shape)
 
         # 3. Run three-phase matching engine
         engine = MatchingEngine(
@@ -91,10 +91,10 @@ class MappingWizard:
         )
         matches, unmatched_cols, unmatched_targets = engine.match(columns, targets)
         _log.info(
-            "Matching complete: %d matched, %d unmatched cols, %d unmatched targets",
-            len(matches),
-            len(unmatched_cols),
-            len(unmatched_targets),
+            "Matching complete",
+            matched=len(matches),
+            unmatched_cols=len(unmatched_cols),
+            unmatched_targets=len(unmatched_targets),
         )
 
         # 4. Assemble result
@@ -139,7 +139,7 @@ class MappingWizard:
                 score = overlap / len(target_names_normalized)
                 scores.append((shape_name, score))
             except Exception:
-                _log.debug("Skipping shape '%s' during detection", shape_name, exc_info=True)
+                _log.debug("Skipping shape during detection", shape=shape_name, exc_info=True)
 
         scores.sort(key=lambda x: x[1], reverse=True)
         return scores
