@@ -203,19 +203,19 @@ Always run pytest **directly** — never pipe or filter the output.
 
 ```powershell
 # Run all tests
-pytest -v --tb=short
+python -m pytest tests/ -v --tb=short
 
 # Run with coverage
-pytest --cov=src/ceds_jsonld --cov-report=term-missing -v
+python -m pytest tests/ --cov=src/ceds_jsonld --cov-report=term-missing -v
 
 # Run specific test file
-pytest tests/test_builder.py -v
+python -m pytest tests/test_builder.py -v
 
 # Run tests matching a pattern
-pytest -k "person" -v
+python -m pytest tests/ -k "person" -v
 
 # Run performance tests only
-pytest tests/benchmarks/ -v
+python -m pytest tests/benchmarks/ -v
 ```
 
 **NEVER** do any of the following:
@@ -224,9 +224,46 @@ pytest tests/benchmarks/ -v
 pytest 2>&1 | Select-String "passed|failed"
 pytest | grep PASSED
 pytest | findstr /i "error"
+
+# BAD — piping through Select-Object to get "just the summary" breaks output
+python -m pytest tests/ -q --tb=short 2>&1 | Select-Object -Last 15
+
+# BAD — piping through any filter, period
+python -m pytest tests/ | Out-String | Select-String "passed"
 ```
 
 Read the raw pytest output. It already tells you everything.
+
+## Terminal Output Hazards — Avoiding Stale Results
+
+The shared PowerShell terminal **accumulates history from all previous commands**.
+When pytest output is large (>60 KB), the tool writes it to a temp file that
+contains the ENTIRE terminal buffer — including output from earlier runs.
+
+**Critical rules:**
+
+1. **Set adequate timeouts.** The full suite (900+ tests) takes 3–6 minutes.
+   Use `timeout: 360000` (6 min) for a full run. Using a short timeout causes
+   `KeyboardInterrupt` which looks like a real failure but is not.
+2. **Never trust `[... PREVIOUS OUTPUT TRUNCATED ...]` files.** When output is
+   written to a temp file, read from the END of the file, not the beginning.
+   The beginning contains old terminal history. The last 20–30 lines have the
+   real results.
+3. **Use `cls ;` before the test command** when you need clean output. This
+   clears the terminal buffer so there is no stale history mixed in:
+   ```powershell
+   cls ; python -m pytest tests/ -v --tb=short
+   ```
+4. **When in doubt, run the targeted test file first.** Before the full suite,
+   run just the new/changed tests to confirm GREEN. This is fast (<2s) and
+   gives unambiguous results:
+   ```powershell
+   python -m pytest tests/test_issue_NN_foo.py -v --tb=short
+   ```
+5. **After the full suite, verify the summary line.** The ONLY line that matters
+   is the final `=== N passed, M failed ===` line. If you see failures, confirm
+   they are from THIS run (not an earlier one in the buffer) by checking that the
+   test count matches `collected N items`.
 
 ## Fixtures and Conftest
 
