@@ -165,17 +165,10 @@ class ColumnProfiler:
     def _build_profile(self, name: str, raw_values: list[Any]) -> ColumnProfile:
         """Build a ColumnProfile from raw column values."""
         total = len(raw_values)
-        nulls = sum(
-            1 for v in raw_values
-            if v is None or (isinstance(v, str) and v.strip() == "")
-        )
+        nulls = sum(1 for v in raw_values if v is None or (isinstance(v, str) and v.strip() == ""))
         null_rate = nulls / total if total > 0 else 0.0
 
-        non_null = [
-            str(v).strip()
-            for v in raw_values
-            if v is not None and str(v).strip() != ""
-        ]
+        non_null = [str(v).strip() for v in raw_values if v is not None and str(v).strip() != ""]
 
         sample_values = non_null[: self._sample_size]
 

@@ -17,6 +17,38 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ---
 
+## [0.12.0] — 2026-03-24
+
+### Summary
+
+Minor release adding the AI-assisted Mapping Wizard, HTML validation reports, Markdown introspection output, and `map-wizard` CLI command. Three-phase matching pipeline (concept-value → heuristic → LLM) auto-maps CSV/Excel columns to CEDS shape properties with confidence scoring. 875 tests passing.
+
+### Added
+
+- **Mapping Wizard** — `MappingWizard` class with `suggest()`, `detect_shape()`, and `preview()` methods for AI-assisted column-to-property mapping
+- **ColumnProfiler** — column analysis with type inference, null rates, unique counts, and delimiter detection
+- **ShapeMetadataCollector** — aggregates target property metadata from SHACL introspector
+- **ConceptValueMatcher** — resolves columns by matching distinct values against CEDS concept scheme enums (zero LLM cost)
+- **HeuristicMatcher** — scoring engine with exact/fuzzy name matching, datatype compatibility, and concept overlap
+- **MatchingEngine** — three-phase orchestrator: concept-value → heuristic → LLM
+- **MappingAssembler** + **WizardResult** — builds complete YAML config with confidence annotations, `save()`, and `yaml_text`
+- **LLMMatcher** — optional LLM-assisted resolution for unresolved columns (local transformers or Ollama)
+- **HTML validation reports** — `--report` flag on `validate` CLI command generates self-contained HTML reports
+- **Markdown introspection** — `--format markdown` on `introspect` CLI command outputs property tables
+- **`map-wizard` CLI command** — auto-map columns with `--no-llm`, `--threshold`, and shape auto-detection
+
+### Changed
+
+- README expanded with full Mapping Wizard documentation, CLI examples, and updated badge (875 tests)
+- Optional Dependencies table now includes `[sdg]` and `[sdg-ollama]` extras
+
+### Tests
+
+- 148 new tests covering all wizard modules, CLI integration, HTML reports, and markdown output
+- Total test count: **875 passed** (up from 727)
+
+---
+
 ## [0.11.0] — 2026-03-20
 
 ### Summary

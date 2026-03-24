@@ -17,7 +17,7 @@ from rdflib import Graph, URIRef
 from rdflib.namespace import RDFS, SKOS, XSD
 
 from ceds_jsonld.logging import get_logger
-from ceds_jsonld.sdg.concept_resolver import ConceptSchemeResolver, PropertyMetadata
+from ceds_jsonld.sdg.concept_resolver import PropertyMetadata
 
 _log = get_logger(__name__)
 
@@ -162,30 +162,31 @@ class OntologyMetadataExtractor:
             lines.append(f"Max Length: {info['max_length']}")
         lines.append(f"Parent Class: {info['parent_class']}")
 
-        lines.extend([
-            "",
-            "Context: This data is used in US K-12 and postsecondary education "
-            "records managed by state education agencies.",
-            "",
-            "Requirements:",
-            "- Values must be realistic and diverse (not repetitive)",
-            "- Values must conform to the data type and format constraints",
-        ])
+        lines.extend(
+            [
+                "",
+                "Context: This data is used in US K-12 and postsecondary education "
+                "records managed by state education agencies.",
+                "",
+                "Requirements:",
+                "- Values must be realistic and diverse (not repetitive)",
+                "- Values must conform to the data type and format constraints",
+            ]
+        )
 
-        if "string" in info["data_type"]:
-            if info["max_length"]:
-                lines.append(
-                    f"- For string values: respect the max length of {info['max_length']}"
-                )
+        if "string" in info["data_type"] and info["max_length"]:
+            lines.append(f"- For string values: respect the max length of {info['max_length']}")
         if "date" in info["data_type"].lower():
             lines.append("- For date values: use ISO 8601 format (YYYY-MM-DD)")
         if "token" in info["data_type"]:
             lines.append("- For numeric tokens: generate realistic ID numbers")
 
-        lines.extend([
-            "- Return ONLY the JSON object, no explanation",
-            "",
-            'Return your response as a JSON object: {"values": ["val1", "val2", ...]}',
-        ])
+        lines.extend(
+            [
+                "- Return ONLY the JSON object, no explanation",
+                "",
+                'Return your response as a JSON object: {"values": ["val1", "val2", ...]}',
+            ]
+        )
 
         return "\n".join(lines)

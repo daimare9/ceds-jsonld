@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from ceds_jsonld.wizard.concept_matcher import ConceptValueMatcher, MatchCandidate
 from ceds_jsonld.wizard.collector import TargetProperty
+from ceds_jsonld.wizard.concept_matcher import ConceptValueMatcher, MatchCandidate
 from ceds_jsonld.wizard.profiler import ColumnProfile
 
 
@@ -44,8 +44,15 @@ class TestConceptValueMatcher:
         assert "direct" in result.strategy
 
     def test_prefixed_match(self) -> None:
-        col = _make_profile("Type", ["PersonIdentifierType_PersonIdentifier", "PersonIdentifierType_StaffMemberIdentifier"])
-        target = _make_target("hasPersonIdentifierType", "PersonIdentification", ["PersonIdentifier", "StaffMemberIdentifier"])
+        col = _make_profile(
+            "Type",
+            ["PersonIdentifierType_PersonIdentifier", "PersonIdentifierType_StaffMemberIdentifier"],
+        )
+        target = _make_target(
+            "hasPersonIdentifierType",
+            "PersonIdentification",
+            ["PersonIdentifier", "StaffMemberIdentifier"],
+        )
 
         matcher = ConceptValueMatcher()
         result = matcher.match(col, target)

@@ -85,7 +85,6 @@ def test_import_from_top_level() -> None:
 
 
 class TestPreview:
-
     @pytest.fixture()
     def person_csv(self, tmp_path):
         path = tmp_path / "people.csv"
@@ -121,7 +120,6 @@ class TestEndToEndJourney:
         import yaml
 
         from ceds_jsonld.mapping import FieldMapper
-        from ceds_jsonld.registry import ShapeRegistry
 
         # 1. Run wizard
         wizard = MappingWizard(use_llm=False)

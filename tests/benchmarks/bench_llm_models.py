@@ -69,8 +69,7 @@ def _build_prompt(prop: dict, count: int) -> str:
     lines = [
         "You are a synthetic data generator for education data systems.",
         "",
-        f"Generate exactly {count} realistic values for the following CEDS "
-        "(Common Education Data Standards) property:",
+        f"Generate exactly {count} realistic values for the following CEDS (Common Education Data Standards) property:",
         "",
         f"Property: {prop['label']}",
     ]
@@ -80,17 +79,19 @@ def _build_prompt(prop: dict, count: int) -> str:
     if prop.get("max_length"):
         lines.append(f"Max Length: {prop['max_length']}")
     lines.append(f"Parent Class: {prop['parent_class']}")
-    lines.extend([
-        "",
-        "Context: US K-12 and postsecondary education records.",
-        "",
-        "Requirements:",
-        "- Values must be realistic and diverse",
-        "- Values must conform to the data type and format constraints",
-        "- Return ONLY the JSON object, no explanation",
-        "",
-        '{"values": ["val1", "val2", ...]}',
-    ])
+    lines.extend(
+        [
+            "",
+            "Context: US K-12 and postsecondary education records.",
+            "",
+            "Requirements:",
+            "- Values must be realistic and diverse",
+            "- Values must conform to the data type and format constraints",
+            "- Return ONLY the JSON object, no explanation",
+            "",
+            '{"values": ["val1", "val2", ...]}',
+        ]
+    )
     return "\n".join(lines)
 
 
@@ -161,7 +162,9 @@ def bench_transformers(models: list[str], count: int) -> list[dict]:
 
         tokenizer = AutoTokenizer.from_pretrained(model_id)
         model = AutoModelForCausalLM.from_pretrained(
-            model_id, torch_dtype=dtype, device_map="auto",
+            model_id,
+            torch_dtype=dtype,
+            device_map="auto",
         )
 
         if device == "cuda":
@@ -176,7 +179,9 @@ def bench_transformers(models: list[str], count: int) -> list[dict]:
             template_kwargs = {"return_tensors": "pt", "add_generation_prompt": True}
             try:
                 inputs = tokenizer.apply_chat_template(
-                    messages, enable_thinking=False, **template_kwargs,
+                    messages,
+                    enable_thinking=False,
+                    **template_kwargs,
                 )
             except TypeError:
                 inputs = tokenizer.apply_chat_template(messages, **template_kwargs)
@@ -196,7 +201,7 @@ def bench_transformers(models: list[str], count: int) -> list[dict]:
             new_tokens = output.shape[1] - inputs.shape[1]
             tps = new_tokens / elapsed if elapsed > 0 else 0
 
-            raw = tokenizer.decode(output[0][inputs.shape[1]:], skip_special_tokens=True)
+            raw = tokenizer.decode(output[0][inputs.shape[1] :], skip_special_tokens=True)
             values = _parse_values(raw)
 
             prop_result = {
@@ -316,21 +321,14 @@ def _write_report(results: list[dict], output: Path, count: int) -> None:
         div = statistics.mean(p["diversity"] for p in props)
         tps = statistics.mean(p["tokens_per_sec"] for p in props)
         vram = r.get("peak_vram_mb", "N/A")
-        lines.append(
-            f"| {r['model']} | {valid}/{len(props)} | "
-            f"{fmt:.0%} | {div:.0%} | {tps:.1f} | {vram} |"
-        )
+        lines.append(f"| {r['model']} | {valid}/{len(props)} | {fmt:.0%} | {div:.0%} | {tps:.1f} | {vram} |")
 
     lines.extend(["", "## Detailed Results", ""])
 
     for r in results:
         lines.extend([f"### {r['model']}", ""])
-        lines.append(
-            "| Property | Valid JSON | Count | Format Rate | Diversity | tok/s | Time (s) |"
-        )
-        lines.append(
-            "|----------|----------|-------|------------|----------|------|---------|"
-        )
+        lines.append("| Property | Valid JSON | Count | Format Rate | Diversity | tok/s | Time (s) |")
+        lines.append("|----------|----------|-------|------------|----------|------|---------|")
         for p in r["properties"]:
             lines.append(
                 f"| {p['property']} | {p['json_valid']} | {p['value_count']} | "
@@ -339,21 +337,23 @@ def _write_report(results: list[dict], output: Path, count: int) -> None:
             )
         lines.append("")
 
-    lines.extend([
-        "## Methodology",
-        "",
-        "- Each model generates a pool of values for 3 representative properties.",
-        "- **JSON validity**: whether the raw output parses as `{\"values\": [...]}` or a bare array.",
-        "- **Format rate**: fraction of values matching expected type constraints "
-        "(date → ISO 8601, string → max length, token → digits/symbols).",
-        "- **Diversity**: unique values / total values (1.0 = all unique).",
-        "- **Throughput**: new tokens per second (transformers) or estimated (Ollama).",
-        "- **VRAM**: peak GPU memory allocated (transformers only).",
-        "",
-        "## Recommendation",
-        "",
-        "See ROADMAP.md Task 1.20 for the chosen default model.",
-    ])
+    lines.extend(
+        [
+            "## Methodology",
+            "",
+            "- Each model generates a pool of values for 3 representative properties.",
+            '- **JSON validity**: whether the raw output parses as `{"values": [...]}` or a bare array.',
+            "- **Format rate**: fraction of values matching expected type constraints "
+            "(date → ISO 8601, string → max length, token → digits/symbols).",
+            "- **Diversity**: unique values / total values (1.0 = all unique).",
+            "- **Throughput**: new tokens per second (transformers) or estimated (Ollama).",
+            "- **VRAM**: peak GPU memory allocated (transformers only).",
+            "",
+            "## Recommendation",
+            "",
+            "See ROADMAP.md Task 1.20 for the chosen default model.",
+        ]
+    )
 
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text("\n".join(lines), encoding="utf-8")
@@ -364,7 +364,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Benchmark LLM models for SDG")
     parser.add_argument("--count", type=int, default=200, help="Values per property")
     parser.add_argument(
-        "--backend", choices=["transformers", "ollama"], default="transformers",
+        "--backend",
+        choices=["transformers", "ollama"],
+        default="transformers",
         help="Which backend to benchmark",
     )
     args = parser.parse_args()

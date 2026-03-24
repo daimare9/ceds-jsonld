@@ -15,7 +15,6 @@ making them directly usable with the existing Pipeline.
 from __future__ import annotations
 
 import csv
-import io
 from pathlib import Path
 from typing import Any
 
@@ -128,7 +127,9 @@ class SyntheticDataGenerator:
 
         # Build value pools for each source column
         value_pools = self._build_value_pools(
-            mapping_config, classified, shape_def.context,
+            mapping_config,
+            classified,
+            shape_def.context,
         )
 
         # Assemble rows
@@ -227,7 +228,6 @@ class SyntheticDataGenerator:
 
         # Find extension ontology files for this shape
         extension_files: list[Path] = []
-        ext_ontology = shape_def.base_dir / f"Person_Extension_Ontology.ttl"
 
         # More generically, look for any *_Extension_Ontology.ttl or *_Ontology.ttl
         for ttl_file in shape_def.base_dir.glob("*_Ontology.ttl"):
@@ -261,7 +261,7 @@ class SyntheticDataGenerator:
         for key, val in ctx.items():
             if key.startswith("@"):
                 continue
-            if isinstance(val, str) and not ":" in val.split("//", 1)[-1]:
+            if isinstance(val, str) and ":" not in val.split("//", 1)[-1]:
                 # This is a prefix definition (no colon in the path part)
                 # e.g. "ceds" -> "http://ceds.ed.gov/terms#"
                 prefixes[key] = val
@@ -393,7 +393,8 @@ class SyntheticDataGenerator:
                         )
                     else:
                         pools[source_col] = self._fallback.generate_pool(
-                            meta, count=self._pool_size,
+                            meta,
+                            count=self._pool_size,
                         )
                         _log.debug(
                             "Fallback pool created",
@@ -417,8 +418,7 @@ class SyntheticDataGenerator:
             from ceds_jsonld.sdg.llm_generator import LLMValueGenerator
         except ImportError:
             _log.warning(
-                "LLM generation requested but dependencies not installed. "
-                "Install with: pip install ceds-jsonld[sdg]"
+                "LLM generation requested but dependencies not installed. Install with: pip install ceds-jsonld[sdg]"
             )
             return None
 

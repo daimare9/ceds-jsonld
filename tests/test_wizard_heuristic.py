@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from ceds_jsonld.wizard.concept_matcher import MatchCandidate
 from ceds_jsonld.wizard.collector import TargetProperty
 from ceds_jsonld.wizard.heuristic import HeuristicMatcher
 from ceds_jsonld.wizard.profiler import ColumnProfile

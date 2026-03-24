@@ -65,7 +65,8 @@ class MatchingEngine:
             len(remaining_targets),
         )
         phase1, remaining_cols, remaining_targets = self._run_concept_phase(
-            remaining_cols, remaining_targets,
+            remaining_cols,
+            remaining_targets,
         )
         matches.extend(phase1)
         _log.info("Phase 1 resolved %d columns", len(phase1))
@@ -77,7 +78,8 @@ class MatchingEngine:
             len(remaining_targets),
         )
         phase2, remaining_cols, remaining_targets = self._run_heuristic_phase(
-            remaining_cols, remaining_targets,
+            remaining_cols,
+            remaining_targets,
         )
         matches.extend(phase2)
         _log.info("Phase 2 resolved %d columns", len(phase2))
@@ -90,7 +92,8 @@ class MatchingEngine:
                 len(remaining_targets),
             )
             phase3, remaining_cols, remaining_targets = self._run_llm_phase(
-                remaining_cols, remaining_targets,
+                remaining_cols,
+                remaining_targets,
             )
             matches.extend(phase3)
             _log.info("Phase 3 resolved %d columns", len(phase3))
@@ -146,9 +149,10 @@ class MatchingEngine:
                 if target.name in resolved_target_names:
                     continue
                 candidate = self._heuristic_matcher.score(col, target)
-                if candidate.confidence >= self._heuristic_threshold:
-                    if best is None or candidate.confidence > best.confidence:
-                        best = candidate
+                if candidate.confidence >= self._heuristic_threshold and (
+                    best is None or candidate.confidence > best.confidence
+                ):
+                    best = candidate
             if best is not None:
                 matches.append(best)
                 resolved_col_names.add(col.name)

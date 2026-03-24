@@ -222,7 +222,7 @@ class LLMMatcher:
         try:
             import httpx
 
-            from ceds_jsonld.sdg.llm_generator import DEFAULT_OLLAMA_MODEL, _OLLAMA_BASE
+            from ceds_jsonld.sdg.llm_generator import _OLLAMA_BASE, DEFAULT_OLLAMA_MODEL
 
             model = self._model or DEFAULT_OLLAMA_MODEL
             resp = httpx.post(
@@ -248,17 +248,22 @@ class LLMMatcher:
 
             tokenizer = AutoTokenizer.from_pretrained(model_name)
             model = AutoModelForCausalLM.from_pretrained(
-                model_name, torch_dtype="auto", device_map="auto",
+                model_name,
+                torch_dtype="auto",
+                device_map="auto",
             )
 
             messages = [{"role": "user", "content": prompt}]
             text = tokenizer.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=True, enable_thinking=False,
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
+                enable_thinking=False,
             )
             inputs = tokenizer([text], return_tensors="pt").to(model.device)
 
             outputs = model.generate(**inputs, max_new_tokens=2048, do_sample=False)
-            generated = outputs[0][inputs["input_ids"].shape[-1]:]
+            generated = outputs[0][inputs["input_ids"].shape[-1] :]
             return tokenizer.decode(generated, skip_special_tokens=True)
 
         except ImportError:

@@ -7,7 +7,6 @@ from ceds_jsonld.validator import FieldIssue, ValidationResult
 
 
 class TestHTMLReport:
-
     def test_generate_passing_report(self) -> None:
         result = ValidationResult(
             conforms=True,

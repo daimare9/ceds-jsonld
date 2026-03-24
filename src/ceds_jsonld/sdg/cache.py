@@ -21,9 +21,8 @@ Each cache file is a JSON document::
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 
 from ceds_jsonld.logging import get_logger
 
@@ -138,7 +137,7 @@ class ValueCache:
             "property_iri": property_iri,
             "property_label": property_label,
             "model": model,
-            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "generated_at": datetime.now(UTC).isoformat(),
             "count": len(values),
             "values": values,
         }

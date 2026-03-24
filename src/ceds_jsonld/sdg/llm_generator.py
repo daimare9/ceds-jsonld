@@ -158,10 +158,7 @@ class LLMValueGenerator:
             return
 
         self._backend = "none"
-        _log.warning(
-            "No LLM backend available. "
-            "Install torch+transformers or run Ollama for LLM generation."
-        )
+        _log.warning("No LLM backend available. Install torch+transformers or run Ollama for LLM generation.")
 
     def _check_ollama(self) -> bool:
         """Check if Ollama is reachable on localhost."""
@@ -273,7 +270,7 @@ class LLMValueGenerator:
             )
 
         response = self._hf_tokenizer.decode(
-            output[0][inputs.shape[1]:],
+            output[0][inputs.shape[1] :],
             skip_special_tokens=True,
         )
         return response
@@ -284,10 +281,7 @@ class LLMValueGenerator:
             return self._call_ollama(prompt)
         if self.backend == "transformers":
             return self._call_transformers(prompt)
-        msg = (
-            "No LLM backend available. Install 'ceds-jsonld[sdg]' for "
-            "transformers+torch, or run Ollama locally."
-        )
+        msg = "No LLM backend available. Install 'ceds-jsonld[sdg]' for transformers+torch, or run Ollama locally."
         raise RuntimeError(msg)
 
     # ------------------------------------------------------------------

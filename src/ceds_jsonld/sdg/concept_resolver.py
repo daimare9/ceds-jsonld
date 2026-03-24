@@ -16,7 +16,6 @@ per-record. The resulting value pools are cached for fast random sampling.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
 from rdflib import Graph, Namespace, URIRef
 from rdflib.namespace import OWL, RDF, RDFS, SKOS, XSD
@@ -37,15 +36,18 @@ SCHEMA = Namespace("https://schema.org/")
 DC = Namespace("http://purl.org/dc/elements/1.1/")
 
 # Structural classes that get default values (not concept schemes)
-_STRUCTURAL_CLASSES = frozenset({
-    str(CEDS["C200411"]),  # RecordStatus
-    str(CEDS["C200410"]),  # DataCollection
-})
+_STRUCTURAL_CLASSES = frozenset(
+    {
+        str(CEDS["C200411"]),  # RecordStatus
+        str(CEDS["C200410"]),  # DataCollection
+    }
+)
 
 
 # ---------------------------------------------------------------------------
 # Property metadata (used by generators)
 # ---------------------------------------------------------------------------
+
 
 class PropertyMetadata:
     """Metadata extracted for a single SHACL property.
@@ -65,9 +67,17 @@ class PropertyMetadata:
     """
 
     __slots__ = (
-        "name", "path_iri", "category", "xsd_datatype", "allowed_values",
-        "label", "description", "max_length", "text_format",
-        "parent_shape_name", "node_class",
+        "name",
+        "path_iri",
+        "category",
+        "xsd_datatype",
+        "allowed_values",
+        "label",
+        "description",
+        "max_length",
+        "text_format",
+        "parent_shape_name",
+        "node_class",
     )
 
     def __init__(
@@ -98,15 +108,13 @@ class PropertyMetadata:
         self.node_class = node_class
 
     def __repr__(self) -> str:
-        return (
-            f"PropertyMetadata(name={self.name!r}, category={self.category!r}, "
-            f"values={len(self.allowed_values)})"
-        )
+        return f"PropertyMetadata(name={self.name!r}, category={self.category!r}, values={len(self.allowed_values)})"
 
 
 # ---------------------------------------------------------------------------
 # Main resolver
 # ---------------------------------------------------------------------------
+
 
 class ConceptSchemeResolver:
     """Resolve concept scheme values from CEDS ontology files.

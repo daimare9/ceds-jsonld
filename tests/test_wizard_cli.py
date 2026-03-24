@@ -22,22 +22,38 @@ def sample_csv(tmp_path):
 
 
 class TestMapWizardCLI:
-
     def test_map_wizard_basic(self, sample_csv, tmp_path) -> None:
         runner = CliRunner()
         output = tmp_path / "mapping.yaml"
-        result = runner.invoke(cli, [
-            "map-wizard", "--input", sample_csv, "--shape", "person",
-            "--output", str(output), "--no-llm",
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "map-wizard",
+                "--input",
+                sample_csv,
+                "--shape",
+                "person",
+                "--output",
+                str(output),
+                "--no-llm",
+            ],
+        )
         assert result.exit_code == 0, result.output
         assert output.exists()
 
     def test_map_wizard_stdout(self, sample_csv) -> None:
         runner = CliRunner()
-        result = runner.invoke(cli, [
-            "map-wizard", "--input", sample_csv, "--shape", "person", "--no-llm",
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "map-wizard",
+                "--input",
+                sample_csv,
+                "--shape",
+                "person",
+                "--no-llm",
+            ],
+        )
         assert result.exit_code == 0
         assert "shape" in result.output
 

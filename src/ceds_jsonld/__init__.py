@@ -25,7 +25,6 @@ from ceds_jsonld.introspector import NodeShapeInfo, PropertyInfo, SHACLIntrospec
 from ceds_jsonld.logging import get_logger
 from ceds_jsonld.mapping import FieldMapper
 from ceds_jsonld.pipeline import Pipeline, PipelineResult
-from ceds_jsonld.wizard import MappingWizard
 from ceds_jsonld.registry import ShapeDefinition, ShapeRegistry
 from ceds_jsonld.sanitize import sanitize_iri_component, sanitize_string_value, validate_base_uri
 from ceds_jsonld.validator import (
@@ -35,8 +34,9 @@ from ceds_jsonld.validator import (
     ValidationMode,
     ValidationResult,
 )
+from ceds_jsonld.wizard import MappingWizard
 
-__version__ = "0.11.0"
+__version__ = "0.12.0"
 __all__ = [
     "APIAdapter",
     "BigQueryAdapter",

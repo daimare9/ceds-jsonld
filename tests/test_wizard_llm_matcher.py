@@ -9,20 +9,19 @@ from __future__ import annotations
 
 import json
 
-import pytest
-
+from ceds_jsonld.wizard.collector import TargetProperty
 from ceds_jsonld.wizard.llm_matcher import (
-    LLMMatcher,
     _build_mapping_prompt,
     _parse_llm_response,
     _validate_response,
 )
-from ceds_jsonld.wizard.collector import TargetProperty
 from ceds_jsonld.wizard.profiler import ColumnProfile
 
 
 def _col(
-    name: str, samples: list[str] | None = None, inferred_type: str = "string",
+    name: str,
+    samples: list[str] | None = None,
+    inferred_type: str = "string",
 ) -> ColumnProfile:
     return ColumnProfile(
         name=name,
@@ -34,7 +33,10 @@ def _col(
 
 
 def _target(
-    name: str, parent: str, label: str = "", description: str = "",
+    name: str,
+    parent: str,
+    label: str = "",
+    description: str = "",
 ) -> TargetProperty:
     return TargetProperty(
         name=name,
@@ -70,33 +72,37 @@ class TestBuildMappingPrompt:
 
 class TestParseLLMResponse:
     def test_parse_valid_json(self) -> None:
-        raw = json.dumps({
-            "mappings": [
-                {
-                    "source_column": "FIRST_NM",
-                    "target_property": "FirstName",
-                    "target_shape": "PersonName",
-                    "confidence": 0.95,
-                    "transform": None,
-                    "reason": "name match",
-                },
-            ],
-        })
+        raw = json.dumps(
+            {
+                "mappings": [
+                    {
+                        "source_column": "FIRST_NM",
+                        "target_property": "FirstName",
+                        "target_shape": "PersonName",
+                        "confidence": 0.95,
+                        "transform": None,
+                        "reason": "name match",
+                    },
+                ],
+            }
+        )
         result = _parse_llm_response(raw)
         assert len(result) == 1
         assert result[0]["source_column"] == "FIRST_NM"
 
     def test_parse_json_with_fences(self) -> None:
-        inner = json.dumps({
-            "mappings": [
-                {
-                    "source_column": "X",
-                    "target_property": "Y",
-                    "confidence": 0.8,
-                    "reason": "test",
-                },
-            ],
-        })
+        inner = json.dumps(
+            {
+                "mappings": [
+                    {
+                        "source_column": "X",
+                        "target_property": "Y",
+                        "confidence": 0.8,
+                        "reason": "test",
+                    },
+                ],
+            }
+        )
         raw = f"```json\n{inner}\n```"
         result = _parse_llm_response(raw)
         assert len(result) == 1

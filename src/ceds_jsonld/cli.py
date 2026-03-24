@@ -469,13 +469,15 @@ def _collect_properties_flat(
             extra = ", ..." if len(prop.allowed_values) > 5 else ""
             concept = ", ".join(vals) + extra
 
-        rows.append({
-            "Property": name,
-            "Sub-Shape": shape_label,
-            "Type": dtype,
-            "Required": required,
-            "Concept Scheme": concept,
-        })
+        rows.append(
+            {
+                "Property": name,
+                "Sub-Shape": shape_label,
+                "Type": dtype,
+                "Required": required,
+                "Concept Scheme": concept,
+            }
+        )
 
     for _name, child in shape.children.items():
         rows.extend(_collect_properties_flat(child, parent=child.local_name, iri_to_name=lookup))
@@ -751,19 +753,29 @@ def benchmark(shape: str, records: int, shapes_dir: str | None) -> None:
 
 @cli.command("map-wizard")
 @click.option(
-    "-i", "--input", "input_path", required=True,
-    type=click.Path(exists=True), help="Path to input data file (CSV or Excel).",
+    "-i",
+    "--input",
+    "input_path",
+    required=True,
+    type=click.Path(exists=True),
+    help="Path to input data file (CSV or Excel).",
 )
 @click.option("-s", "--shape", default=None, help="Shape name. Auto-detected if omitted.")
 @click.option(
-    "-o", "--output", "output_path", default=None,
-    type=click.Path(), help="Output YAML path. Prints to stdout if omitted.",
+    "-o",
+    "--output",
+    "output_path",
+    default=None,
+    type=click.Path(),
+    help="Output YAML path. Prints to stdout if omitted.",
 )
 @click.option("--no-llm", is_flag=True, default=False, help="Heuristic-only mode (no LLM).")
 @click.option("--threshold", type=float, default=0.4, help="Minimum confidence threshold.")
 @click.option(
-    "--shapes-dir", type=click.Path(exists=True, file_okay=False),
-    default=None, help="Additional shapes directory.",
+    "--shapes-dir",
+    type=click.Path(exists=True, file_okay=False),
+    default=None,
+    help="Additional shapes directory.",
 )
 def map_wizard(
     input_path: str,

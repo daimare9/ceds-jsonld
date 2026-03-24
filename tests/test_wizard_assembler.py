@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import yaml
-import pytest
 
 from ceds_jsonld.wizard.assembler import MappingAssembler, WizardResult
 from ceds_jsonld.wizard.concept_matcher import MatchCandidate
@@ -87,7 +86,9 @@ class TestMappingAssembler:
             base_uri="",
         )
         result = assembler.assemble(
-            matches=matches, unmapped_columns=[], unmapped_properties=[],
+            matches=matches,
+            unmapped_columns=[],
+            unmapped_properties=[],
         )
 
         parsed = yaml.safe_load(result.yaml_text)
@@ -106,10 +107,14 @@ class TestMappingAssembler:
             ),
         ]
         assembler = MappingAssembler(
-            shape_name="PersonShape", context_url="", base_uri="",
+            shape_name="PersonShape",
+            context_url="",
+            base_uri="",
         )
         result = assembler.assemble(
-            matches=matches, unmapped_columns=[], unmapped_properties=[],
+            matches=matches,
+            unmapped_columns=[],
+            unmapped_properties=[],
         )
 
         config = result.mapping_config

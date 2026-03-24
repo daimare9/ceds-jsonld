@@ -40,10 +40,7 @@ $issues_section
 </body>
 </html>""")
 
-_ISSUES_TABLE_HEADER = (
-    "<table>"
-    "<tr><th>Record</th><th>Severity</th><th>Property</th><th>Message</th></tr>"
-)
+_ISSUES_TABLE_HEADER = "<table><tr><th>Record</th><th>Severity</th><th>Property</th><th>Message</th></tr>"
 
 
 def generate_html_report(result: ValidationResult, *, shape: str = "") -> str:

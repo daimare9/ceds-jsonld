@@ -28,10 +28,10 @@ from ceds_jsonld.sdg.concept_resolver import (
 from ceds_jsonld.sdg.fallback_generators import FallbackGenerators
 from ceds_jsonld.sdg.generator import SyntheticDataGenerator
 
-
 # ------------------------------------------------------------------
 # Fixtures
 # ------------------------------------------------------------------
+
 
 @pytest.fixture(scope="module")
 def registry() -> ShapeRegistry:
@@ -63,6 +63,7 @@ def resolver():
 # ==================================================================
 # ConceptSchemeResolver
 # ==================================================================
+
 
 class TestConceptSchemeResolver:
     """Tests for ontology concept scheme resolution."""
@@ -105,23 +106,13 @@ class TestConceptSchemeResolver:
     def test_classified_has_concept_properties(self, resolver, introspector):
         """At least one property should be classified as 'concept'."""
         result = resolver.classify_shape_properties(introspector)
-        concept_count = sum(
-            1
-            for props in result.values()
-            for p in props
-            if p.category == "concept"
-        )
+        concept_count = sum(1 for props in result.values() for p in props if p.category == "concept")
         assert concept_count > 0, "Expected at least one concept property"
 
     def test_classified_has_literal_properties(self, resolver, introspector):
         """At least one property should be classified as 'literal'."""
         result = resolver.classify_shape_properties(introspector)
-        literal_count = sum(
-            1
-            for props in result.values()
-            for p in props
-            if p.category == "literal"
-        )
+        literal_count = sum(1 for props in result.values() for p in props if p.category == "literal")
         assert literal_count > 0, "Expected at least one literal property"
 
     def test_structural_classes_excluded(self, resolver, introspector):
@@ -136,36 +127,41 @@ class TestConceptSchemeResolver:
 # FallbackGenerators
 # ==================================================================
 
+
 class TestFallbackGenerators:
     """Tests for XSD-type and heuristic value generators."""
 
     def test_deterministic_with_seed(self):
         gen1 = FallbackGenerators(seed=42)
         gen2 = FallbackGenerators(seed=42)
-        meta = PropertyMetadata("FirstName", "", label="First Name",
-                                xsd_datatype="http://www.w3.org/2001/XMLSchema#string")
+        meta = PropertyMetadata(
+            "FirstName", "", label="First Name", xsd_datatype="http://www.w3.org/2001/XMLSchema#string"
+        )
         assert gen1.generate_one(meta) == gen2.generate_one(meta)
 
     def test_generate_first_name(self):
         gen = FallbackGenerators(seed=1)
-        meta = PropertyMetadata("FirstName", "", label="First Name",
-                                xsd_datatype="http://www.w3.org/2001/XMLSchema#string")
+        meta = PropertyMetadata(
+            "FirstName", "", label="First Name", xsd_datatype="http://www.w3.org/2001/XMLSchema#string"
+        )
         val = gen.generate_one(meta)
         assert isinstance(val, str)
         assert len(val) > 0
 
     def test_generate_last_name(self):
         gen = FallbackGenerators(seed=1)
-        meta = PropertyMetadata("LastOrSurname", "", label="Last or Surname",
-                                xsd_datatype="http://www.w3.org/2001/XMLSchema#string")
+        meta = PropertyMetadata(
+            "LastOrSurname", "", label="Last or Surname", xsd_datatype="http://www.w3.org/2001/XMLSchema#string"
+        )
         val = gen.generate_one(meta)
         assert isinstance(val, str)
         assert len(val) > 0
 
     def test_generate_date(self):
         gen = FallbackGenerators(seed=1)
-        meta = PropertyMetadata("Birthdate", "", label="Birthdate",
-                                xsd_datatype="http://www.w3.org/2001/XMLSchema#date")
+        meta = PropertyMetadata(
+            "Birthdate", "", label="Birthdate", xsd_datatype="http://www.w3.org/2001/XMLSchema#date"
+        )
         val = gen.generate_one(meta)
         # Must be YYYY-MM-DD
         parts = val.split("-")
@@ -174,29 +170,31 @@ class TestFallbackGenerators:
 
     def test_generate_datetime(self):
         gen = FallbackGenerators(seed=1)
-        meta = PropertyMetadata("Created", "", label="Created",
-                                xsd_datatype="http://www.w3.org/2001/XMLSchema#dateTime")
+        meta = PropertyMetadata(
+            "Created", "", label="Created", xsd_datatype="http://www.w3.org/2001/XMLSchema#dateTime"
+        )
         val = gen.generate_one(meta)
         assert "T" in val
 
     def test_generate_token(self):
         gen = FallbackGenerators(seed=1)
-        meta = PropertyMetadata("PersonIdentifier", "", label="Person Identifier",
-                                xsd_datatype="http://www.w3.org/2001/XMLSchema#token")
+        meta = PropertyMetadata(
+            "PersonIdentifier", "", label="Person Identifier", xsd_datatype="http://www.w3.org/2001/XMLSchema#token"
+        )
         val = gen.generate_one(meta)
         assert len(val) > 0
 
     def test_generate_integer(self):
         gen = FallbackGenerators(seed=1)
-        meta = PropertyMetadata("Count", "", label="Count",
-                                xsd_datatype="http://www.w3.org/2001/XMLSchema#integer")
+        meta = PropertyMetadata("Count", "", label="Count", xsd_datatype="http://www.w3.org/2001/XMLSchema#integer")
         val = gen.generate_one(meta)
         int(val)  # Should not raise
 
     def test_generate_boolean(self):
         gen = FallbackGenerators(seed=1)
-        meta = PropertyMetadata("IsActive", "", label="Is Active",
-                                xsd_datatype="http://www.w3.org/2001/XMLSchema#boolean")
+        meta = PropertyMetadata(
+            "IsActive", "", label="Is Active", xsd_datatype="http://www.w3.org/2001/XMLSchema#boolean"
+        )
         val = gen.generate_one(meta)
         assert val in ("true", "false")
 
@@ -222,6 +220,7 @@ class TestFallbackGenerators:
 # ==================================================================
 # MappingAwareAssembler
 # ==================================================================
+
 
 class TestMappingAwareAssembler:
     """Tests for flat row assembly from value pools."""
@@ -293,6 +292,7 @@ class TestMappingAwareAssembler:
 # SyntheticDataGenerator (orchestration)
 # ==================================================================
 
+
 class TestSyntheticDataGenerator:
     """Tests for the end-to-end generator orchestrator."""
 
@@ -351,6 +351,7 @@ class TestSyntheticDataGenerator:
 # Round-trip: SDG → Pipeline → JSON-LD
 # ==================================================================
 
+
 class TestRoundTrip:
     """Generate synthetic data and process it through the full pipeline."""
 
@@ -407,20 +408,21 @@ class TestValueQuality:
         rows = gen.generate("person", count=50)
         valid_sex = {"Male", "Female", "NotSelected"}
         sex_values = {row["Sex"] for row in rows}
-        assert sex_values.issubset(valid_sex), (
-            f"Sex values contain non-ontology strings: {sex_values - valid_sex}"
-        )
+        assert sex_values.issubset(valid_sex), f"Sex values contain non-ontology strings: {sex_values - valid_sex}"
 
     def test_race_values_from_ontology(self, registry):
         """RaceEthnicity column values should come from ontology concepts."""
         gen = SyntheticDataGenerator(registry, seed=42)
         rows = gen.generate("person", count=50)
         valid_race = {
-            "AmericanIndianOrAlaskaNative", "Asian",
-            "BlackOrAfricanAmerican", "DemographicRaceTwoOrMoreRaces",
+            "AmericanIndianOrAlaskaNative",
+            "Asian",
+            "BlackOrAfricanAmerican",
+            "DemographicRaceTwoOrMoreRaces",
             "HispanicOrLatinoEthnicity",
             "NativeHawaiianOrOtherPacificIslander",
-            "RaceAndEthnicityUnknown", "White",
+            "RaceAndEthnicityUnknown",
+            "White",
         }
         for row in rows:
             raw = row["RaceEthnicity"]
@@ -428,21 +430,18 @@ class TestValueQuality:
                 for val in instance.split(","):
                     val = val.strip()
                     if val:
-                        assert val in valid_race, (
-                            f"Race value '{val}' is not a valid ontology concept"
-                        )
+                        assert val in valid_race, f"Race value '{val}' is not a valid ontology concept"
 
     def test_birthdate_is_valid_iso_date(self, registry):
         """Birthdate column should contain valid ISO 8601 dates."""
         import re
+
         gen = SyntheticDataGenerator(registry, seed=42)
         rows = gen.generate("person", count=50)
         date_pattern = re.compile(r"^\d{4}-\d{2}-\d{2}$")
         for row in rows:
             bd = row["Birthdate"]
-            assert date_pattern.match(bd), (
-                f"Birthdate '{bd}' is not a valid ISO date"
-            )
+            assert date_pattern.match(bd), f"Birthdate '{bd}' is not a valid ISO date"
 
     def test_first_names_are_realistic(self, registry):
         """FirstName should come from curated name list, not random strings."""

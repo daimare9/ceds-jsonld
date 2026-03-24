@@ -10,9 +10,6 @@ from __future__ import annotations
 import random
 from typing import Any
 
-from ceds_jsonld.sdg.concept_resolver import ConceptSchemeResolver, PropertyMetadata
-from ceds_jsonld.sdg.fallback_generators import FallbackGenerators
-
 
 class MappingAwareAssembler:
     """Assemble flat source rows from generated values using a mapping config.
@@ -64,7 +61,7 @@ class MappingAwareAssembler:
         row: dict[str, str] = {}
         properties = self._config.get("properties", {})
 
-        for prop_name, prop_cfg in properties.items():
+        for _prop_name, prop_cfg in properties.items():
             cardinality = prop_cfg.get("cardinality", "single")
             fields = prop_cfg.get("fields", {})
 

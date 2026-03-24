@@ -7,7 +7,7 @@ confidence annotations as YAML comments.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -116,7 +116,10 @@ class MappingAssembler:
         }
 
         yaml_text = self._build_annotated_yaml(
-            config, matches, unmapped_columns, unmapped_properties,
+            config,
+            matches,
+            unmapped_columns,
+            unmapped_properties,
         )
 
         return WizardResult(
@@ -158,7 +161,10 @@ class MappingAssembler:
         lines.append("")
 
         yaml_body = yaml.dump(
-            config, default_flow_style=False, sort_keys=False, allow_unicode=True,
+            config,
+            default_flow_style=False,
+            sort_keys=False,
+            allow_unicode=True,
         )
 
         match_by_source = {m.source_column: m for m in matches}
