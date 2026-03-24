@@ -1,5 +1,6 @@
 # K12School Shape — Declarative Field Mapping Configuration
 # Extends base Organization with K12-specific properties
+# Uses array @type: a K12School is both a K12School and an Organization
 
 shape: K12SchoolShape
 context_url: "https://cepi-dev.state.mi.us/ontology/context-k12school.json"
@@ -8,7 +9,7 @@ base_uri: "cepi:school/"
 id_source: SchoolId
 id_transform: int_clean
 
-type: K12School
+type: [K12School, Organization]
 
 properties:
   hasOrganizationTitle:

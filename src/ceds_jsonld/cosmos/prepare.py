@@ -77,7 +77,13 @@ def prepare_for_cosmos(
     if partition_value is not None:
         cosmos_doc["partitionKey"] = partition_value
     elif "@type" in doc:
-        cosmos_doc["partitionKey"] = str(doc["@type"])
+        doc_type = doc["@type"]
+        # When @type is a list (e.g. ["Organization", "K12School"]),
+        # use the first element as the partition key.
+        if isinstance(doc_type, list):
+            cosmos_doc["partitionKey"] = str(doc_type[0])
+        else:
+            cosmos_doc["partitionKey"] = str(doc_type)
     else:
         cosmos_doc["partitionKey"] = cosmos_doc["id"]
 
