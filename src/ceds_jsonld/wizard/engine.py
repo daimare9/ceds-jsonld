@@ -60,43 +60,43 @@ class MatchingEngine:
 
         # --- Phase 1: Concept-value matching ---
         _log.info(
-            "Phase 1: Concept-value matching (%d cols x %d targets)",
-            len(remaining_cols),
-            len(remaining_targets),
+            "Phase 1: Concept-value matching",
+            cols=len(remaining_cols),
+            targets=len(remaining_targets),
         )
         phase1, remaining_cols, remaining_targets = self._run_concept_phase(
             remaining_cols,
             remaining_targets,
         )
         matches.extend(phase1)
-        _log.info("Phase 1 resolved %d columns", len(phase1))
+        _log.info("Phase 1 resolved columns", count=len(phase1))
 
         # --- Phase 2: Heuristic name matching ---
         _log.info(
-            "Phase 2: Heuristic matching (%d cols x %d targets)",
-            len(remaining_cols),
-            len(remaining_targets),
+            "Phase 2: Heuristic matching",
+            cols=len(remaining_cols),
+            targets=len(remaining_targets),
         )
         phase2, remaining_cols, remaining_targets = self._run_heuristic_phase(
             remaining_cols,
             remaining_targets,
         )
         matches.extend(phase2)
-        _log.info("Phase 2 resolved %d columns", len(phase2))
+        _log.info("Phase 2 resolved columns", count=len(phase2))
 
         # --- Phase 3: LLM-assisted (optional) ---
         if self._use_llm and remaining_cols and remaining_targets:
             _log.info(
-                "Phase 3: LLM matching (%d cols x %d targets)",
-                len(remaining_cols),
-                len(remaining_targets),
+                "Phase 3: LLM matching",
+                cols=len(remaining_cols),
+                targets=len(remaining_targets),
             )
             phase3, remaining_cols, remaining_targets = self._run_llm_phase(
                 remaining_cols,
                 remaining_targets,
             )
             matches.extend(phase3)
-            _log.info("Phase 3 resolved %d columns", len(phase3))
+            _log.info("Phase 3 resolved columns", count=len(phase3))
 
         unmatched_cols = [c.name for c in remaining_cols]
         unmatched_targets = [t.name for t in remaining_targets]
