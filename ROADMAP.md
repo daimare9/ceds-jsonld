@@ -4,8 +4,8 @@
 mapping it to CEDS/CEPI ontology-backed RDF shapes, outputting conformant JSON-LD, and
 loading it into Azure Cosmos DB.
 
-**Date:** February 11, 2026
-**Current Release:** v0.10.0 (published to PyPI) · 680 tests
+**Date:** March 24, 2026
+**Current Release:** v1.0.0 (published to PyPI) · 886 tests
 
 ---
 

@@ -120,7 +120,7 @@ class ShapeMetadataCollector:
         try:
             return list(self._concept_resolver.resolve_sh_in_values(prop.allowed_values))
         except Exception:
-            _log.debug("Failed to resolve concept values for %s", prop.path)
+            _log.debug("Failed to resolve concept values", property=prop.path)
             # Fallback: extract local names from IRIs
             return [v.rsplit("/", 1)[-1].rsplit("#", 1)[-1] for v in prop.allowed_values]
 

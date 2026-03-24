@@ -151,6 +151,16 @@ class JSONLDBuilder:
                     else:
                         node[target] = value
 
+            # Recursively build nested sub-properties
+            for nested_name, nested_def in prop_def.get("properties", {}).items():
+                nested_instances = instance.get(nested_name)
+                if not nested_instances:
+                    continue
+                nested_nodes = self._build_sub_nodes(nested_instances, nested_def)
+                if not nested_nodes:
+                    continue
+                node[nested_name] = nested_nodes if len(nested_nodes) > 1 else nested_nodes[0]
+
             # Inject record status
             if prop_def.get("include_record_status") and self._record_status_template:
                 node["hasRecordStatus"] = self._copy_template(self._record_status_template)
@@ -164,7 +174,7 @@ class JSONLDBuilder:
         return nodes
 
     @staticmethod
-    def _typed_literal(value: Any, datatype: str) -> dict[str, str] | list[dict[str, str]] | None:
+    def _typed_literal(value: Any, datatype: str) -> dict[str, str] | list | str | None:
         """Wrap a value as a JSON-LD typed literal.
 
         Args:
@@ -173,19 +183,23 @@ class JSONLDBuilder:
 
         Returns:
             ``{"@type": datatype, "@value": value}``, a list of such dicts,
+            a plain string (when *datatype* is ``"xsd:string"``),
             or ``None`` if the value is ``None`` or non-finite.
         """
         if value is None:
             return None
         if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
             return None
+        is_string = datatype == "xsd:string"
         if isinstance(value, list):
-            clean = [
-                {"@type": datatype, "@value": str(v)}
+            clean: list = [
+                str(v) if is_string else {"@type": datatype, "@value": str(v)}
                 for v in value
                 if v is not None and not (isinstance(v, float) and (math.isnan(v) or math.isinf(v)))
             ]
             return clean or None
+        if is_string:
+            return str(value)
         return {"@type": datatype, "@value": str(value)}
 
     @staticmethod

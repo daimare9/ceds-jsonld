@@ -21,6 +21,22 @@ _log = get_logger(__name__)
 
 
 # ---------------------------------------------------------------------------
+# Confidence clamping
+# ---------------------------------------------------------------------------
+
+_IEEE_SPECIAL = frozenset({"nan", "inf", "-inf", "infinity", "-infinity"})
+
+
+def _clamp_confidence(value: float) -> float:
+    """Clamp a confidence value to [0.0, 1.0], treating NaN as 0.0."""
+    import math
+
+    if math.isnan(value):
+        return 0.0
+    return max(0.0, min(value, 1.0))
+
+
+# ---------------------------------------------------------------------------
 # Prompt building
 # ---------------------------------------------------------------------------
 
@@ -118,11 +134,11 @@ def _validate_response(
     for m in mappings:
         prop = m.get("target_property", "")
         if prop not in valid_properties:
-            _log.debug("Filtering hallucinated property: %s", prop)
+            _log.debug("Filtering hallucinated property", property=prop)
             continue
         transform = m.get("transform")
         if transform and transform not in valid_transforms:
-            _log.debug("Stripping hallucinated transform: %s", transform)
+            _log.debug("Stripping hallucinated transform", transform=transform)
             m["transform"] = None
         validated.append(m)
     return validated
@@ -189,7 +205,7 @@ class LLMMatcher:
                     source_column=src,
                     target_property=tgt,
                     target_shape=m.get("target_shape", ""),
-                    confidence=float(m.get("confidence", 0.8)),
+                    confidence=_clamp_confidence(float(m.get("confidence", 0.8))),
                     reasons=[m.get("reason", "LLM suggestion")],
                     strategy="llm",
                     suggested_transform=m.get("transform"),
@@ -244,7 +260,7 @@ class LLMMatcher:
             from ceds_jsonld.sdg.llm_generator import DEFAULT_MODEL
 
             model_name = self._model or DEFAULT_MODEL
-            _log.info("Loading model %s for mapping wizard...", model_name)
+            _log.info("Loading model for mapping wizard", model=model_name)
 
             tokenizer = AutoTokenizer.from_pretrained(model_name)
             model = AutoModelForCausalLM.from_pretrained(
