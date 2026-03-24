@@ -56,66 +56,71 @@ properties:
 
   hasLocation:
     type: Location
-    cardinality: multiple
-    split_on: ";"
-    fields:
-      hasAddressTypeForOrganization:
-        source: AddressTypes
-        target: hasAddressTypeForOrganization
-        optional: true
-      AddressStreetNumberAndName:
-        source: AddressStreets
-        target: AddressStreetNumberAndName
-        datatype: "xsd:string"
-        optional: true
-      AddressApartmentRoomOrSuiteNumber:
-        source: AddressApts
-        target: AddressApartmentRoomOrSuiteNumber
-        datatype: "xsd:string"
-        optional: true
-      AddressCity:
-        source: AddressCities
-        target: AddressCity
-        datatype: "xsd:string"
-        optional: true
-      hasStateAbbreviation:
-        source: AddressStates
-        target: hasStateAbbreviation
-        optional: true
-      AddressPostalCode:
-        source: AddressZips
-        target: AddressPostalCode
-        datatype: "xsd:string"
-        optional: true
-      AddressCountyName:
-        source: AddressCounties
-        target: AddressCountyName
-        datatype: "xsd:string"
-        optional: true
-      Latitude:
-        source: Latitudes
-        target: Latitude
-        datatype: "xsd:decimal"
-        transform: decimal_clean
-        optional: true
-      Longitude:
-        source: Longitudes
-        target: Longitude
-        datatype: "xsd:decimal"
-        transform: decimal_clean
-        optional: true
-      XLocation:
-        source: XLocations
-        target: XLocation
-        datatype: "xsd:decimal"
-        transform: decimal_clean
-        optional: true
-      YLocation:
-        source: YLocations
-        target: YLocation
-        datatype: "xsd:decimal"
-        transform: decimal_clean
-        optional: true
+    cardinality: single
+    fields: {}
+    properties:
+      hasLocationAddress:
+        type: LocationAddress
+        cardinality: multiple
+        split_on: ";"
+        fields:
+          hasAddressTypeForOrganization:
+            source: AddressTypes
+            target: hasAddressTypeForOrganization
+            optional: true
+          AddressStreetNumberAndName:
+            source: AddressStreets
+            target: AddressStreetNumberAndName
+            datatype: "xsd:string"
+            optional: true
+          AddressApartmentRoomOrSuiteNumber:
+            source: AddressApts
+            target: AddressApartmentRoomOrSuiteNumber
+            datatype: "xsd:string"
+            optional: true
+          AddressCity:
+            source: AddressCities
+            target: AddressCity
+            datatype: "xsd:string"
+            optional: true
+          hasStateAbbreviation:
+            source: AddressStates
+            target: hasStateAbbreviation
+            optional: true
+          AddressPostalCode:
+            source: AddressZips
+            target: AddressPostalCode
+            datatype: "xsd:string"
+            optional: true
+          AddressCountyName:
+            source: AddressCounties
+            target: AddressCountyName
+            datatype: "xsd:string"
+            optional: true
+          Latitude:
+            source: Latitudes
+            target: Latitude
+            datatype: "xsd:decimal"
+            transform: decimal_clean
+            optional: true
+          Longitude:
+            source: Longitudes
+            target: Longitude
+            datatype: "xsd:decimal"
+            transform: decimal_clean
+            optional: true
+          XLocation:
+            source: XLocations
+            target: XLocation
+            datatype: "xsd:decimal"
+            transform: decimal_clean
+            optional: true
+          YLocation:
+            source: YLocations
+            target: YLocation
+            datatype: "xsd:decimal"
+            transform: decimal_clean
+            optional: true
 
   hasOrganizationOperationalDetail:
     type: OrganizationOperationalDetail
