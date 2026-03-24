@@ -300,6 +300,12 @@ class FieldMapper:
             else:
                 instance[target] = value
 
+        # Recursively map nested properties (e.g. hasLocationAddress inside Location)
+        for nested_name, nested_def in prop_def.get("properties", {}).items():
+            nested_instances = self._map_property(raw_row, nested_name, nested_def)
+            if nested_instances:
+                instance[nested_name] = nested_instances
+
         return [instance] if instance else []
 
     def _map_multiple(
@@ -440,6 +446,12 @@ class FieldMapper:
                         value = xform_result
                     if value is not None:
                         instance[target] = value
+
+            # Recursively map nested properties within each instance
+            for nested_name, nested_def in prop_def.get("properties", {}).items():
+                nested_instances = self._map_property(raw_row, nested_name, nested_def)
+                if nested_instances:
+                    instance[nested_name] = nested_instances
 
             if instance:
                 instances.append(instance)
