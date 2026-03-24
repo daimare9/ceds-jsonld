@@ -8,10 +8,7 @@ from __future__ import annotations
 
 import math
 
-import pytest
-
 from ceds_jsonld.wizard.profiler import ColumnProfiler, _infer_type
-
 
 # ---------------------------------------------------------------------------
 # Issue #47 — NaN/Infinity type inference
@@ -56,9 +53,13 @@ class TestNaNInfinityTypeInference:
     def test_profiler_nan_column(self) -> None:
         """End-to-end: profiler should classify NaN-only column as string."""
         profiler = ColumnProfiler()
-        profiles = profiler.profile_from_dicts([
-            {"x": "NaN"}, {"x": "Infinity"}, {"x": "-Infinity"},
-        ])
+        profiles = profiler.profile_from_dicts(
+            [
+                {"x": "NaN"},
+                {"x": "Infinity"},
+                {"x": "-Infinity"},
+            ]
+        )
         assert profiles[0].inferred_type == "string"
 
 
@@ -71,8 +72,6 @@ class TestLLMConfidenceClamping:
     """LLM confidence values must be clamped to [0.0, 1.0]."""
 
     def test_overflow_confidence_clamped(self) -> None:
-        from ceds_jsonld.wizard.llm_matcher import LLMMatcher
-        from ceds_jsonld.wizard.concept_matcher import MatchCandidate
 
         # We can't easily call the full LLM path, so test the clamping
         # function directly. The fix should extract a helper or inline clamp.
@@ -108,4 +107,5 @@ class TestLLMConfidenceClamping:
 def _clamp_confidence(value: float) -> float:
     """Import the clamping function from llm_matcher."""
     from ceds_jsonld.wizard.llm_matcher import _clamp_confidence as clamp
+
     return clamp(value)

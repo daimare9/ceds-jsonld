@@ -44,3 +44,4 @@ _mypy_fix_tests.txt
 test_output.txt
 test_results.txt
 test_run*.txt
+release_test_output.txt

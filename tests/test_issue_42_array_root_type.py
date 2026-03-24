@@ -7,16 +7,12 @@ values continue to produce a plain string ``@type``.
 
 from __future__ import annotations
 
-from dataclasses import replace
 from typing import Any
-
-import pytest
 
 from ceds_jsonld.builder import JSONLDBuilder
 from ceds_jsonld.cosmos.prepare import prepare_for_cosmos
 from ceds_jsonld.mapping import FieldMapper
 from ceds_jsonld.registry import ShapeDefinition
-
 
 # ---------------------------------------------------------------------------
 # Helpers — build a minimal ShapeDefinition with a given type value
