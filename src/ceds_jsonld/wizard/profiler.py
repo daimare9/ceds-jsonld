@@ -63,6 +63,12 @@ _DATE_RE = re.compile(
     r"|^\d{2}-\d{2}-\d{4}$"
 )
 _BOOL_VALUES = frozenset({"true", "false", "yes", "no", "0", "1"})
+_IEEE_SPECIAL = frozenset({"nan", "inf", "-inf", "infinity", "-infinity"})
+
+
+def _is_ieee_special(value: str) -> bool:
+    """Check if a string is an IEEE 754 special value (NaN, Infinity)."""
+    return value.strip().lower() in _IEEE_SPECIAL
 
 
 def _infer_type(values: list[str]) -> str:
@@ -84,6 +90,9 @@ def _infer_type(values: list[str]) -> str:
     try:
         for v in values:
             float(v.strip())
+        # If ALL values are IEEE 754 specials, classify as string
+        if all(_is_ieee_special(v) for v in values):
+            return "string"
         return "float"
     except (ValueError, TypeError):
         pass

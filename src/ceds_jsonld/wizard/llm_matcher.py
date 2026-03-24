@@ -21,6 +21,22 @@ _log = get_logger(__name__)
 
 
 # ---------------------------------------------------------------------------
+# Confidence clamping
+# ---------------------------------------------------------------------------
+
+_IEEE_SPECIAL = frozenset({"nan", "inf", "-inf", "infinity", "-infinity"})
+
+
+def _clamp_confidence(value: float) -> float:
+    """Clamp a confidence value to [0.0, 1.0], treating NaN as 0.0."""
+    import math
+
+    if math.isnan(value):
+        return 0.0
+    return max(0.0, min(value, 1.0))
+
+
+# ---------------------------------------------------------------------------
 # Prompt building
 # ---------------------------------------------------------------------------
 
@@ -189,7 +205,7 @@ class LLMMatcher:
                     source_column=src,
                     target_property=tgt,
                     target_shape=m.get("target_shape", ""),
-                    confidence=float(m.get("confidence", 0.8)),
+                    confidence=_clamp_confidence(float(m.get("confidence", 0.8))),
                     reasons=[m.get("reason", "LLM suggestion")],
                     strategy="llm",
                     suggested_transform=m.get("transform"),
