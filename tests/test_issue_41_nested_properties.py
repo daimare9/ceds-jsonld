@@ -9,16 +9,11 @@ Closes #41.
 
 from __future__ import annotations
 
-import copy
-
-import pytest
-
 from pathlib import Path
 
 from ceds_jsonld.builder import JSONLDBuilder
 from ceds_jsonld.mapping import FieldMapper
 from ceds_jsonld.registry import ShapeDefinition, ShapeRegistry
-
 
 # ---------------------------------------------------------------------------
 # Synthetic mapping config with nested properties
@@ -309,9 +304,7 @@ class TestNestedTypedLiterals:
         """Non-string typed literals in nested shapes should stay wrapped."""
         config = _make_nested_config()
         # Add a decimal field to the nested config
-        config["properties"]["hasLocation"]["properties"]["hasLocationAddress"][
-            "fields"
-        ]["Latitude"] = {
+        config["properties"]["hasLocation"]["properties"]["hasLocationAddress"]["fields"]["Latitude"] = {
             "source": "Latitudes",
             "target": "Latitude",
             "datatype": "xsd:decimal",
@@ -417,8 +410,7 @@ class TestOrganizationShapeIntegration:
         # Verify the YAML now has nested properties
         loc_def = config["properties"]["hasLocation"]
         assert "properties" in loc_def, (
-            "Organization hasLocation should have nested 'properties' key "
-            "after YAML update for issue #41"
+            "Organization hasLocation should have nested 'properties' key after YAML update for issue #41"
         )
         assert "hasLocationAddress" in loc_def["properties"]
 

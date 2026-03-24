@@ -10,12 +10,9 @@ from __future__ import annotations
 
 from typing import Any
 
-import pytest
-
 from ceds_jsonld.builder import JSONLDBuilder
 from ceds_jsonld.mapping import FieldMapper
 from ceds_jsonld.registry import ShapeDefinition, ShapeRegistry
-
 
 # ---------------------------------------------------------------------------
 # Helpers
