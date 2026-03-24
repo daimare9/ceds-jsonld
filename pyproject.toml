@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ceds-jsonld"
-version = "0.11.0"
+version = "0.12.0"
 description = "Python library for ingesting education data, mapping to CEDS/CEPI ontology SHACL shapes, and outputting conformant JSON-LD"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -80,6 +80,8 @@ all-adapters = [
     "google-cloud-bigquery>=3.0",
     "databricks-sql-connector>=3.0",
 ]
+sdg = ["torch>=2.2", "transformers>=4.40", "huggingface-hub>=0.20"]
+sdg-ollama = ["ollama>=0.4"]
 cli = ["click>=8.1"]
 observability = ["structlog>=24.0", "tqdm>=4.60"]
 all = [
@@ -114,6 +116,10 @@ dev = [
     "sphinx>=7.0",
     "sphinx-rtd-theme>=2.0",
     "sphinx-autodoc-typehints>=2.0",
+    "torch>=2.2",
+    "transformers>=4.40",
+    "huggingface-hub>=0.20",
+    "ollama>=0.4",
 ]
 
 [project.scripts]

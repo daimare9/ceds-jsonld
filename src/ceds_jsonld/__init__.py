@@ -34,8 +34,9 @@ from ceds_jsonld.validator import (
     ValidationMode,
     ValidationResult,
 )
+from ceds_jsonld.wizard import MappingWizard
 
-__version__ = "0.11.0"
+__version__ = "0.12.0"
 __all__ = [
     "APIAdapter",
     "BigQueryAdapter",
@@ -50,6 +51,7 @@ __all__ = [
     "GoogleSheetsAdapter",
     "JSONLDBuilder",
     "FieldMapper",
+    "MappingWizard",
     "NDJSONAdapter",
     "NodeShapeInfo",
     "OneRosterAdapter",

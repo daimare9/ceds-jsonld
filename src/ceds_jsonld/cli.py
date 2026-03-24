@@ -274,6 +274,13 @@ def convert(
     default=0.01,
     help="SHACL sample rate in sample mode (default: 0.01 = 1%%).",
 )
+@click.option(
+    "--report",
+    "report_path",
+    type=click.Path(),
+    default=None,
+    help="Write an HTML validation report to this file.",
+)
 def validate(
     shape: str,
     input_path: str,
@@ -282,6 +289,7 @@ def validate(
     mode: str,
     shacl: bool,
     sample_rate: float,
+    report_path: str | None,
 ) -> None:
     """Validate data against a SHACL shape.
 
@@ -308,6 +316,13 @@ def validate(
         raise click.ClickException(str(exc)) from exc
 
     elapsed = time.perf_counter() - t0
+
+    if report_path:
+        from ceds_jsonld.report import generate_html_report
+
+        html = generate_html_report(result, shape=shape)
+        Path(report_path).write_text(html, encoding="utf-8")
+        click.echo(f"HTML report written to {report_path}")
 
     if result.conforms:
         click.secho(
@@ -347,9 +362,16 @@ def validate(
     "as_json",
     is_flag=True,
     default=False,
-    help="Output as JSON instead of human-readable text.",
+    help="Output as JSON (shorthand for --format json).",
 )
-def introspect(shacl_path: str, as_json: bool) -> None:
+@click.option(
+    "--format",
+    "fmt",
+    type=click.Choice(["text", "json", "markdown"], case_sensitive=False),
+    default=None,
+    help="Output format: text (default), json, or markdown.",
+)
+def introspect(shacl_path: str, as_json: bool, fmt: str | None) -> None:
     """Inspect a SHACL shape file and display its structure.
 
     Shows the shape tree including property names, datatypes, cardinalities,
@@ -360,17 +382,30 @@ def introspect(shacl_path: str, as_json: bool) -> None:
         ceds-jsonld introspect --shacl ontologies/person/Person_SHACL.ttl
 
         ceds-jsonld introspect --shacl Person_SHACL.ttl --json
+
+        ceds-jsonld introspect --shacl Person_SHACL.ttl --format markdown
     """
     from ceds_jsonld.introspector import SHACLIntrospector
+
+    # --json flag is shorthand for --format json
+    if as_json and fmt is None:
+        fmt = "json"
+    elif fmt is None:
+        fmt = "text"
 
     try:
         intro = SHACLIntrospector(shacl_path)
     except ShapeLoadError as exc:
         raise click.ClickException(str(exc)) from exc
 
-    if as_json:
+    if fmt == "json":
         data = intro.to_dict()
         click.echo(dumps(data, pretty=True).decode())
+    elif fmt == "markdown":
+        tree = intro.shape_tree()
+        # Try to auto-discover context for friendly name resolution
+        context = _find_sibling_context(shacl_path)
+        _print_markdown_table(tree, context)
     else:
         tree = intro.shape_tree()
         _print_shape_tree(tree, indent=0)
@@ -397,6 +432,86 @@ def _print_shape_tree(shape: Any, indent: int = 0) -> None:
 
     for _name, child in shape.children.items():
         _print_shape_tree(child, indent=indent + 1)
+
+
+def _find_sibling_context(shacl_path: str) -> dict[str, str] | None:
+    """Auto-discover a *_context.json file in the same directory as the SHACL file."""
+    import glob
+    import json as _json
+
+    parent = Path(shacl_path).parent
+    candidates = glob.glob(str(parent / "*_context.json"))
+    if not candidates:
+        return None
+    with open(candidates[0]) as f:
+        data = _json.load(f)
+    ctx = data.get("@context", data)
+    return ctx if isinstance(ctx, dict) else None
+
+
+def _collect_properties_flat(
+    shape: Any,
+    parent: str = "",
+    iri_to_name: dict[str, str] | None = None,
+) -> list[dict[str, str]]:
+    """Recursively collect properties into a flat list for markdown output."""
+    rows: list[dict[str, str]] = []
+    shape_label = parent or shape.local_name
+    lookup = iri_to_name or {}
+
+    for prop in shape.properties:
+        name = lookup.get(prop.path, prop.name or prop.path_local)
+        dtype = prop.datatype.split("#")[-1] if prop.datatype else "object"
+        required = "Yes" if prop.min_count and prop.min_count > 0 else ""
+        concept = ""
+        if prop.allowed_values:
+            vals = [v.split("/")[-1].split("#")[-1] for v in prop.allowed_values[:5]]
+            extra = ", ..." if len(prop.allowed_values) > 5 else ""
+            concept = ", ".join(vals) + extra
+
+        rows.append(
+            {
+                "Property": name,
+                "Sub-Shape": shape_label,
+                "Type": dtype,
+                "Required": required,
+                "Concept Scheme": concept,
+            }
+        )
+
+    for _name, child in shape.children.items():
+        rows.extend(_collect_properties_flat(child, parent=child.local_name, iri_to_name=lookup))
+
+    return rows
+
+
+def _print_markdown_table(
+    shape: Any,
+    context: dict[str, str] | None = None,
+) -> None:
+    """Print shape properties as a Markdown table."""
+    from ceds_jsonld.introspector import SHACLIntrospector
+
+    iri_to_name = SHACLIntrospector._build_iri_to_name(context) if context else None
+    rows = _collect_properties_flat(shape, iri_to_name=iri_to_name)
+    headers = ["Property", "Sub-Shape", "Type", "Required", "Concept Scheme"]
+
+    # Calculate column widths
+    widths = {h: len(h) for h in headers}
+    for row in rows:
+        for h in headers:
+            widths[h] = max(widths[h], len(row.get(h, "")))
+
+    # Header
+    header_line = "| " + " | ".join(h.ljust(widths[h]) for h in headers) + " |"
+    sep_line = "| " + " | ".join("-" * widths[h] for h in headers) + " |"
+    click.echo(header_line)
+    click.echo(sep_line)
+
+    # Rows
+    for row in rows:
+        line = "| " + " | ".join(row.get(h, "").ljust(widths[h]) for h in headers) + " |"
+        click.echo(line)
 
 
 # ---------------------------------------------------------------------------
@@ -629,6 +744,77 @@ def benchmark(shape: str, records: int, shapes_dir: str | None) -> None:
     click.echo("  ────────────────────────────────────────")
     click.echo(f"  Total:          {t_total:>12.3f}s  ({records / t_total:>10,.0f} rec/s)")
     click.echo(f"  Per record:     {t_total / records * 1000:>12.4f} ms")
+
+
+# ---------------------------------------------------------------------------
+# map-wizard command
+# ---------------------------------------------------------------------------
+
+
+@cli.command("map-wizard")
+@click.option(
+    "-i",
+    "--input",
+    "input_path",
+    required=True,
+    type=click.Path(exists=True),
+    help="Path to input data file (CSV or Excel).",
+)
+@click.option("-s", "--shape", default=None, help="Shape name. Auto-detected if omitted.")
+@click.option(
+    "-o",
+    "--output",
+    "output_path",
+    default=None,
+    type=click.Path(),
+    help="Output YAML path. Prints to stdout if omitted.",
+)
+@click.option("--no-llm", is_flag=True, default=False, help="Heuristic-only mode (no LLM).")
+@click.option("--threshold", type=float, default=0.4, help="Minimum confidence threshold.")
+@click.option(
+    "--shapes-dir",
+    type=click.Path(exists=True, file_okay=False),
+    default=None,
+    help="Additional shapes directory.",
+)
+def map_wizard(
+    input_path: str,
+    shape: str | None,
+    output_path: str | None,
+    no_llm: bool,
+    threshold: float,
+    shapes_dir: str | None,
+) -> None:
+    """AI-assisted mapping wizard — auto-map columns to CEDS shapes."""
+    from ceds_jsonld.wizard import MappingWizard
+
+    wizard = MappingWizard(
+        use_llm=not no_llm,
+        heuristic_threshold=threshold,
+        shapes_dir=shapes_dir,
+    )
+
+    if shape is None:
+        click.echo("Detecting best shape...")
+        detected = wizard.detect_shape(input_path)
+        if not detected:
+            click.echo("Error: Could not detect a matching shape.", err=True)
+            raise SystemExit(1)
+        shape = detected[0][0]
+        click.echo(f"Detected shape: {shape} (score: {detected[0][1]:.2f})")
+
+    result = wizard.suggest(input_path, shape=shape)
+
+    if output_path:
+        result.save(output_path)
+        click.echo(f"Mapping saved to {output_path}")
+    else:
+        click.echo(result.yaml_text)
+
+    if result.unmapped_columns:
+        click.echo(f"\nUnmapped columns: {', '.join(result.unmapped_columns)}", err=True)
+    if result.unmapped_properties:
+        click.echo(f"Unmapped properties: {', '.join(result.unmapped_properties)}", err=True)
 
 
 # ---------------------------------------------------------------------------

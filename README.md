@@ -4,7 +4,7 @@
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![CI](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml/badge.svg)](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml)
-[![Tests: 727 passed](https://img.shields.io/badge/tests-727%20passed-brightgreen.svg)](tests/)
+[![Tests: 875 passed](https://img.shields.io/badge/tests-875%20passed-brightgreen.svg)](tests/)
 [![Coverage: 88%](https://img.shields.io/badge/coverage-88%25-yellowgreen.svg)]()
 
 **Python library for converting education data into standards-compliant JSON-LD documents backed by the [CEDS ontology](https://ceds.ed.gov/).**
@@ -252,6 +252,49 @@ log = get_logger("my_app")
 log.info("pipeline.complete", records=1000, ssn="123-45-6789")
 # ssn is automatically redacted in log output
 ```
+
+### Mapping Wizard
+
+Auto-map source CSV/Excel columns to CEDS shape properties using a three-phase matching pipeline:
+concept-value matching → heuristic name matching → optional LLM-assisted resolution.
+
+```python
+from ceds_jsonld import MappingWizard
+
+wizard = MappingWizard()                        # use_llm=True by default
+result = wizard.suggest("students.csv", shape="person")
+
+# Review confidence scores
+for col, prop, score, method in result.confidence_report:
+    print(f"  {col} → {prop}  ({score:.0%} via {method})")
+
+# Save the generated YAML mapping
+result.save("person_mapping.yaml")
+
+# Auto-detect the best shape for a file
+scores = wizard.detect_shape("students.csv")
+print(scores)  # [("person", 0.85), ("organization", 0.12), ...]
+
+# Preview JSON-LD output before committing to the mapping
+docs = wizard.preview("students.csv", result, count=3)
+for doc in docs:
+    print(doc["@type"])
+```
+
+Or from the CLI:
+
+```bash
+# Specify shape explicitly
+ceds-jsonld map-wizard --input students.csv --shape person --output person_mapping.yaml
+
+# Auto-detect shape (omit --shape)
+ceds-jsonld map-wizard --input students.csv --output mapping.yaml
+
+# Heuristic-only mode (no LLM), custom confidence threshold
+ceds-jsonld map-wizard --input students.csv --shape person --no-llm --threshold 0.5
+```
+
+Pass `--no-llm` to skip the LLM phase entirely (faster, no model download required).
 
 ### Reading from Excel
 
@@ -629,6 +672,22 @@ ceds-jsonld validate -s person -i students.csv --shacl
 
 # Sample-based validation for large files
 ceds-jsonld validate -s person -i students.csv --shacl --mode sample --sample-rate 0.05
+
+# Generate an HTML validation report
+ceds-jsonld validate -s person -i students.csv --report validation_report.html
+```
+
+### AI-assisted mapping
+
+```bash
+# Auto-map columns to a CEDS shape
+ceds-jsonld map-wizard --input students.csv --shape person --output person_mapping.yaml
+
+# Auto-detect the best shape (omit --shape)
+ceds-jsonld map-wizard --input students.csv --output mapping.yaml
+
+# Heuristic-only (no LLM download required)
+ceds-jsonld map-wizard --input students.csv --shape person --no-llm
 ```
 
 ### Inspect SHACL shapes
@@ -639,6 +698,9 @@ ceds-jsonld introspect --shacl ontologies/person/Person_SHACL.ttl
 
 # JSON output
 ceds-jsonld introspect --shacl Person_SHACL.ttl --json
+
+# Markdown table (great for docs and READMEs)
+ceds-jsonld introspect --shacl Person_SHACL.ttl --format markdown
 ```
 
 ### Generate mapping templates
@@ -747,6 +809,7 @@ JSON serialization uses [orjson](https://github.com/ijl/orjson) (Rust-backed, ~1
 | 0.10.0 — Native Adapters | ✅ Complete | 6 new adapters (Sheets, Snowflake, BigQuery, Databricks, Canvas, OneRoster) + 2 SIS factory functions. **680 tests**. |
 | 0.10.1–0.10.2 — Patch Fixes | ✅ Complete | Adapter bug fixes, IRI sanitization, transform hardening. **727 tests**. |
 | 0.11.0 — Organization Shapes | ✅ Complete | 5 new shapes: Organization, LEA, K-12 School, Facility, Post-Secondary Institution. |
+| 2.0 — Mapping Wizard | ✅ Complete | AI-assisted `MappingWizard`, three-phase matching, HTML validation reports, introspect markdown. **875 tests**. |
 
 See [ROADMAP.md](ROADMAP.md) for the full plan.
 
@@ -773,6 +836,8 @@ See [ROADMAP.md](ROADMAP.md) for the full plan.
 | `observability` | structlog, tqdm | Structured logging & progress bars |
 | `validation` | pyshacl | SHACL validation |
 | `cli` | click | Command-line interface |
+| `sdg` | torch, transformers, huggingface-hub | Synthetic data generation (local LLM) |
+| `sdg-ollama` | ollama | Synthetic data generation via Ollama |
 | `all` | all of the above | Everything for production |
 | `dev` | pytest, ruff, mypy, etc. | Development and testing |
 

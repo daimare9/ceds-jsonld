@@ -153,7 +153,7 @@ auto-detected as power-user alternative. Default model: Qwen3 4B (~8 GB, BFloat1
 
 ## v2.0 — Phase 2: AI-Assisted Mapping Wizard + Quick-Wins
 
-**Status:** ✅ Research Validated with End-to-End PoC (Feb 9, 2026)
+**Status:** ✅ Complete (March 21, 2026)
 **Research:** `ResearchFiles/FEATURE1_AI_MAPPING_WIZARD_RESEARCH.md`
 
 AI-assisted wizard that reads CSV/Excel column headers and sample values, then suggests
@@ -201,14 +201,16 @@ a complete `_mapping.yaml` config — including transform recommendations and co
 
 ### Deliverables
 
-- [ ] `MappingWizard` — heuristic + LLM-assisted column→property matching
-- [ ] `ColumnProfiler`, `HeuristicMatcher`, `MatchingEngine`
-- [ ] LLM integration (reuses Phase 1 engine, zero new deps)
-- [ ] `map-wizard` CLI command with annotated YAML output
-- [ ] QW-1: `--validate-only` HTML report
-- [ ] QW-2: `introspect` Markdown table output
-- [ ] QW-3: Built-in `benchmark` command
-- [ ] Tests and docs
+- [x] `MappingWizard` — heuristic + LLM-assisted column→property matching
+- [x] `ColumnProfiler`, `HeuristicMatcher`, `MatchingEngine`
+- [x] LLM integration (reuses Phase 1 engine, zero new deps)
+- [x] `map-wizard` CLI command with annotated YAML output
+- [x] QW-1: HTML validation report (`--report` on validate command)
+- [x] QW-2: `introspect` Markdown table output (`--format markdown`)
+- [ ] QW-3: Built-in `benchmark` command (deferred to next phase)
+- [x] Tests and docs
+
+> **Phase 2 completed March 21, 2026.** Three-phase matching pipeline (concept-value → heuristic → LLM) with `MappingWizard` orchestrator, CLI integration, HTML validation reports, introspect markdown output. QW-3 benchmark command deferred.
 
 ---
 
@@ -314,4 +316,4 @@ Open questions to investigate as the project progresses:
 | **v1.0 (Phases 0–8)** | ✅ Complete | Full library: 557 tests, published to PyPI. See [README](README.md). |
 | **v0.10.0** | ✅ Complete | Native Adapters — 6 adapters + 2 factory functions. 76 new tests (680 total). |
 | **v2.0 Phase 1** | 📋 Planning | Synthetic Data Generator — concept scheme extraction + local LLM. |
-| **v2.0 Phase 2** | ✅ Research Validated | AI-Assisted Mapping Wizard — three-phase matching, 100% PoC accuracy. |
+| **v2.0 Phase 2** | ✅ Complete | AI-Assisted Mapping Wizard — three-phase matching, QW-1 HTML reports, QW-2 markdown. |
