@@ -92,29 +92,35 @@ def _encode_all(value: str) -> str:
 def sanitize_string_value(value: str) -> str:
     """Strip null bytes and other control characters from a field value.
 
-    Removes ASCII control characters (U+0000 through U+001F, except tab,
-    newline, and carriage return) that have no legitimate use in education
-    data and can cause problems in downstream systems (C-based string
-    processing, database storage, XML serialization).
+    Removes all Unicode control characters — C0 (U+0000–U+001F), DEL
+    (U+007F), and C1 (U+0080–U+009F) — except tab (U+0009), newline
+    (U+000A), and carriage return (U+000D).  These have no legitimate use
+    in education data and can cause problems in downstream systems (XML/RDF
+    serialization, HTML rendering, data interchange).
 
     Args:
         value: The raw string value from a mapped field.
 
     Returns:
-        The cleaned string with null bytes and control characters removed.
+        The cleaned string with control characters removed.
 
     Example:
         >>> sanitize_string_value("Jane\\x00Doe")
         'JaneDoe'
+        >>> sanitize_string_value("Jane\\x7fDoe")
+        'JaneDoe'
     """
-    # Remove null bytes and other problematic control characters.
-    # Preserve tab (\t=0x09), newline (\n=0x0A), carriage return (\r=0x0D).
     return value.translate(_CONTROL_CHAR_TABLE)
 
 
 #: Translation table that maps dangerous control characters to None (removal).
+#: Covers C0 (0x00–0x1F), DEL (0x7F), and C1 (0x80–0x9F).
 #: Keeps tab (0x09), newline (0x0A), and carriage return (0x0D).
-_CONTROL_CHAR_TABLE = {c: None for c in range(0x00, 0x20) if c not in (0x09, 0x0A, 0x0D)}
+_CONTROL_CHAR_TABLE: dict[int, None] = {
+    c: None
+    for c in (*range(0x00, 0x20), 0x7F, *range(0x80, 0xA0))
+    if c not in (0x09, 0x0A, 0x0D)
+}
 
 
 def validate_base_uri(base_uri: str) -> str:
