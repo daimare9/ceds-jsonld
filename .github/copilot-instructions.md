@@ -117,11 +117,17 @@ Present the phase tasks as a numbered list and get confirmation before starting.
 - Run tests **once** after a logical set of related changes — not after every micro-edit.
 - **Never re-run tests that already passed.** If the suite passed, move on.
 - **Never grep or filter pytest output.** Run `pytest` directly and read the raw output.
-  Do not pipe through `Select-String`, `grep`, or `findstr`.
+  Do not pipe through `Select-String`, `grep`, `findstr`, or `Select-Object`.
 - Tests must pass before moving to the next task.
 - Report test results with: pass count, fail count, and failure details.
 - Performance-sensitive code must include benchmark assertions.
 - **Never write fake or mock-based tests when the real dependency can be installed.** See Rule 8.
+- **Use `cls ;` before test commands** to clear stale terminal output. The shared terminal
+  accumulates history; without clearing, you will misread old failures as current ones.
+- **Set timeout ≥ 360000 (6 min) for full suite runs.** The 900+ test suite takes 3–6 min.
+  A short timeout causes `KeyboardInterrupt` that looks like real failure.
+- **When output is in a temp file, read the END.** Large output files contain the entire
+  terminal buffer. Old run results are at the top; current results are at the bottom.
 
 ### 4. Update the Roadmap Immediately on Pivots
 If the user says anything like "let's change direction", "actually let's do X instead", or "skip that":
