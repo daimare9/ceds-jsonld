@@ -36,7 +36,7 @@ from ceds_jsonld.validator import (
 )
 from ceds_jsonld.wizard import MappingWizard
 
-__version__ = "0.12.0"
+__version__ = "0.12.1"
 __all__ = [
     "APIAdapter",
     "BigQueryAdapter",

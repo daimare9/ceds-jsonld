@@ -342,7 +342,7 @@ class FallbackGenerators:
         """
         datatype = meta.xsd_datatype or f"{_XSD_NS}string"
         generator_fn = _GENERATORS.get(datatype, _generate_string)
-        return generator_fn(meta, self._rng)
+        return str(generator_fn(meta, self._rng))
 
     def generate_pool(self, meta: PropertyMetadata, count: int = 200) -> list[str]:
         """Generate a pool of values for a property.
