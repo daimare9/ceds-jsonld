@@ -231,7 +231,7 @@ class LLMMatcher:
                 timeout=120.0,
             )
             if resp.status_code == 200:
-                return resp.json().get("response", "")
+                return str(resp.json().get("response", ""))
         except Exception:
             _log.debug("Ollama not available", exc_info=True)
         return ""
@@ -264,7 +264,7 @@ class LLMMatcher:
 
             outputs = model.generate(**inputs, max_new_tokens=2048, do_sample=False)
             generated = outputs[0][inputs["input_ids"].shape[-1] :]
-            return tokenizer.decode(generated, skip_special_tokens=True)
+            return str(tokenizer.decode(generated, skip_special_tokens=True))
 
         except ImportError:
             _log.warning("transformers not available — install ceds-jsonld[sdg]")

@@ -213,7 +213,7 @@ class LLMValueGenerator:
                 "required": ["values"],
             },
         )
-        return response["message"]["content"]
+        return str(response["message"]["content"])
 
     def _call_transformers(self, prompt: str) -> str:
         """Call an in-process HuggingFace model."""
@@ -273,7 +273,7 @@ class LLMValueGenerator:
             output[0][inputs.shape[1] :],
             skip_special_tokens=True,
         )
-        return response
+        return str(response)
 
     def _call_llm(self, prompt: str) -> str:
         """Route to the appropriate backend."""

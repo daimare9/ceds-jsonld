@@ -242,7 +242,7 @@ class ConceptSchemeResolver:
         for individual in self._graph.subjects(RDF.type, class_ref):
             # Confirm it's an owl:NamedIndividual
             if (individual, RDF.type, OWL.NamedIndividual) in self._graph:
-                notation = self._get_notation(individual)
+                notation = self._get_notation(URIRef(str(individual)))
                 if notation:
                     notations.append(notation)
 
@@ -250,7 +250,7 @@ class ConceptSchemeResolver:
             # Fallback: try skos:inScheme
             for individual in self._graph.subjects(SKOS.inScheme, class_ref):
                 if (individual, RDF.type, OWL.NamedIndividual) in self._graph:
-                    notation = self._get_notation(individual)
+                    notation = self._get_notation(URIRef(str(individual)))
                     if notation:
                         notations.append(notation)
 
