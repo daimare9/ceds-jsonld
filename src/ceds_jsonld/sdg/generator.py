@@ -345,22 +345,24 @@ class SyntheticDataGenerator:
                 if source_col in pools:
                     continue  # Already generated
 
-                meta = meta_by_target.get(target)
-                if meta is None:
+                looked_up = meta_by_target.get(target)
+                if looked_up is None:
                     # Not classified (possibly structural) — use field config hints
                     meta = self._meta_from_field_config(field_name, field_cfg, prop_name)
-                elif meta.xsd_datatype is None and field_cfg.get("datatype"):
+                elif looked_up.xsd_datatype is None and field_cfg.get("datatype"):
                     # Enrich SHACL-classified meta with YAML datatype info
                     enriched = self._meta_from_field_config(field_name, field_cfg, prop_name)
                     meta = PropertyMetadata(
-                        name=meta.name,
-                        path_iri=meta.path_iri,
-                        category=meta.category,
+                        name=looked_up.name,
+                        path_iri=looked_up.path_iri,
+                        category=looked_up.category,
                         xsd_datatype=enriched.xsd_datatype,
-                        label=meta.label,
-                        parent_shape_name=meta.parent_shape_name,
-                        allowed_values=meta.allowed_values,
+                        label=looked_up.label,
+                        parent_shape_name=looked_up.parent_shape_name,
+                        allowed_values=looked_up.allowed_values,
                     )
+                else:
+                    meta = looked_up
 
                 if meta.category == "concept" and meta.allowed_values:
                     pools[source_col] = list(meta.allowed_values)

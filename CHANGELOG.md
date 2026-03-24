@@ -17,6 +17,14 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ---
 
+## [0.12.1] — 2026-03-24
+
+### Fixed
+
+- Fix 9 mypy strict type errors that broke CI quality gate (concept_resolver, generator, fallback_generators, llm_generator, llm_matcher, collector).
+
+---
+
 ## [0.12.0] — 2026-03-24
 
 ### Summary
