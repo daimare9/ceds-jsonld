@@ -2,16 +2,11 @@
 
 from __future__ import annotations
 
-import datetime
-import os
-import tempfile
-
 import pytest
 
 from ceds_jsonld import sanitize_string_value
 from ceds_jsonld.exceptions import SerializationError
 from ceds_jsonld.serializer import write_json
-
 
 # ---------------------------------------------------------------------------
 # Issue #50 — sanitize_string_value must strip DEL and C1 control characters
