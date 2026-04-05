@@ -85,11 +85,18 @@ class JSONLDBuilder:
             if not instances:
                 continue
 
-            nodes = self._build_sub_nodes(instances, prop_def)
-            if not nodes:
-                continue
-            # Single instance → unwrap from array
-            doc[prop_name] = nodes if len(nodes) > 1 else nodes[0]
+            if prop_def.get("type") == "named_individual":
+                # Concept scheme: flatten to plain string value(s)
+                values = self._flatten_named_individuals(instances, prop_def)
+                if not values:
+                    continue
+                doc[prop_name] = values if len(values) > 1 else values[0]
+            else:
+                nodes = self._build_sub_nodes(instances, prop_def)
+                if not nodes:
+                    continue
+                # Single instance → unwrap from array
+                doc[prop_name] = nodes if len(nodes) > 1 else nodes[0]
 
         return doc
 
@@ -117,6 +124,27 @@ class JSONLDBuilder:
         dc_defaults = self._config.get("data_collection_defaults")
         if dc_defaults:
             self._data_collection_template = self._build_data_collection_template(dc_defaults)
+
+    @staticmethod
+    def _flatten_named_individuals(
+        instances: list[dict[str, Any]],
+        prop_def: dict[str, Any],
+    ) -> list[str]:
+        """Extract plain string values from named-individual instances.
+
+        Named-individual / concept-scheme properties carry a single
+        concept-code value that should appear as a plain string in JSON-LD,
+        not wrapped in a typed sub-node object.
+        """
+        values: list[str] = []
+        fields = prop_def.get("fields", {})
+        for instance in instances:
+            for _fk, fdef in fields.items():
+                target = fdef.get("target", _fk)
+                if target in instance and instance[target] is not None:
+                    values.append(str(instance[target]))
+                    break  # one value per instance
+        return values
 
     def _build_sub_nodes(
         self,
@@ -190,7 +218,7 @@ class JSONLDBuilder:
             return None
         if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
             return None
-        is_string = datatype == "xsd:string"
+        is_string = datatype in {"xsd:string", "named_individual"}
         if isinstance(value, list):
             clean: list = [
                 str(v) if is_string else {"@type": datatype, "@value": str(v)}
