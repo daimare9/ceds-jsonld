@@ -17,6 +17,22 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ---
 
+## [1.0.2] — 2026-04-06
+
+### Added
+
+- **Builder** — Concept scheme / `named_individual` properties now emit plain string values
+  in JSON-LD output instead of verbose typed sub-node objects. Properties with
+  `type: named_individual` in mapping YAML produce `"hasLocale": "Locale_CityMidsize"`
+  instead of `{"@type": "Locale", "Locale": "Locale_CityMidsize"}`. Fields with
+  `datatype: named_individual` inside object properties are also flattened (#52)
+
+### Tests
+
+- 967 tests passing (up from 952 at v1.0.1)
+
+---
+
 ## [1.0.1] — 2026-03-24
 
 ### Fixed
@@ -28,6 +44,10 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
   single-prefix error messages instead of confusing nested "Failed to … Failed to …" output (#51)
 - **Wizard** — `_infer_type` in profiler now classifies all-NaN/Infinity columns as `'string'`
   instead of `'float'`, preventing downstream validation errors (#47)
+
+### Tests
+
+- 952 tests passing (up from 886 at v1.0.0)
 
 ---
 

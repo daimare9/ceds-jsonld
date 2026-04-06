@@ -4,8 +4,8 @@
 mapping it to CEDS/CEPI ontology-backed RDF shapes, outputting conformant JSON-LD, and
 loading it into Azure Cosmos DB.
 
-**Date:** March 24, 2026
-**Current Release:** v1.0.0 (published to PyPI) · 886 tests
+**Date:** March 26, 2026
+**Current Release:** v1.0.1 (published to PyPI) · 952 tests
 
 ---
 
@@ -27,8 +27,9 @@ loading it into Azure Cosmos DB.
 v1.0 shipped February 2026 after 9 phases. The library provides: Shape Registry,
 6 source adapters (CSV, Excel, Dict, NDJSON, API, Database), YAML-driven field mapping,
 high-performance JSON-LD builder (direct dict construction, 161x faster than rdflib+PyLD),
-SHACL validation (optional), Cosmos DB async bulk loader, CLI (6 commands), Sphinx docs,
-structured logging, dead-letter queue, and CI/CD via GitHub Actions.
+SHACL validation (optional), Cosmos DB async bulk loader, CLI (7 commands), Sphinx docs,
+structured logging, dead-letter queue, Synthetic Data Generator, AI-assisted Mapping Wizard,
+and CI/CD via GitHub Actions. 952 tests passing.
 
 See the [README](README.md) for current features, installation, and usage examples.
 Architectural decisions are documented in [docs/adr/](docs/adr/).
@@ -86,7 +87,7 @@ data warehouses (Snowflake, BigQuery, Databricks). All adapters follow the exist
 
 ## v2.0 — Phase 1: Synthetic Data Generator
 
-**Status:** ✅ Research Validated with End-to-End PoC (Feb 9, 2026)
+**Status:** ✅ Core Complete (March 2026) — 81 tests, 6 backlog items remain
 **Research:** `ResearchFiles/FEATURE4_SYNTHETIC_DATA_RESEARCH.md`
 **PoC Script:** `ResearchFiles/phase1_benchmarks/bench_person_jsonld_dynamic.py`
 **Target extras:** `pip install ceds-jsonld[sdg]`
@@ -116,38 +117,46 @@ auto-detected as power-user alternative. Default model: Qwen3 4B (~8 GB, BFloat1
 
 | # | Task |
 |---|------|
-| 1.1 | `ConceptSchemeResolver` — parse ontology RDF, resolve values via `sh:in` and `schema:rangeIncludes` |
-| 1.2 | `FallbackGenerators` — pure-Python generators for all XSD types + name-aware defaults |
-| 1.3 | `MappingAwareAssembler` — read mapping YAML, assemble CSV rows, pipe-delimited fields |
-| 1.4 | `SyntheticDataGenerator` — core orchestrator |
-| 1.5 | CSV + NDJSON output writers |
-| 1.6 | Round-trip integration tests (generate → Pipeline → JSON-LD → SHACL validate) |
-| 1.7 | `[sdg]` extras (`torch`, `transformers`, `huggingface-hub`) |
-| 1.8 | `OntologyMetadataExtractor` — extract labels, descriptions, constraints for prompts |
-| 1.9 | `LLMValueGenerator` — prompt building + structured output parsing |
-| 1.10 | Ollama auto-detection (prefer over in-process when available) |
-| 1.11 | File-based caching layer (`~/.ceds_jsonld/cache/`) |
-| 1.12 | Three-tier fallback logic (LLM → cache → deterministic) |
-| 1.13 | Post-generation validation (datatype constraints, date formats, numeric ranges) |
-| 1.14 | `generate-sample` CLI command |
-| 1.15 | `generate-cache` CLI command (pre-warm cache for CI) |
-| 1.16 | Ship default Person cache for zero-setup CI |
-| 1.17 | Streaming mode for 100K+ row generation |
-| 1.18 | JSON-LD output mode (generate → Pipeline → JSON-LD end-to-end) |
-| 1.19 | Benchmark suite (LLM generation, cached, 10K/100K/1M assembly) |
-| 1.20 | Model comparison (Qwen3 4B vs. Granite4 3B vs. Phi-4 Mini) |
-| 1.21 | Distribution profiles (optional YAML config for demographic distributions) |
-| 1.22 | Documentation |
+| # | Task | Status |
+|---|------|--------|
+| 1.1 | `ConceptSchemeResolver` — parse ontology RDF, resolve values via `sh:in` and `schema:rangeIncludes` | ✅ Done |
+| 1.2 | `FallbackGenerators` — pure-Python generators for all XSD types + name-aware defaults | ✅ Done |
+| 1.3 | `MappingAwareAssembler` — read mapping YAML, assemble CSV rows, pipe-delimited fields | ✅ Done |
+| 1.4 | `SyntheticDataGenerator` — core orchestrator | ✅ Done |
+| 1.5 | CSV + NDJSON output writers | ✅ Done |
+| 1.6 | Round-trip integration tests (generate → Pipeline → JSON-LD → SHACL validate) | ✅ Done |
+| 1.7 | `[sdg]` extras (`torch`, `transformers`, `huggingface-hub`) | ✅ Done |
+| 1.8 | `OntologyMetadataExtractor` — extract labels, descriptions, constraints for prompts | ✅ Done |
+| 1.9 | `LLMValueGenerator` — prompt building + structured output parsing | ✅ Done |
+| 1.10 | Ollama auto-detection (prefer over in-process when available) | ✅ Done |
+| 1.11 | File-based caching layer (`~/.ceds_jsonld/cache/`) | ✅ Done |
+| 1.12 | Three-tier fallback logic (LLM → cache → deterministic) | ✅ Done |
+| 1.13 | Post-generation validation (datatype constraints, date formats, numeric ranges) | ✅ Done |
+| 1.14 | `generate-sample` CLI command | Backlog |
+| 1.15 | `generate-cache` CLI command (pre-warm cache for CI) | Backlog |
+| 1.16 | Ship default Person cache for zero-setup CI | Backlog |
+| 1.17 | Streaming mode for 100K+ row generation | Backlog |
+| 1.18 | JSON-LD output mode (generate → Pipeline → JSON-LD end-to-end) | Backlog |
+| 1.19 | Benchmark suite (LLM generation, cached, 10K/100K/1M assembly) | ✅ Done |
+| 1.20 | Model comparison (Qwen3 4B vs. Granite4 3B vs. Phi-4 Mini) | ✅ Done |
+| 1.21 | Distribution profiles (optional YAML config for demographic distributions) | Backlog |
+| 1.22 | Documentation | ✅ Partial (README extras documented; user guide pending) |
 
 ### Deliverables
 
-- [ ] `ConceptSchemeResolver` + `FallbackGenerators` — zero-LLM synthetic data for any shape
-- [ ] `LLMValueGenerator` + `OntologyMetadataExtractor` — LLM-powered realistic literals
-- [ ] Caching layer (generate once, reuse everywhere including CI)
-- [ ] CLI commands: `generate-sample`, `generate-cache`
-- [ ] `[sdg]` extras group in `pyproject.toml`
-- [ ] Round-trip tests + benchmarks
-- [ ] Docs: user guide, API reference, README section
+- [x] `ConceptSchemeResolver` + `FallbackGenerators` — zero-LLM synthetic data for any shape
+- [x] `LLMValueGenerator` + `OntologyMetadataExtractor` — LLM-powered realistic literals
+- [x] Caching layer (generate once, reuse everywhere including CI)
+- [ ] CLI commands: `generate-sample`, `generate-cache` (backlog)
+- [x] `[sdg]` extras group in `pyproject.toml`
+- [x] Round-trip tests + benchmarks (81 tests)
+- [ ] Docs: user guide, API reference, README section (partial — extras documented)
+
+> **Phase 1 core completed March 2026.** All generator components, LLM integration,
+> caching, Ollama auto-detection, benchmark suite, and model comparison are production-ready.
+> 81 tests covering SDG modules. Remaining backlog: CLI commands (`generate-sample`,
+> `generate-cache`), streaming mode, JSON-LD end-to-end output, distribution profiles,
+> and dedicated user guide documentation.
 
 ---
 
@@ -207,10 +216,10 @@ a complete `_mapping.yaml` config — including transform recommendations and co
 - [x] `map-wizard` CLI command with annotated YAML output
 - [x] QW-1: HTML validation report (`--report` on validate command)
 - [x] QW-2: `introspect` Markdown table output (`--format markdown`)
-- [ ] QW-3: Built-in `benchmark` command (deferred to next phase)
+- [x] QW-3: Built-in `benchmark` command (`ceds-jsonld benchmark -s person -n 1000000`)
 - [x] Tests and docs
 
-> **Phase 2 completed March 21, 2026.** Three-phase matching pipeline (concept-value → heuristic → LLM) with `MappingWizard` orchestrator, CLI integration, HTML validation reports, introspect markdown output. QW-3 benchmark command deferred.
+> **Phase 2 completed March 21, 2026.** Three-phase matching pipeline (concept-value → heuristic → LLM) with `MappingWizard` orchestrator, CLI integration, HTML validation reports, introspect markdown output. QW-3 benchmark command added to CLI.
 
 ---
 
@@ -315,5 +324,6 @@ Open questions to investigate as the project progresses:
 |-------|--------|----------------|
 | **v1.0 (Phases 0–8)** | ✅ Complete | Full library: 557 tests, published to PyPI. See [README](README.md). |
 | **v0.10.0** | ✅ Complete | Native Adapters — 6 adapters + 2 factory functions. 76 new tests (680 total). |
-| **v2.0 Phase 1** | 📋 Planning | Synthetic Data Generator — concept scheme extraction + local LLM. |
-| **v2.0 Phase 2** | ✅ Complete | AI-Assisted Mapping Wizard — three-phase matching, QW-1 HTML reports, QW-2 markdown. |
+| **v2.0 Phase 1** | ✅ Core Complete | Synthetic Data Generator — 16/22 tasks done, 81 tests. 6 backlog items (CLI commands, streaming, distribution profiles). |
+| **v2.0 Phase 2** | ✅ Complete | AI-Assisted Mapping Wizard — three-phase matching, QW-1/2/3 all done. |
+| **v1.0.1** | ✅ Released | Patch: DEL/C1 sanitization (#50), serializer double-wrap (#51), wizard NaN (#47). 952 tests. |
