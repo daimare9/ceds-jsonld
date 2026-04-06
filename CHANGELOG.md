@@ -17,6 +17,17 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ---
 
+## [1.0.3] — 2026-04-06
+
+### Fixed
+
+- **CI** — Suppressed `transformers` type-stub `[misc]` error in mypy for
+  `model.generate()` call in `wizard/llm_matcher.py`; added `torch` and
+  `transformers` to mypy `ignore_missing_imports` overrides so CI and local
+  dev environments both pass without the optional SDG dependencies installed
+
+---
+
 ## [1.0.2] — 2026-04-06
 
 ### Added
