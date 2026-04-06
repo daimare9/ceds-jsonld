@@ -4,7 +4,7 @@
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![CI](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml/badge.svg)](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml)
-[![Tests: 875 passed](https://img.shields.io/badge/tests-875%20passed-brightgreen.svg)](tests/)
+[![Tests: 952 passed](https://img.shields.io/badge/tests-952%20passed-brightgreen.svg)](tests/)
 [![Coverage: 88%](https://img.shields.io/badge/coverage-88%25-yellowgreen.svg)]()
 
 **Python library for converting education data into standards-compliant JSON-LD documents backed by the [CEDS ontology](https://ceds.ed.gov/).**
@@ -809,7 +809,10 @@ JSON serialization uses [orjson](https://github.com/ijl/orjson) (Rust-backed, ~1
 | 0.10.0 — Native Adapters | ✅ Complete | 6 new adapters (Sheets, Snowflake, BigQuery, Databricks, Canvas, OneRoster) + 2 SIS factory functions. **680 tests**. |
 | 0.10.1–0.10.2 — Patch Fixes | ✅ Complete | Adapter bug fixes, IRI sanitization, transform hardening. **727 tests**. |
 | 0.11.0 — Organization Shapes | ✅ Complete | 5 new shapes: Organization, LEA, K-12 School, Facility, Post-Secondary Institution. |
-| 2.0 — Mapping Wizard | ✅ Complete | AI-assisted `MappingWizard`, three-phase matching, HTML validation reports, introspect markdown. **875 tests**. |
+| 2.0 — Mapping Wizard | ✅ Complete | AI-assisted `MappingWizard`, three-phase matching, HTML validation reports, introspect markdown, benchmark CLI. **875 tests**. |
+| 2.0 — Synthetic Data Generator | ✅ Core Complete | `SyntheticDataGenerator`, concept scheme resolution, LLM + Ollama + deterministic fallback, caching, model comparison benchmarks. **81 SDG tests**. |
+| 1.0.0 | ✅ Released | First major release. All core features production-ready. **886 tests**. |
+| 1.0.1 | ✅ Released | Patch: DEL/C1 sanitization (#50), serializer double-wrap (#51), wizard NaN (#47). **952 tests**. |
 
 See [ROADMAP.md](ROADMAP.md) for the full plan.
 
