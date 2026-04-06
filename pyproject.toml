@@ -177,6 +177,10 @@ module = [
     "google.cloud.*",
     "google.oauth2.*",
     "databricks.*",
+    "torch",
+    "torch.*",
+    "transformers",
+    "transformers.*",
 ]
 ignore_missing_imports = true
 
