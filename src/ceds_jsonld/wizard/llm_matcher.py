@@ -278,7 +278,7 @@ class LLMMatcher:
             )
             inputs = tokenizer([text], return_tensors="pt").to(model.device)
 
-            outputs = model.generate(**inputs, max_new_tokens=2048, do_sample=False)
+            outputs = model.generate(**inputs, max_new_tokens=2048, do_sample=False)  # type: ignore[misc]
             generated = outputs[0][inputs["input_ids"].shape[-1] :]
             return str(tokenizer.decode(generated, skip_special_tokens=True))
 
