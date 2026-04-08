@@ -17,6 +17,17 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ---
 
+## [1.1.1] — 2026-04-08
+
+### Fixed
+
+- **mypy**: Added `pyarrow` / `pyarrow.*` to `ignore_missing_imports` overrides
+  to resolve CI `import-untyped` errors.
+- **mypy**: Cast `metadata.num_rows` to `int` in `ParquetAdapter.count()` to
+  satisfy `no-any-return` check.
+
+---
+
 ## [1.1.0] — 2026-04-08
 
 ### Added
