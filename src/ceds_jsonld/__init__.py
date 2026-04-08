@@ -14,6 +14,7 @@ from ceds_jsonld.adapters import (
     GoogleSheetsAdapter,
     NDJSONAdapter,
     OneRosterAdapter,
+    ParquetAdapter,
     SnowflakeAdapter,
     SourceAdapter,
     blackbaud_adapter,
@@ -36,7 +37,7 @@ from ceds_jsonld.validator import (
 )
 from ceds_jsonld.wizard import MappingWizard
 
-__version__ = "1.0.4"
+__version__ = "1.1.0"
 __all__ = [
     "APIAdapter",
     "BigQueryAdapter",
@@ -55,6 +56,7 @@ __all__ = [
     "NDJSONAdapter",
     "NodeShapeInfo",
     "OneRosterAdapter",
+    "ParquetAdapter",
     "Pipeline",
     "PipelineResult",
     "PreBuildValidator",

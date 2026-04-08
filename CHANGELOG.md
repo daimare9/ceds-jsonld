@@ -17,6 +17,21 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ---
 
+## [1.1.0] — 2026-04-08
+
+### Added
+
+- **ParquetAdapter** — New source adapter for reading Apache Parquet files.
+  Supports column selection, row-group-aware batching via `read_batch()`, and
+  metadata-only row counting via `count()`. `pyarrow` is now a core dependency.
+  Importable from `ceds_jsonld` directly.
+
+### Tests
+
+- 976 tests passing (up from 967 at v1.0.3)
+
+---
+
 ## [1.0.4] — 2026-04-08
 
 ### Changed

@@ -23,6 +23,7 @@ from ceds_jsonld.adapters import (
     DictAdapter,
     ExcelAdapter,
     NDJSONAdapter,
+    ParquetAdapter,
     SourceAdapter,
 )
 from ceds_jsonld.exceptions import AdapterError
@@ -316,6 +317,105 @@ class TestNDJSONAdapter:
     def test_file_not_found(self, tmp_path: Path) -> None:
         with pytest.raises(AdapterError, match="not found"):
             NDJSONAdapter(tmp_path / "nope.ndjson")
+
+
+# =====================================================================
+# ParquetAdapter — real Parquet files via pyarrow
+# =====================================================================
+
+
+@pytest.fixture()
+def parquet_path(tmp_path: Path) -> Path:
+    """Real Parquet file created by pyarrow."""
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    table = pa.table(
+        {
+            "FirstName": ["Alice", "Bob", "Carol"],
+            "LastName": ["Smith", "Jones", "Lee"],
+            "Age": ["30", "25", "42"],
+        }
+    )
+    p = tmp_path / "test.parquet"
+    pq.write_table(table, p)
+    return p
+
+
+@pytest.fixture()
+def parquet_with_nulls(tmp_path: Path) -> Path:
+    """Parquet file with null values."""
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    table = pa.table(
+        {
+            "Name": ["Alice", None],
+            "Value": [None, "42"],
+        }
+    )
+    p = tmp_path / "nulls.parquet"
+    pq.write_table(table, p)
+    return p
+
+
+@pytest.fixture()
+def parquet_multi_row_group(tmp_path: Path) -> Path:
+    """Parquet file with multiple row groups for batching tests."""
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    p = tmp_path / "multi_rg.parquet"
+    writer = pq.ParquetWriter(p, pa.schema([("id", pa.int64()), ("val", pa.string())]))
+    for i in range(3):
+        table = pa.table({"id": [i * 2, i * 2 + 1], "val": [f"a{i * 2}", f"a{i * 2 + 1}"]})
+        writer.write_table(table)
+    writer.close()
+    return p
+
+
+class TestParquetAdapter:
+    """Parquet adapter with real .parquet files created by pyarrow."""
+
+    def test_read_all_rows(self, parquet_path: Path) -> None:
+        rows = list(ParquetAdapter(parquet_path).read())
+        assert len(rows) == 3
+        assert rows[0]["FirstName"] == "Alice"
+        assert rows[2]["LastName"] == "Lee"
+
+    def test_values_are_strings(self, parquet_path: Path) -> None:
+        rows = list(ParquetAdapter(parquet_path).read())
+        assert rows[0]["Age"] == "30"
+
+    def test_count(self, parquet_path: Path) -> None:
+        assert ParquetAdapter(parquet_path).count() == 3
+
+    def test_column_selection(self, parquet_path: Path) -> None:
+        rows = list(ParquetAdapter(parquet_path, columns=["FirstName"]).read())
+        assert len(rows) == 3
+        assert set(rows[0].keys()) == {"FirstName"}
+
+    def test_nan_replaced_with_empty_string(self, parquet_with_nulls: Path) -> None:
+        rows = list(ParquetAdapter(parquet_with_nulls).read())
+        assert rows[0]["Value"] == ""
+        assert rows[1]["Name"] == ""
+
+    def test_file_not_found(self, tmp_path: Path) -> None:
+        with pytest.raises(AdapterError, match="not found"):
+            ParquetAdapter(tmp_path / "nope.parquet")
+
+    def test_read_batch(self, parquet_path: Path) -> None:
+        batches = list(ParquetAdapter(parquet_path).read_batch(batch_size=2))
+        total = sum(len(b) for b in batches)
+        assert total == 3
+
+    def test_read_batch_multi_row_group(self, parquet_multi_row_group: Path) -> None:
+        batches = list(ParquetAdapter(parquet_multi_row_group).read_batch(batch_size=4))
+        total = sum(len(b) for b in batches)
+        assert total == 6
+
+    def test_count_multi_row_group(self, parquet_multi_row_group: Path) -> None:
+        assert ParquetAdapter(parquet_multi_row_group).count() == 6
 
 
 # =====================================================================

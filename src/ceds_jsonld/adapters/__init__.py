@@ -14,6 +14,7 @@ from ceds_jsonld.adapters.excel_adapter import ExcelAdapter
 from ceds_jsonld.adapters.google_sheets_adapter import GoogleSheetsAdapter
 from ceds_jsonld.adapters.ndjson_adapter import NDJSONAdapter
 from ceds_jsonld.adapters.oneroster_adapter import OneRosterAdapter
+from ceds_jsonld.adapters.parquet_adapter import ParquetAdapter
 from ceds_jsonld.adapters.sis_factories import blackbaud_adapter, powerschool_adapter
 from ceds_jsonld.adapters.snowflake_adapter import SnowflakeAdapter
 
@@ -29,6 +30,7 @@ __all__ = [
     "GoogleSheetsAdapter",
     "NDJSONAdapter",
     "OneRosterAdapter",
+    "ParquetAdapter",
     "SnowflakeAdapter",
     "SourceAdapter",
     "blackbaud_adapter",
