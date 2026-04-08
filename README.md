@@ -1,7 +1,7 @@
 # ceds-jsonld
 
 [![PyPI version](https://img.shields.io/pypi/v/ceds-jsonld.svg)](https://pypi.org/project/ceds-jsonld/)
-[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![CI](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml/badge.svg)](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml)
 [![Tests: 952 passed](https://img.shields.io/badge/tests-952%20passed-brightgreen.svg)](tests/)
@@ -51,7 +51,7 @@ pip install ceds-jsonld[dev]
 pip install -e ".[dev]"
 ```
 
-Requires **Python 3.12+**.
+Requires **Python 3.11+**.
 
 ---
 

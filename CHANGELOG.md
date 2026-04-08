@@ -17,6 +17,16 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ---
 
+## [1.0.4] — 2026-04-08
+
+### Changed
+
+- **Compatibility** — Lowered minimum Python version from 3.12 to 3.11. No code
+  changes required — the codebase uses only `X | Y` union syntax (3.10+) and
+  lowercase generics (3.9+). CI matrix now tests 3.11, 3.12, and 3.13.
+
+---
+
 ## [1.0.3] — 2026-04-06
 
 ### Fixed
