@@ -104,6 +104,6 @@ class ParquetAdapter(SourceAdapter):
         """Return the total row count from Parquet metadata (no data read)."""
         try:
             metadata = pq.read_metadata(self._path)
-            return metadata.num_rows
+            return int(metadata.num_rows)
         except Exception:
             return None
