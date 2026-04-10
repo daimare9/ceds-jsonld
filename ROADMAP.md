@@ -4,8 +4,8 @@
 mapping it to CEDS/CEPI ontology-backed RDF shapes, outputting conformant JSON-LD, and
 loading it into Azure Cosmos DB.
 
-**Date:** March 26, 2026
-**Current Release:** v1.0.1 (published to PyPI) · 952 tests
+**Date:** April 10, 2026
+**Current Release:** v1.1.1 (published to PyPI) · 976 tests
 
 ---
 
@@ -15,10 +15,12 @@ loading it into Azure Cosmos DB.
 2. [v0.10.0 — Native Adapters](#v0100--native-adapters)
 3. [v2.0 — Phase 1: Synthetic Data Generator](#v20--phase-1-synthetic-data-generator)
 4. [v2.0 — Phase 2: AI-Assisted Mapping Wizard + Quick-Wins](#v20--phase-2-ai-assisted-mapping-wizard--quick-wins)
-5. [v2.0 — Future Features (Backlog)](#v20--future-features-backlog)
-6. [Risk Register](#risk-register)
-7. [Research Backlog](#research-backlog)
-8. [Summary Timeline](#summary-timeline)
+5. [v1.2.0 — Structured Validation Reporting (Tier 1)](#v120--structured-validation-reporting-tier-1)
+6. [v1.3.0 — Cosmos DB Validation Store (Tier 2)](#v130--cosmos-db-validation-store-tier-2)
+7. [v2.0 — Future Features (Backlog)](#v20--future-features-backlog)
+8. [Risk Register](#risk-register)
+9. [Research Backlog](#research-backlog)
+10. [Summary Timeline](#summary-timeline)
 
 ---
 
@@ -223,6 +225,91 @@ a complete `_mapping.yaml` config — including transform recommendations and co
 
 ---
 
+## v1.2.0 — Structured Validation Reporting (Tier 1)
+
+**Status:** 🟡 Planned
+**Plan:** `docs/plans/2026-04-10-validation-reporting.md`
+**Branch:** `feature/validation-reporting-tier1`
+**Target:** v1.2.0
+
+Extend `ValidationResult` with run metadata and structured output formats so
+validation results can be consumed by Power BI, Azure Data Explorer, or any BI
+tool — with zero Azure infrastructure required.
+
+### Scope
+
+- Add run metadata to `ValidationResult`: `run_id` (UUID), `timestamp`, `shape_name`,
+  `source_name`, `library_version`. All with defaults (fully backward compatible).
+- Add `to_dict()` serialization (JSON-compatible dict with flat issues list).
+- Add `to_dataframe()` (pandas DataFrame, one row per issue).
+- New report generators: `generate_json_report()`, `generate_csv_report()`,
+  `generate_parquet_report()` alongside existing `generate_html_report()`.
+- CLI: replace `--report <path>` with `--report-format (html|json|csv|parquet)`
+  + `--report-path <path>` on the `validate` command.
+- `Pipeline.validate()` auto-populates metadata from Pipeline context.
+
+### Tasks
+
+| # | Task | Status |
+|---|------|--------|
+| T1.1 | Add run metadata fields to `ValidationResult` dataclass | Not started |
+| T1.2 | Add `to_dict()` method | Not started |
+| T1.3 | Add `to_dataframe()` method | Not started |
+| T1.4 | Add `generate_json_report()` to `report.py` | Not started |
+| T1.5 | Add `generate_csv_report()` and `generate_parquet_report()` to `report.py` | Not started |
+| T1.6 | Wire `Pipeline.validate()` to populate metadata | Not started |
+| T1.7 | Update CLI `validate` with `--report-format` / `--report-path` | Not started |
+| T1.8 | Update exports, version bump to 1.2.0, CHANGELOG | Not started |
+
+### Deliverables
+
+- [ ] `ValidationResult.to_dict()`, `ValidationResult.to_dataframe()`
+- [ ] `generate_json_report()`, `generate_csv_report()`, `generate_parquet_report()`
+- [ ] CLI `--report-format` / `--report-path`
+- [ ] Auto-populated run metadata (run_id, timestamp, shape, source, version)
+- [ ] Tests for all new serialization paths
+
+---
+
+## v1.3.0 — Cosmos DB Validation Store (Tier 2)
+
+**Status:** 🟡 Planned (blocked by v1.2.0)
+**Plan:** `docs/plans/2026-04-10-validation-reporting.md`
+**Branch:** `feature/validation-reporting-tier2`
+**Target:** v1.3.0
+
+Persist validation results to Azure Cosmos DB so Power BI can connect directly via
+the native Cosmos DB connector for live dashboards with historical trending.
+
+### Scope
+
+- New `ValidationStore` class in `cosmos/` — wraps `CosmosLoader` for a shared
+  `validation_results` container, partitioned by `shape_name`.
+- `Pipeline.validate(persist=True)` + `cosmos_config` parameter.
+- CLI `--persist` flag with `--cosmos-endpoint`, `--cosmos-database`, `--cosmos-key`
+  options (env var support via `CEDS_COSMOS_*`).
+- Power BI connection guide (Sphinx doc page).
+
+### Tasks
+
+| # | Task | Status |
+|---|------|--------|
+| T2.1 | Create `ValidationStore` class in `cosmos/validation_store.py` | Not started |
+| T2.2 | Wire `Pipeline.validate(persist=True)` | Not started |
+| T2.3 | Add CLI `--persist` flag + Cosmos connection options | Not started |
+| T2.4 | Update exports, version bump to 1.3.0, CHANGELOG | Not started |
+| T2.5 | Write Power BI connection guide (`docs/powerbi-reporting.rst`) | Not started |
+
+### Deliverables
+
+- [ ] `ValidationStore` class with `store()`, `store_many()`, `query_by_shape()`, `query_by_run()`
+- [ ] `Pipeline.validate(persist=True)` integration
+- [ ] CLI `--persist` with env var config
+- [ ] Power BI documentation (CSV/Parquet import + Cosmos connector)
+- [ ] Tests for store, pipeline integration, CLI flag
+
+---
+
 ## v2.0 — Future Features (Backlog)
 
 Candidate features for v2.1+. Nothing committed — each needs research and prioritization.
@@ -281,6 +368,8 @@ Docker image with all extras, Helm chart / Azure Container App template.
 | R10 | LLM-generated values fail SHACL validation | Medium | Medium | Post-generation validation + deterministic fallback. |
 | R11 | SIS vendor APIs behind login walls; evolving endpoints | Medium | Medium | Build to standards (OneRoster); factory functions for vendor-specific REST APIs. |
 | R12 | Cloud warehouse connectors bring heavy transitive deps | Low | Medium | Each adapter in its own extras group; document minimum install. |
+| R13 | Large validation results (100K+ issues) exceed Cosmos 2 MB doc limit | Medium | Low | Truncate issues array or split into summary + detail documents. |
+| R14 | CLI `--report` removal breaks existing user scripts | Low | Medium | Document as breaking CLI change in CHANGELOG; Python API unaffected. |
 
 ---
 
@@ -327,3 +416,10 @@ Open questions to investigate as the project progresses:
 | **v2.0 Phase 1** | ✅ Core Complete | Synthetic Data Generator — 16/22 tasks done, 81 tests. 6 backlog items (CLI commands, streaming, distribution profiles). |
 | **v2.0 Phase 2** | ✅ Complete | AI-Assisted Mapping Wizard — three-phase matching, QW-1/2/3 all done. |
 | **v1.0.1** | ✅ Released | Patch: DEL/C1 sanitization (#50), serializer double-wrap (#51), wizard NaN (#47). 952 tests. |
+| **v1.0.2** | ✅ Released | Patch: Flatten concept scheme properties (#52). |
+| **v1.0.3** | ✅ Released | Patch: CI mypy fix for transformers stubs. |
+| **v1.0.4** | ✅ Released | Chore: Lower Python floor to 3.11. CI matrix: 3.11/3.12/3.13. |
+| **v1.1.0** | ✅ Released | Feature: ParquetAdapter with row-group batching. pyarrow now core dep. 976 tests. |
+| **v1.1.1** | ✅ Released | Patch: Fix mypy errors for pyarrow stubs. |
+| **v1.2.0** | 🟡 Planned | Structured Validation Reporting — JSON/CSV/Parquet reports, run metadata, CLI --report-format. |
+| **v1.3.0** | 🟡 Planned | Cosmos DB Validation Store — persist results, Power BI integration, CLI --persist. |
