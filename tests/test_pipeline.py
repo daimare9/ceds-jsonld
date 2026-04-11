@@ -95,9 +95,7 @@ class TestPipelineConstruction:
 class TestValidateMetadata:
     """Pipeline.validate() populates run metadata on the result."""
 
-    def test_validate_populates_run_metadata(
-        self, registry: ShapeRegistry, sample_rows: list[dict]
-    ) -> None:
+    def test_validate_populates_run_metadata(self, registry: ShapeRegistry, sample_rows: list[dict]) -> None:
         source = DictAdapter(sample_rows)
         pipeline = Pipeline(source=source, shape="person", registry=registry)
         result = pipeline.validate()

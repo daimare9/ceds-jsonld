@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 from html import escape
+from pathlib import Path
 from string import Template
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ceds_jsonld.validator import ValidationResult
@@ -126,12 +127,12 @@ def generate_csv_report(result: ValidationResult, *, shape: str = "") -> str:
     if shape and not result.shape_name:
         result = _with_shape(result, shape)
     df = result.to_dataframe()
-    return df.to_csv(index=False)
+    return str(df.to_csv(index=False))
 
 
 def generate_parquet_report(
     result: ValidationResult,
-    path: str,
+    path: str | Path,
     *,
     shape: str = "",
 ) -> None:
