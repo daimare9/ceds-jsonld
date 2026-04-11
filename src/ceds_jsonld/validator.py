@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import datetime
 import random
+import uuid
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from enum import Enum
@@ -78,6 +79,11 @@ class ValidationResult:
         issues: Per-record list of ``FieldIssue`` items, keyed by a record
             identifier (``@id``, index, etc.).
         raw_report: For SHACL validation, the textual pySHACL report.
+        run_id: Unique identifier for this validation run (auto-generated UUID).
+        timestamp: ISO-8601 timestamp of the validation run (auto-generated).
+        shape_name: Name of the shape being validated (e.g. ``"person"``).
+        source_name: Description of the data source (e.g. ``"students.csv"``).
+        library_version: Version of the ceds-jsonld library that ran the validation.
     """
 
     conforms: bool = True
@@ -86,6 +92,13 @@ class ValidationResult:
     warning_count: int = 0
     issues: dict[str, list[FieldIssue]] = field(default_factory=dict)
     raw_report: str = ""
+    run_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    timestamp: str = field(
+        default_factory=lambda: datetime.datetime.now(datetime.UTC).isoformat(),
+    )
+    shape_name: str = ""
+    source_name: str = ""
+    library_version: str = ""
 
     def add_issue(self, record_id: str, issue: FieldIssue) -> None:
         """Append an issue for a specific record.

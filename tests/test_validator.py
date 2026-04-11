@@ -131,6 +131,30 @@ class TestValidationResult:
         assert "2 errors" in s
         assert "1 warnings" in s
 
+    def test_metadata_defaults_populated(self):
+        """New metadata fields auto-populate with sensible defaults."""
+        result = ValidationResult()
+        assert result.run_id  # non-empty UUID string
+        assert result.timestamp  # non-empty ISO timestamp
+        assert result.shape_name == ""
+        assert result.source_name == ""
+        assert result.library_version == ""
+
+    def test_metadata_overrides(self):
+        """Metadata fields can be overridden at construction."""
+        result = ValidationResult(
+            run_id="custom-id",
+            timestamp="2026-04-10T00:00:00+00:00",
+            shape_name="person",
+            source_name="students.csv",
+            library_version="1.2.0",
+        )
+        assert result.run_id == "custom-id"
+        assert result.timestamp == "2026-04-10T00:00:00+00:00"
+        assert result.shape_name == "person"
+        assert result.source_name == "students.csv"
+        assert result.library_version == "1.2.0"
+
 
 # =========================================================================
 # PreBuildValidator — basic checks
