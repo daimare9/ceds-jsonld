@@ -108,3 +108,48 @@ def generate_json_report(result: ValidationResult, *, shape: str = "") -> str:
         import json
 
         return json.dumps(data, indent=2, default=str)
+
+
+def generate_csv_report(result: ValidationResult, *, shape: str = "") -> str:
+    """Serialize a ValidationResult to a CSV string.
+
+    One row per issue.  Columns: run_id, timestamp, shape_name, source_name,
+    record_id, property_path, severity, message, expected, actual.
+
+    Args:
+        result: The validation result to render.
+        shape: Shape name override (used if ``result.shape_name`` is empty).
+
+    Returns:
+        CSV-formatted string (including header row).
+    """
+    if shape and not result.shape_name:
+        result = _with_shape(result, shape)
+    df = result.to_dataframe()
+    return df.to_csv(index=False)
+
+
+def generate_parquet_report(
+    result: ValidationResult,
+    path: str,
+    *,
+    shape: str = "",
+) -> None:
+    """Write a ValidationResult to a Parquet file.
+
+    Args:
+        result: The validation result to render.
+        path: File path for the Parquet output.
+        shape: Shape name override (used if ``result.shape_name`` is empty).
+    """
+    if shape and not result.shape_name:
+        result = _with_shape(result, shape)
+    df = result.to_dataframe()
+    df.to_parquet(path, index=False, engine="pyarrow")
+
+
+def _with_shape(result: ValidationResult, shape: str) -> ValidationResult:
+    """Return *result* with ``shape_name`` set without mutating the original."""
+    from dataclasses import replace
+
+    return replace(result, shape_name=shape)
