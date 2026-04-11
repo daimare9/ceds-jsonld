@@ -277,7 +277,13 @@ class Pipeline:
         if isinstance(mode, str):
             mode = ValidationMode(mode)
 
-        result = ValidationResult()
+        from ceds_jsonld import __version__
+
+        result = ValidationResult(
+            shape_name=self._shape_name,
+            source_name=type(self._source).__name__,
+            library_version=__version__,
+        )
 
         # Phase 1: pre-build validation on raw rows
         raw_rows: list[dict[str, Any]] = []

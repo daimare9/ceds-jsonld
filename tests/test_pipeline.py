@@ -88,6 +88,27 @@ class TestPipelineConstruction:
 
 
 # =====================================================================
+# Validation metadata
+# =====================================================================
+
+
+class TestValidateMetadata:
+    """Pipeline.validate() populates run metadata on the result."""
+
+    def test_validate_populates_run_metadata(
+        self, registry: ShapeRegistry, sample_rows: list[dict]
+    ) -> None:
+        source = DictAdapter(sample_rows)
+        pipeline = Pipeline(source=source, shape="person", registry=registry)
+        result = pipeline.validate()
+        assert result.run_id  # non-empty UUID
+        assert result.timestamp  # non-empty ISO timestamp
+        assert result.shape_name == "person"
+        assert result.source_name == "DictAdapter"
+        assert result.library_version  # non-empty version string
+
+
+# =====================================================================
 # stream()
 # =====================================================================
 
