@@ -1,10 +1,10 @@
-"""Self-contained HTML validation report generator."""
+"""Self-contained validation report generators (HTML, JSON, CSV, Parquet)."""
 
 from __future__ import annotations
 
 from html import escape
 from string import Template
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from ceds_jsonld.validator import ValidationResult
@@ -81,3 +81,30 @@ def generate_html_report(result: ValidationResult, *, shape: str = "") -> str:
         warning_count=result.warning_count,
         issues_section=issues_section,
     )
+
+
+def generate_json_report(result: ValidationResult, *, shape: str = "") -> str:
+    """Serialize a ValidationResult to a JSON string.
+
+    Uses orjson if available, falls back to stdlib json.
+    Includes run metadata and flattened issues list.
+
+    Args:
+        result: The validation result to render.
+        shape: Shape name override (used if ``result.shape_name`` is empty).
+
+    Returns:
+        Pretty-printed JSON string.
+    """
+    data = result.to_dict()
+    if shape and not data.get("shape_name"):
+        data["shape_name"] = shape
+
+    try:
+        import orjson
+
+        return orjson.dumps(data, option=orjson.OPT_INDENT_2).decode()
+    except ImportError:
+        import json
+
+        return json.dumps(data, indent=2, default=str)

@@ -1,4 +1,4 @@
-"""Tests for HTML validation report generator."""
+"""Tests for validation report generators (HTML, JSON, CSV, Parquet)."""
 
 from __future__ import annotations
 
@@ -47,3 +47,31 @@ class TestHTMLReport:
         html = generate_html_report(result, shape="person")
         assert "http://" not in html
         assert "https://" not in html
+
+
+class TestJSONReport:
+    def test_generate_json_report_conforming(self) -> None:
+        """JSON report for conforming result has correct structure."""
+        import json
+
+        from ceds_jsonld.report import generate_json_report
+
+        result = ValidationResult(shape_name="person")
+        text = generate_json_report(result, shape="person")
+        data = json.loads(text)
+        assert data["conforms"] is True
+        assert data["shape_name"] == "person"
+        assert data["issues"] == []
+
+    def test_generate_json_report_with_issues(self) -> None:
+        """JSON report includes flattened issues."""
+        import json
+
+        from ceds_jsonld.report import generate_json_report
+
+        result = ValidationResult()
+        result.add_issue("rec-1", FieldIssue(property_path="a", message="bad"))
+        text = generate_json_report(result)
+        data = json.loads(text)
+        assert len(data["issues"]) == 1
+        assert data["issues"][0]["record_id"] == "rec-1"
