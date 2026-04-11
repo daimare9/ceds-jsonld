@@ -155,6 +155,27 @@ class TestValidationResult:
         assert result.source_name == "students.csv"
         assert result.library_version == "1.2.0"
 
+    def test_to_dict_conforming(self):
+        """to_dict on a conforming result includes metadata and empty issues."""
+        result = ValidationResult(shape_name="person", source_name="test.csv")
+        d = result.to_dict()
+        assert d["conforms"] is True
+        assert d["shape_name"] == "person"
+        assert d["source_name"] == "test.csv"
+        assert d["issues"] == []
+        assert "run_id" in d
+        assert "timestamp" in d
+
+    def test_to_dict_with_issues(self):
+        """to_dict flattens issues with record_id."""
+        result = ValidationResult()
+        result.add_issue("rec-1", FieldIssue(property_path="firstName", message="missing"))
+        d = result.to_dict()
+        assert len(d["issues"]) == 1
+        assert d["issues"][0]["record_id"] == "rec-1"
+        assert d["issues"][0]["property_path"] == "firstName"
+        assert d["issues"][0]["message"] == "missing"
+
 
 # =========================================================================
 # PreBuildValidator — basic checks

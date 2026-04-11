@@ -125,6 +125,37 @@ class ValidationResult:
         parts.append(f"{self.warning_count} warnings")
         return ": ".join([parts[0], ", ".join(parts[1:])])
 
+    def to_dict(self) -> dict[str, Any]:
+        """Serialize to a JSON-compatible dict.
+
+        Returns a dict with all metadata, summary counts, and a flat
+        list of issues (each issue includes its ``record_id``).
+        """
+        flat_issues: list[dict[str, Any]] = []
+        for record_id, issue_list in self.issues.items():
+            for issue in issue_list:
+                flat_issues.append({
+                    "record_id": record_id,
+                    "property_path": issue.property_path,
+                    "message": issue.message,
+                    "severity": issue.severity,
+                    "expected": issue.expected,
+                    "actual": issue.actual,
+                })
+
+        return {
+            "run_id": self.run_id,
+            "timestamp": self.timestamp,
+            "shape_name": self.shape_name,
+            "source_name": self.source_name,
+            "library_version": self.library_version,
+            "conforms": self.conforms,
+            "record_count": self.record_count,
+            "error_count": self.error_count,
+            "warning_count": self.warning_count,
+            "issues": flat_issues,
+        }
+
 
 # ---------------------------------------------------------------------------
 # Pre-build lightweight validator
