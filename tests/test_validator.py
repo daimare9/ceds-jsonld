@@ -176,6 +176,27 @@ class TestValidationResult:
         assert d["issues"][0]["property_path"] == "firstName"
         assert d["issues"][0]["message"] == "missing"
 
+    def test_to_dataframe_empty(self):
+        """to_dataframe on conforming result returns empty DataFrame with correct columns."""
+        import pandas as pd
+
+        result = ValidationResult(shape_name="person")
+        df = result.to_dataframe()
+        assert isinstance(df, pd.DataFrame)
+        assert len(df) == 0
+        assert "record_id" in df.columns
+        assert "shape_name" in df.columns
+
+    def test_to_dataframe_with_issues(self):
+        """to_dataframe returns one row per issue with correct record_id ordering."""
+        result = ValidationResult(shape_name="person")
+        result.add_issue("rec-1", FieldIssue(property_path="a", message="msg1"))
+        result.add_issue("rec-1", FieldIssue(property_path="b", message="msg2"))
+        result.add_issue("rec-2", FieldIssue(property_path="c", message="msg3"))
+        df = result.to_dataframe()
+        assert len(df) == 3
+        assert list(df["record_id"]) == ["rec-1", "rec-1", "rec-2"]
+
 
 # =========================================================================
 # PreBuildValidator — basic checks

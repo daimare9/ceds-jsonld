@@ -156,6 +156,42 @@ class ValidationResult:
             "issues": flat_issues,
         }
 
+    def to_dataframe(self) -> Any:
+        """Convert issues to a pandas DataFrame.
+
+        Returns a DataFrame with columns: run_id, timestamp, shape_name,
+        source_name, record_id, property_path, severity, message, expected,
+        actual.  If there are no issues, returns a DataFrame with those
+        columns and zero rows.
+
+        Raises:
+            ImportError: If pandas is not installed.
+        """
+        import pandas as pd
+
+        columns = [
+            "run_id", "timestamp", "shape_name", "source_name",
+            "record_id", "property_path", "severity", "message",
+            "expected", "actual",
+        ]
+        rows: list[dict[str, Any]] = []
+        for record_id, issue_list in self.issues.items():
+            for issue in issue_list:
+                rows.append({
+                    "run_id": self.run_id,
+                    "timestamp": self.timestamp,
+                    "shape_name": self.shape_name,
+                    "source_name": self.source_name,
+                    "record_id": record_id,
+                    "property_path": issue.property_path,
+                    "severity": issue.severity,
+                    "message": issue.message,
+                    "expected": str(issue.expected) if issue.expected is not None else "",
+                    "actual": str(issue.actual) if issue.actual is not None else "",
+                })
+
+        return pd.DataFrame(rows, columns=columns)
+
 
 # ---------------------------------------------------------------------------
 # Pre-build lightweight validator
