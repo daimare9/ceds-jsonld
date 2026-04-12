@@ -1,8 +1,9 @@
-"""Self-contained HTML validation report generator."""
+"""Self-contained validation report generators (HTML, JSON, CSV, Parquet)."""
 
 from __future__ import annotations
 
 from html import escape
+from pathlib import Path
 from string import Template
 from typing import TYPE_CHECKING
 
@@ -81,3 +82,75 @@ def generate_html_report(result: ValidationResult, *, shape: str = "") -> str:
         warning_count=result.warning_count,
         issues_section=issues_section,
     )
+
+
+def generate_json_report(result: ValidationResult, *, shape: str = "") -> str:
+    """Serialize a ValidationResult to a JSON string.
+
+    Uses orjson if available, falls back to stdlib json.
+    Includes run metadata and flattened issues list.
+
+    Args:
+        result: The validation result to render.
+        shape: Shape name override (used if ``result.shape_name`` is empty).
+
+    Returns:
+        Pretty-printed JSON string.
+    """
+    data = result.to_dict()
+    if shape and not data.get("shape_name"):
+        data["shape_name"] = shape
+
+    try:
+        import orjson
+
+        return orjson.dumps(data, option=orjson.OPT_INDENT_2).decode()
+    except ImportError:
+        import json
+
+        return json.dumps(data, indent=2, default=str)
+
+
+def generate_csv_report(result: ValidationResult, *, shape: str = "") -> str:
+    """Serialize a ValidationResult to a CSV string.
+
+    One row per issue.  Columns: run_id, timestamp, shape_name, source_name,
+    record_id, property_path, severity, message, expected, actual.
+
+    Args:
+        result: The validation result to render.
+        shape: Shape name override (used if ``result.shape_name`` is empty).
+
+    Returns:
+        CSV-formatted string (including header row).
+    """
+    if shape and not result.shape_name:
+        result = _with_shape(result, shape)
+    df = result.to_dataframe()
+    return str(df.to_csv(index=False))
+
+
+def generate_parquet_report(
+    result: ValidationResult,
+    path: str | Path,
+    *,
+    shape: str = "",
+) -> None:
+    """Write a ValidationResult to a Parquet file.
+
+    Args:
+        result: The validation result to render.
+        path: File path for the Parquet output.
+        shape: Shape name override (used if ``result.shape_name`` is empty).
+    """
+    if shape and not result.shape_name:
+        result = _with_shape(result, shape)
+    df = result.to_dataframe()
+    df.to_parquet(path, index=False, engine="pyarrow")
+
+
+def _with_shape(result: ValidationResult, shape: str) -> ValidationResult:
+    """Return *result* with ``shape_name`` set without mutating the original."""
+    from dataclasses import replace
+
+    return replace(result, shape_name=shape)

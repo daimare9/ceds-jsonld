@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import datetime
 import random
+import uuid
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from enum import Enum
@@ -78,6 +79,11 @@ class ValidationResult:
         issues: Per-record list of ``FieldIssue`` items, keyed by a record
             identifier (``@id``, index, etc.).
         raw_report: For SHACL validation, the textual pySHACL report.
+        run_id: Unique identifier for this validation run (auto-generated UUID).
+        timestamp: ISO-8601 timestamp of the validation run (auto-generated).
+        shape_name: Name of the shape being validated (e.g. ``"person"``).
+        source_name: Description of the data source (e.g. ``"students.csv"``).
+        library_version: Version of the ceds-jsonld library that ran the validation.
     """
 
     conforms: bool = True
@@ -86,6 +92,13 @@ class ValidationResult:
     warning_count: int = 0
     issues: dict[str, list[FieldIssue]] = field(default_factory=dict)
     raw_report: str = ""
+    run_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    timestamp: str = field(
+        default_factory=lambda: datetime.datetime.now(datetime.UTC).isoformat(),
+    )
+    shape_name: str = ""
+    source_name: str = ""
+    library_version: str = ""
 
     def add_issue(self, record_id: str, issue: FieldIssue) -> None:
         """Append an issue for a specific record.
@@ -111,6 +124,84 @@ class ValidationResult:
         parts.append(f"{self.error_count} errors")
         parts.append(f"{self.warning_count} warnings")
         return ": ".join([parts[0], ", ".join(parts[1:])])
+
+    def to_dict(self) -> dict[str, Any]:
+        """Serialize to a JSON-compatible dict.
+
+        Returns a dict with all metadata, summary counts, and a flat
+        list of issues (each issue includes its ``record_id``).
+        """
+        flat_issues: list[dict[str, Any]] = []
+        for record_id, issue_list in self.issues.items():
+            for issue in issue_list:
+                flat_issues.append(
+                    {
+                        "record_id": record_id,
+                        "property_path": issue.property_path,
+                        "message": issue.message,
+                        "severity": issue.severity,
+                        "expected": issue.expected,
+                        "actual": issue.actual,
+                    }
+                )
+
+        return {
+            "run_id": self.run_id,
+            "timestamp": self.timestamp,
+            "shape_name": self.shape_name,
+            "source_name": self.source_name,
+            "library_version": self.library_version,
+            "conforms": self.conforms,
+            "record_count": self.record_count,
+            "error_count": self.error_count,
+            "warning_count": self.warning_count,
+            "issues": flat_issues,
+        }
+
+    def to_dataframe(self) -> Any:
+        """Convert issues to a pandas DataFrame.
+
+        Returns a DataFrame with columns: run_id, timestamp, shape_name,
+        source_name, record_id, property_path, severity, message, expected,
+        actual.  If there are no issues, returns a DataFrame with those
+        columns and zero rows.
+
+        Raises:
+            ImportError: If pandas is not installed.
+        """
+        import pandas as pd
+
+        columns = [
+            "run_id",
+            "timestamp",
+            "shape_name",
+            "source_name",
+            "record_id",
+            "property_path",
+            "severity",
+            "message",
+            "expected",
+            "actual",
+        ]
+        rows: list[dict[str, Any]] = []
+        for record_id, issue_list in self.issues.items():
+            for issue in issue_list:
+                rows.append(
+                    {
+                        "run_id": self.run_id,
+                        "timestamp": self.timestamp,
+                        "shape_name": self.shape_name,
+                        "source_name": self.source_name,
+                        "record_id": record_id,
+                        "property_path": issue.property_path,
+                        "severity": issue.severity,
+                        "message": issue.message,
+                        "expected": str(issue.expected) if issue.expected is not None else "",
+                        "actual": str(issue.actual) if issue.actual is not None else "",
+                    }
+                )
+
+        return pd.DataFrame(rows, columns=columns)
 
 
 # ---------------------------------------------------------------------------

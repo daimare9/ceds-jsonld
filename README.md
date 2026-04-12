@@ -4,7 +4,7 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![CI](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml/badge.svg)](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml)
-[![Tests: 952 passed](https://img.shields.io/badge/tests-952%20passed-brightgreen.svg)](tests/)
+[![Tests: 993 passed](https://img.shields.io/badge/tests-993%20passed-brightgreen.svg)](tests/)
 [![Coverage: 88%](https://img.shields.io/badge/coverage-88%25-yellowgreen.svg)]()
 
 **Python library for converting education data into standards-compliant JSON-LD documents backed by the [CEDS ontology](https://ceds.ed.gov/).**
@@ -190,6 +190,49 @@ Three validation modes are available:
 | `"report"` | Collect all issues, never raise. Invalid rows skipped in `stream()`. |
 | `"strict"` | Raise `ValidationError` on the first failure. |
 | `"sample"` | Validate a random subset (default 1%) — ideal for large batches. |
+
+### Validation Reports
+
+Export validation results to HTML, JSON, CSV, or Parquet for dashboards, data lakes, or auditing:
+
+```python
+from ceds_jsonld import (
+    Pipeline, ShapeRegistry, CSVAdapter,
+    generate_json_report, generate_csv_report, generate_parquet_report,
+)
+from pathlib import Path
+
+registry = ShapeRegistry()
+registry.load_shape("person")
+pipeline = Pipeline(source=CSVAdapter("students.csv"), shape="person", registry=registry)
+result = pipeline.validate(mode="report")
+
+# Each result carries run metadata automatically
+print(result.run_id)           # UUID for this validation run
+print(result.timestamp)        # ISO-8601 UTC timestamp
+print(result.shape_name)       # "person"
+print(result.library_version)  # "1.2.0"
+
+# Export to JSON (uses orjson when available)
+json_str = generate_json_report(result)
+Path("report.json").write_text(json_str)
+
+# Export to CSV
+csv_str = generate_csv_report(result)
+Path("report.csv").write_text(csv_str)
+
+# Export to Parquet (great for data lake ingestion)
+generate_parquet_report(result, "report.parquet")
+
+# Work with results as a pandas DataFrame
+df = result.to_dataframe()
+print(df.columns.tolist())
+# ['run_id', 'timestamp', 'shape_name', 'source_name',
+#  'record_id', 'property_path', 'severity', 'message', 'expected', 'actual']
+
+# Or as a plain dict (for custom serialization)
+data = result.to_dict()
+```
 
 ### Stream processing (constant memory)
 
@@ -673,9 +716,14 @@ ceds-jsonld validate -s person -i students.csv --shacl
 # Sample-based validation for large files
 ceds-jsonld validate -s person -i students.csv --shacl --mode sample --sample-rate 0.05
 
-# Generate an HTML validation report
-ceds-jsonld validate -s person -i students.csv --report validation_report.html
+# Generate a validation report (html, json, csv, or parquet)
+ceds-jsonld validate -s person -i students.csv --report-format html
+ceds-jsonld validate -s person -i students.csv --report-format json --report-path results.json
+ceds-jsonld validate -s person -i students.csv --report-format csv
+ceds-jsonld validate -s person -i students.csv --report-format parquet --report-path validation.parquet
 ```
+
+When `--report-path` is omitted, the report is written to `validation_report.{format}` in the current directory.
 
 ### AI-assisted mapping
 
@@ -813,6 +861,9 @@ JSON serialization uses [orjson](https://github.com/ijl/orjson) (Rust-backed, ~1
 | 2.0 — Synthetic Data Generator | ✅ Core Complete | `SyntheticDataGenerator`, concept scheme resolution, LLM + Ollama + deterministic fallback, caching, model comparison benchmarks. **81 SDG tests**. |
 | 1.0.0 | ✅ Released | First major release. All core features production-ready. **886 tests**. |
 | 1.0.1 | ✅ Released | Patch: DEL/C1 sanitization (#50), serializer double-wrap (#51), wizard NaN (#47). **952 tests**. |
+| 1.1.0 | ✅ Released | `ParquetAdapter` for reading Parquet files. **976 tests**. |
+| 1.1.1 | ✅ Released | mypy CI fix for pyarrow imports. |
+| 1.2.0 | ✅ Released | Structured validation reports (JSON, CSV, Parquet). Run metadata on `ValidationResult`. CLI `--report-format`. **993 tests**. |
 
 See [ROADMAP.md](ROADMAP.md) for the full plan.
 

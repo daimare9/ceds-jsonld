@@ -17,6 +17,33 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ---
 
+## [1.2.0] — 2026-06-26
+
+### Added
+
+- **Structured validation reporting** — `ValidationResult` now carries run
+  metadata (`run_id`, `timestamp`, `shape_name`, `source_name`,
+  `library_version`) and exposes `to_dict()` / `to_dataframe()` for
+  programmatic access to validation results.
+- **`generate_json_report()`** — Serialize validation results to JSON (via
+  orjson with stdlib fallback).
+- **`generate_csv_report()`** — Serialize validation results to CSV string.
+- **`generate_parquet_report()`** — Write validation results to a Parquet file.
+- **CLI `--report-format` / `--report-path`** — The `validate` command now
+  accepts `--report-format {html,json,csv,parquet}` instead of the old
+  `--report` flag. When `--report-path` is omitted, a default filename is
+  generated.
+- All new report functions are importable from `ceds_jsonld` directly.
+
+### Changed
+
+- **CLI breaking change** — `ceds-jsonld validate --report <path>` is replaced
+  by `--report-format <fmt> [--report-path <path>]`.
+- `Pipeline.validate()` now populates `shape_name`, `source_name`, and
+  `library_version` on the returned `ValidationResult`.
+
+---
+
 ## [1.1.1] — 2026-04-08
 
 ### Fixed

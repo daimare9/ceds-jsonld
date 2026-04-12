@@ -16,7 +16,7 @@ loading it into Azure Cosmos DB.
 3. [v2.0 — Phase 1: Synthetic Data Generator](#v20--phase-1-synthetic-data-generator)
 4. [v2.0 — Phase 2: AI-Assisted Mapping Wizard + Quick-Wins](#v20--phase-2-ai-assisted-mapping-wizard--quick-wins)
 5. [v1.2.0 — Structured Validation Reporting (Tier 1)](#v120--structured-validation-reporting-tier-1)
-6. [v1.3.0 — Cosmos DB Validation Store (Tier 2)](#v130--cosmos-db-validation-store-tier-2)
+6. [~~v1.3.0 — Cosmos DB Validation Store (Tier 2)~~](#v130--cosmos-db-validation-store-tier-2) *(skipped)*
 7. [v2.0 — Future Features (Backlog)](#v20--future-features-backlog)
 8. [Risk Register](#risk-register)
 9. [Research Backlog](#research-backlog)
@@ -271,42 +271,12 @@ tool — with zero Azure infrastructure required.
 
 ---
 
-## v1.3.0 — Cosmos DB Validation Store (Tier 2)
+## ~~v1.3.0 — Cosmos DB Validation Store (Tier 2)~~
 
-**Status:** 🟡 Planned (blocked by v1.2.0)
-**Plan:** `docs/plans/2026-04-10-validation-reporting.md`
-**Branch:** `feature/validation-reporting-tier2`
-**Target:** v1.3.0
-
-Persist validation results to Azure Cosmos DB so Power BI can connect directly via
-the native Cosmos DB connector for live dashboards with historical trending.
-
-### Scope
-
-- New `ValidationStore` class in `cosmos/` — wraps `CosmosLoader` for a shared
-  `validation_results` container, partitioned by `shape_name`.
-- `Pipeline.validate(persist=True)` + `cosmos_config` parameter.
-- CLI `--persist` flag with `--cosmos-endpoint`, `--cosmos-database`, `--cosmos-key`
-  options (env var support via `CEDS_COSMOS_*`).
-- Power BI connection guide (Sphinx doc page).
-
-### Tasks
-
-| # | Task | Status |
-|---|------|--------|
-| T2.1 | Create `ValidationStore` class in `cosmos/validation_store.py` | Not started |
-| T2.2 | Wire `Pipeline.validate(persist=True)` | Not started |
-| T2.3 | Add CLI `--persist` flag + Cosmos connection options | Not started |
-| T2.4 | Update exports, version bump to 1.3.0, CHANGELOG | Not started |
-| T2.5 | Write Power BI connection guide (`docs/powerbi-reporting.rst`) | Not started |
-
-### Deliverables
-
-- [ ] `ValidationStore` class with `store()`, `store_many()`, `query_by_shape()`, `query_by_run()`
-- [ ] `Pipeline.validate(persist=True)` integration
-- [ ] CLI `--persist` with env var config
-- [ ] Power BI documentation (CSV/Parquet import + Cosmos connector)
-- [ ] Tests for store, pipeline integration, CLI flag
+**Status:** ⏭️ Skipped (April 2026)
+**Reason:** Pipeline validation data will go to datalake via CSV/JSON/Parquet exports
+(Tier 1) rather than Cosmos DB. Cosmos remains available for JSON-LD document storage
+but won't be used for validation result persistence.
 
 ---
 
@@ -422,4 +392,4 @@ Open questions to investigate as the project progresses:
 | **v1.1.0** | ✅ Released | Feature: ParquetAdapter with row-group batching. pyarrow now core dep. 976 tests. |
 | **v1.1.1** | ✅ Released | Patch: Fix mypy errors for pyarrow stubs. |
 | **v1.2.0** | 🟡 Planned | Structured Validation Reporting — JSON/CSV/Parquet reports, run metadata, CLI --report-format. |
-| **v1.3.0** | 🟡 Planned | Cosmos DB Validation Store — persist results, Power BI integration, CLI --persist. |
+| ~~**v1.3.0**~~ | ⏭️ Skipped | ~~Cosmos DB Validation Store~~ — validation data goes to datalake via CSV/JSON/Parquet instead. |
