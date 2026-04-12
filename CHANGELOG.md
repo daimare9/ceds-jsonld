@@ -17,7 +17,7 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ---
 
-## [1.2.0] — 2026-06-26
+## [1.2.0] — 2026-04-12
 
 ### Added
 
