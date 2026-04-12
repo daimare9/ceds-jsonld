@@ -276,7 +276,9 @@ class TestValidate:
                 "person",
                 "-i",
                 str(sample_csv),
-                "--report",
+                "--report-format",
+                "html",
+                "--report-path",
                 str(report_path),
             ],
         )
@@ -285,6 +287,97 @@ class TestValidate:
         html = report_path.read_text(encoding="utf-8")
         assert "<html" in html
         assert "PASSED" in html
+
+    def test_json_report(self, runner: CliRunner, sample_csv: Path, tmp_path: Path) -> None:
+        import json
+
+        report_path = tmp_path / "report.json"
+        result = runner.invoke(
+            cli,
+            [
+                "validate",
+                "-s",
+                "person",
+                "-i",
+                str(sample_csv),
+                "--report-format",
+                "json",
+                "--report-path",
+                str(report_path),
+            ],
+        )
+        assert result.exit_code == 0
+        assert report_path.exists()
+        data = json.loads(report_path.read_text(encoding="utf-8"))
+        assert "conforms" in data
+
+    def test_csv_report(self, runner: CliRunner, sample_csv: Path, tmp_path: Path) -> None:
+        report_path = tmp_path / "report.csv"
+        result = runner.invoke(
+            cli,
+            [
+                "validate",
+                "-s",
+                "person",
+                "-i",
+                str(sample_csv),
+                "--report-format",
+                "csv",
+                "--report-path",
+                str(report_path),
+            ],
+        )
+        assert result.exit_code == 0
+        assert report_path.exists()
+        text = report_path.read_text(encoding="utf-8")
+        assert "record_id" in text  # header row present
+
+    def test_parquet_report(self, runner: CliRunner, sample_csv: Path, tmp_path: Path) -> None:
+        import pandas as pd
+
+        report_path = tmp_path / "report.parquet"
+        result = runner.invoke(
+            cli,
+            [
+                "validate",
+                "-s",
+                "person",
+                "-i",
+                str(sample_csv),
+                "--report-format",
+                "parquet",
+                "--report-path",
+                str(report_path),
+            ],
+        )
+        assert result.exit_code == 0
+        assert report_path.exists()
+        df = pd.read_parquet(report_path)
+        assert "record_id" in df.columns
+
+    def test_report_format_default_path(self, runner: CliRunner, sample_csv: Path, tmp_path: Path) -> None:
+        """When --report-path is omitted, a default filename is used."""
+        import os
+
+        original_dir = os.getcwd()
+        os.chdir(tmp_path)
+        try:
+            result = runner.invoke(
+                cli,
+                [
+                    "validate",
+                    "-s",
+                    "person",
+                    "-i",
+                    str(sample_csv),
+                    "--report-format",
+                    "json",
+                ],
+            )
+            assert result.exit_code == 0
+            assert (tmp_path / "validation_report.json").exists()
+        finally:
+            os.chdir(original_dir)
 
 
 # ---------------------------------------------------------------------------

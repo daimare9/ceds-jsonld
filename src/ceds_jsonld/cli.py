@@ -275,11 +275,18 @@ def convert(
     help="SHACL sample rate in sample mode (default: 0.01 = 1%%).",
 )
 @click.option(
-    "--report",
+    "--report-format",
+    "report_format",
+    type=click.Choice(["html", "json", "csv", "parquet"], case_sensitive=False),
+    default=None,
+    help="Generate a validation report in this format.",
+)
+@click.option(
+    "--report-path",
     "report_path",
     type=click.Path(),
     default=None,
-    help="Write an HTML validation report to this file.",
+    help="Output path for the validation report (default: auto-named in cwd).",
 )
 def validate(
     shape: str,
@@ -289,6 +296,7 @@ def validate(
     mode: str,
     shacl: bool,
     sample_rate: float,
+    report_format: str | None,
     report_path: str | None,
 ) -> None:
     """Validate data against a SHACL shape.
@@ -317,12 +325,31 @@ def validate(
 
     elapsed = time.perf_counter() - t0
 
-    if report_path:
-        from ceds_jsonld.report import generate_html_report
+    if report_format:
+        from ceds_jsonld.report import (
+            generate_csv_report,
+            generate_html_report,
+            generate_json_report,
+            generate_parquet_report,
+        )
 
-        html = generate_html_report(result, shape=shape)
-        Path(report_path).write_text(html, encoding="utf-8")
-        click.echo(f"HTML report written to {report_path}")
+        ext = report_format.lower()
+        if not report_path:
+            report_path = f"validation_report.{ext}"
+
+        if ext == "html":
+            html = generate_html_report(result, shape=shape)
+            Path(report_path).write_text(html, encoding="utf-8")
+        elif ext == "json":
+            json_str = generate_json_report(result, shape=shape)
+            Path(report_path).write_text(json_str, encoding="utf-8")
+        elif ext == "csv":
+            csv_str = generate_csv_report(result, shape=shape)
+            Path(report_path).write_text(csv_str, encoding="utf-8")
+        elif ext == "parquet":
+            generate_parquet_report(result, Path(report_path), shape=shape)
+
+        click.echo(f"{ext.upper()} report written to {report_path}")
 
     if result.conforms:
         click.secho(

@@ -131,6 +131,72 @@ class TestValidationResult:
         assert "2 errors" in s
         assert "1 warnings" in s
 
+    def test_metadata_defaults_populated(self):
+        """New metadata fields auto-populate with sensible defaults."""
+        result = ValidationResult()
+        assert result.run_id  # non-empty UUID string
+        assert result.timestamp  # non-empty ISO timestamp
+        assert result.shape_name == ""
+        assert result.source_name == ""
+        assert result.library_version == ""
+
+    def test_metadata_overrides(self):
+        """Metadata fields can be overridden at construction."""
+        result = ValidationResult(
+            run_id="custom-id",
+            timestamp="2026-04-10T00:00:00+00:00",
+            shape_name="person",
+            source_name="students.csv",
+            library_version="1.2.0",
+        )
+        assert result.run_id == "custom-id"
+        assert result.timestamp == "2026-04-10T00:00:00+00:00"
+        assert result.shape_name == "person"
+        assert result.source_name == "students.csv"
+        assert result.library_version == "1.2.0"
+
+    def test_to_dict_conforming(self):
+        """to_dict on a conforming result includes metadata and empty issues."""
+        result = ValidationResult(shape_name="person", source_name="test.csv")
+        d = result.to_dict()
+        assert d["conforms"] is True
+        assert d["shape_name"] == "person"
+        assert d["source_name"] == "test.csv"
+        assert d["issues"] == []
+        assert "run_id" in d
+        assert "timestamp" in d
+
+    def test_to_dict_with_issues(self):
+        """to_dict flattens issues with record_id."""
+        result = ValidationResult()
+        result.add_issue("rec-1", FieldIssue(property_path="firstName", message="missing"))
+        d = result.to_dict()
+        assert len(d["issues"]) == 1
+        assert d["issues"][0]["record_id"] == "rec-1"
+        assert d["issues"][0]["property_path"] == "firstName"
+        assert d["issues"][0]["message"] == "missing"
+
+    def test_to_dataframe_empty(self):
+        """to_dataframe on conforming result returns empty DataFrame with correct columns."""
+        import pandas as pd
+
+        result = ValidationResult(shape_name="person")
+        df = result.to_dataframe()
+        assert isinstance(df, pd.DataFrame)
+        assert len(df) == 0
+        assert "record_id" in df.columns
+        assert "shape_name" in df.columns
+
+    def test_to_dataframe_with_issues(self):
+        """to_dataframe returns one row per issue with correct record_id ordering."""
+        result = ValidationResult(shape_name="person")
+        result.add_issue("rec-1", FieldIssue(property_path="a", message="msg1"))
+        result.add_issue("rec-1", FieldIssue(property_path="b", message="msg2"))
+        result.add_issue("rec-2", FieldIssue(property_path="c", message="msg3"))
+        df = result.to_dataframe()
+        assert len(df) == 3
+        assert list(df["record_id"]) == ["rec-1", "rec-1", "rec-2"]
+
 
 # =========================================================================
 # PreBuildValidator — basic checks

@@ -27,6 +27,12 @@ from ceds_jsonld.logging import get_logger
 from ceds_jsonld.mapping import FieldMapper
 from ceds_jsonld.pipeline import Pipeline, PipelineResult
 from ceds_jsonld.registry import ShapeDefinition, ShapeRegistry
+from ceds_jsonld.report import (
+    generate_csv_report,
+    generate_html_report,
+    generate_json_report,
+    generate_parquet_report,
+)
 from ceds_jsonld.sanitize import sanitize_iri_component, sanitize_string_value, validate_base_uri
 from ceds_jsonld.validator import (
     FieldIssue,
@@ -37,7 +43,7 @@ from ceds_jsonld.validator import (
 )
 from ceds_jsonld.wizard import MappingWizard
 
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 __all__ = [
     "APIAdapter",
     "BigQueryAdapter",
@@ -52,6 +58,10 @@ __all__ = [
     "GoogleSheetsAdapter",
     "JSONLDBuilder",
     "FieldMapper",
+    "generate_csv_report",
+    "generate_html_report",
+    "generate_json_report",
+    "generate_parquet_report",
     "MappingWizard",
     "NDJSONAdapter",
     "NodeShapeInfo",
