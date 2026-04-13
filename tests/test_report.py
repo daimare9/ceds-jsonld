@@ -134,6 +134,34 @@ class TestCSVReport:
         assert len(lines) == 1  # header only
         assert "record_id" in lines[0]
 
+    def test_csv_formula_injection_sanitized(self) -> None:
+        """Values starting with =, +, -, @ must be escaped in CSV output (#55)."""
+        from ceds_jsonld.report import generate_csv_report
+
+        result = ValidationResult(shape_name="person")
+        for payload in ["=CMD()", "+CMD()", "-CMD()", "@SUM(A1)"]:
+            result.add_issue(
+                "rec-1",
+                FieldIssue(
+                    property_path="field",
+                    message=payload,
+                    expected=payload,
+                    actual=payload,
+                ),
+            )
+        csv_text = generate_csv_report(result)
+        # No cell should start with a bare formula trigger character
+        import csv
+        import io
+
+        reader = csv.DictReader(io.StringIO(csv_text))
+        for row in reader:
+            for col in ("message", "expected", "actual"):
+                val = row[col]
+                assert not val.startswith(("=", "+", "-", "@")), (
+                    f"CSV cell {col}={val!r} still contains unescaped formula trigger"
+                )
+
 
 class TestParquetReport:
     def test_generate_parquet_report(self, tmp_path) -> None:
