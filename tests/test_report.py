@@ -84,6 +84,23 @@ class TestHTMLReport:
         assert "YYYY-MM-DD" in html
         assert "not-a-date" in html
 
+    def test_html_shape_override_does_not_replace_existing(self) -> None:
+        """shape= param must not override result.shape_name when already set (#53)."""
+        result = ValidationResult(
+            conforms=False,
+            record_count=5,
+            error_count=1,
+            warning_count=0,
+            shape_name="person",
+        )
+        result.add_issue(
+            "rec-1",
+            FieldIssue(severity="error", property_path="x", message="bad"),
+        )
+        html = generate_html_report(result, shape="organization")
+        # Should show the existing shape_name, not the override
+        assert "person" in html
+
 
 class TestJSONReport:
     def test_generate_json_report_conforming(self) -> None:
@@ -161,6 +178,32 @@ class TestCSVReport:
                 assert not val.startswith(("=", "+", "-", "@")), (
                     f"CSV cell {col}={val!r} still contains unescaped formula trigger"
                 )
+
+    def test_csv_formula_injection_whitespace_bypass(self) -> None:
+        """Whitespace-prefixed formula triggers must also be escaped (#55)."""
+        from ceds_jsonld.report import generate_csv_report
+
+        result = ValidationResult(shape_name="person")
+        for payload in ["\t=CMD()", " =CMD()", "\r\n=CMD()"]:
+            result.add_issue(
+                "rec-1",
+                FieldIssue(
+                    property_path="field",
+                    message=payload,
+                    expected="ok",
+                    actual="ok",
+                ),
+            )
+        csv_text = generate_csv_report(result)
+        import csv
+        import io
+
+        reader = csv.DictReader(io.StringIO(csv_text))
+        for row in reader:
+            msg = row["message"].strip()
+            assert not msg.startswith(("=", "+", "-", "@")), (
+                f"CSV message={msg!r} bypasses formula escaping via whitespace"
+            )
 
 
 class TestParquetReport:
