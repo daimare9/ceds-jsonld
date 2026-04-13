@@ -48,6 +48,42 @@ class TestHTMLReport:
         assert "http://" not in html
         assert "https://" not in html
 
+    def test_html_report_shape_fallback(self) -> None:
+        """When shape= is omitted, HTML should fall back to result.shape_name (#53)."""
+        result = ValidationResult(
+            conforms=True,
+            record_count=1,
+            error_count=0,
+            warning_count=0,
+            shape_name="person",
+        )
+        html = generate_html_report(result)
+        assert "person" in html
+
+    def test_html_report_expected_actual_columns(self) -> None:
+        """HTML table must include Expected and Actual columns (#54)."""
+        result = ValidationResult(
+            conforms=False,
+            record_count=1,
+            error_count=1,
+            warning_count=0,
+        )
+        result.add_issue(
+            "rec-1",
+            FieldIssue(
+                severity="error",
+                property_path="BirthDate",
+                message="Invalid format",
+                expected="YYYY-MM-DD",
+                actual="not-a-date",
+            ),
+        )
+        html = generate_html_report(result, shape="person")
+        assert "<th>Expected</th>" in html
+        assert "<th>Actual</th>" in html
+        assert "YYYY-MM-DD" in html
+        assert "not-a-date" in html
+
 
 class TestJSONReport:
     def test_generate_json_report_conforming(self) -> None:
