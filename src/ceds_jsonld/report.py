@@ -56,7 +56,7 @@ def generate_html_report(result: ValidationResult, *, shape: str = "") -> str:
     Returns:
         Complete HTML string (no external dependencies).
     """
-    if not shape and result.shape_name:
+    if result.shape_name:
         shape = result.shape_name
 
     status = "PASSED" if result.conforms else "FAILED"
@@ -169,7 +169,8 @@ _CSV_FORMULA_TRIGGERS = frozenset("=+-@")
 
 def _sanitize_csv_value(value: str) -> str:
     """Prefix values that start with formula trigger characters (CWE-1236)."""
-    if value and value[0] in _CSV_FORMULA_TRIGGERS:
+    stripped = value.lstrip()
+    if stripped and stripped[0] in _CSV_FORMULA_TRIGGERS:
         return "'" + value
     return value
 
