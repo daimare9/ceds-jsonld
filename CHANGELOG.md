@@ -17,6 +17,19 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ---
 
+## [1.2.2] — 2026-04-13
+
+### Fixed
+
+- **HTML report shape_name precedence** — `result.shape_name` now takes
+  precedence over the `shape=` parameter, matching JSON/CSV/Parquet behavior.
+  Previously the explicit param would override a populated shape_name (#53).
+- **CSV formula injection whitespace bypass** — Values with leading whitespace
+  before formula trigger characters (`\t=CMD()`, ` =CMD()`) are now correctly
+  escaped. The check strips whitespace before testing for `=+\-@` (#55).
+
+---
+
 ## [1.2.1] — 2026-04-13
 
 ### Fixed
