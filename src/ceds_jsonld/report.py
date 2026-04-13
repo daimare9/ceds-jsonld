@@ -5,7 +5,7 @@ from __future__ import annotations
 from html import escape
 from pathlib import Path
 from string import Template
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from ceds_jsonld.validator import ValidationResult
@@ -41,7 +41,9 @@ $issues_section
 </body>
 </html>""")
 
-_ISSUES_TABLE_HEADER = "<table><tr><th>Record</th><th>Severity</th><th>Property</th><th>Message</th><th>Expected</th><th>Actual</th></tr>"
+_ISSUES_TABLE_HEADER = (
+    "<table><tr><th>Record</th><th>Severity</th><th>Property</th><th>Message</th><th>Expected</th><th>Actual</th></tr>"
+)
 
 
 def generate_html_report(result: ValidationResult, *, shape: str = "") -> str:
