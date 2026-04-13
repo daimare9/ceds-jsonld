@@ -41,7 +41,7 @@ $issues_section
 </body>
 </html>""")
 
-_ISSUES_TABLE_HEADER = "<table><tr><th>Record</th><th>Severity</th><th>Property</th><th>Message</th></tr>"
+_ISSUES_TABLE_HEADER = "<table><tr><th>Record</th><th>Severity</th><th>Property</th><th>Message</th><th>Expected</th><th>Actual</th></tr>"
 
 
 def generate_html_report(result: ValidationResult, *, shape: str = "") -> str:
@@ -54,6 +54,9 @@ def generate_html_report(result: ValidationResult, *, shape: str = "") -> str:
     Returns:
         Complete HTML string (no external dependencies).
     """
+    if not shape and result.shape_name:
+        shape = result.shape_name
+
     status = "PASSED" if result.conforms else "FAILED"
     badge_class = "pass" if result.conforms else "fail"
 
@@ -69,6 +72,8 @@ def generate_html_report(result: ValidationResult, *, shape: str = "") -> str:
                     f"<td>{sev}</td>"
                     f"<td>{escape(issue.property_path)}</td>"
                     f"<td>{escape(issue.message)}</td>"
+                    f"<td>{escape(issue.expected or '')}</td>"
+                    f"<td>{escape(issue.actual or '')}</td>"
                     "</tr>"
                 )
         issues_section = _ISSUES_TABLE_HEADER + "".join(rows) + "</table>"
