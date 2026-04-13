@@ -97,3 +97,28 @@ class TestWriteJsonNoDoubleWrap:
         obj = {"@type": "Person", "name": "Jane"}
         write_json(obj, path)
         assert read_json(path) == obj
+
+
+# ---------------------------------------------------------------------------
+# Issue #56 — sanitize_string_value must raise TypeError on non-string input
+# ---------------------------------------------------------------------------
+
+
+class TestSanitizeStringValueTypeGuard:
+    """sanitize_string_value must raise TypeError for non-string inputs (#56)."""
+
+    def test_int_raises_type_error(self):
+        with pytest.raises(TypeError, match="expected str"):
+            sanitize_string_value(123)  # type: ignore[arg-type]
+
+    def test_none_raises_type_error(self):
+        with pytest.raises(TypeError, match="expected str"):
+            sanitize_string_value(None)  # type: ignore[arg-type]
+
+    def test_list_raises_type_error(self):
+        with pytest.raises(TypeError, match="expected str"):
+            sanitize_string_value(["a", "b"])  # type: ignore[arg-type]
+
+    def test_bytes_raises_type_error(self):
+        with pytest.raises(TypeError, match="expected str"):
+            sanitize_string_value(b"hello")  # type: ignore[arg-type]

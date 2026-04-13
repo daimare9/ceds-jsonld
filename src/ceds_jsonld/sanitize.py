@@ -110,6 +110,9 @@ def sanitize_string_value(value: str) -> str:
         >>> sanitize_string_value("Jane\\x7fDoe")
         'JaneDoe'
     """
+    if not isinstance(value, str):
+        msg = f"sanitize_string_value expected str, got {type(value).__name__}"
+        raise TypeError(msg)
     return value.translate(_CONTROL_CHAR_TABLE)
 
 
