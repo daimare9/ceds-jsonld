@@ -17,6 +17,22 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ---
 
+## [1.2.1] — 2026-04-13
+
+### Fixed
+
+- **HTML report shape fallback** — `generate_html_report()` now falls back to
+  `result.shape_name` when the `shape=` parameter is omitted (#53).
+- **HTML report Expected/Actual columns** — The HTML issue table now includes
+  Expected and Actual columns, matching JSON/CSV/Parquet output (#54).
+- **CSV formula injection (CWE-1236)** — Cell values starting with `=`, `+`,
+  `-`, or `@` are now prefixed with a single quote to prevent spreadsheet
+  formula interpretation (#55).
+- **`sanitize_string_value()` type guard** — Non-string inputs now raise
+  `TypeError` with a helpful message instead of `AttributeError` (#56).
+
+---
+
 ## [1.2.0] — 2026-04-12
 
 ### Added

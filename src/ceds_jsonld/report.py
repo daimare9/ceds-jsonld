@@ -5,7 +5,7 @@ from __future__ import annotations
 from html import escape
 from pathlib import Path
 from string import Template
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from ceds_jsonld.validator import ValidationResult
@@ -41,7 +41,9 @@ $issues_section
 </body>
 </html>""")
 
-_ISSUES_TABLE_HEADER = "<table><tr><th>Record</th><th>Severity</th><th>Property</th><th>Message</th></tr>"
+_ISSUES_TABLE_HEADER = (
+    "<table><tr><th>Record</th><th>Severity</th><th>Property</th><th>Message</th><th>Expected</th><th>Actual</th></tr>"
+)
 
 
 def generate_html_report(result: ValidationResult, *, shape: str = "") -> str:
@@ -54,6 +56,9 @@ def generate_html_report(result: ValidationResult, *, shape: str = "") -> str:
     Returns:
         Complete HTML string (no external dependencies).
     """
+    if not shape and result.shape_name:
+        shape = result.shape_name
+
     status = "PASSED" if result.conforms else "FAILED"
     badge_class = "pass" if result.conforms else "fail"
 
@@ -69,6 +74,8 @@ def generate_html_report(result: ValidationResult, *, shape: str = "") -> str:
                     f"<td>{sev}</td>"
                     f"<td>{escape(issue.property_path)}</td>"
                     f"<td>{escape(issue.message)}</td>"
+                    f"<td>{escape(issue.expected or '')}</td>"
+                    f"<td>{escape(issue.actual or '')}</td>"
                     "</tr>"
                 )
         issues_section = _ISSUES_TABLE_HEADER + "".join(rows) + "</table>"
@@ -127,6 +134,7 @@ def generate_csv_report(result: ValidationResult, *, shape: str = "") -> str:
     if shape and not result.shape_name:
         result = _with_shape(result, shape)
     df = result.to_dataframe()
+    df = _sanitize_csv_dataframe(df)
     return str(df.to_csv(index=False))
 
 
@@ -154,3 +162,25 @@ def _with_shape(result: ValidationResult, shape: str) -> ValidationResult:
     from dataclasses import replace
 
     return replace(result, shape_name=shape)
+
+
+_CSV_FORMULA_TRIGGERS = frozenset("=+-@")
+
+
+def _sanitize_csv_value(value: str) -> str:
+    """Prefix values that start with formula trigger characters (CWE-1236)."""
+    if value and value[0] in _CSV_FORMULA_TRIGGERS:
+        return "'" + value
+    return value
+
+
+def _sanitize_csv_dataframe(df: Any) -> Any:
+    """Apply formula-injection escaping to all string columns in a DataFrame."""
+    import pandas as pd
+
+    for col in df.columns:
+        if pd.api.types.is_string_dtype(df[col]):
+            df[col] = df[col].map(
+                lambda v: _sanitize_csv_value(v) if isinstance(v, str) else v  # noqa: B023
+            )
+    return df

@@ -48,6 +48,42 @@ class TestHTMLReport:
         assert "http://" not in html
         assert "https://" not in html
 
+    def test_html_report_shape_fallback(self) -> None:
+        """When shape= is omitted, HTML should fall back to result.shape_name (#53)."""
+        result = ValidationResult(
+            conforms=True,
+            record_count=1,
+            error_count=0,
+            warning_count=0,
+            shape_name="person",
+        )
+        html = generate_html_report(result)
+        assert "person" in html
+
+    def test_html_report_expected_actual_columns(self) -> None:
+        """HTML table must include Expected and Actual columns (#54)."""
+        result = ValidationResult(
+            conforms=False,
+            record_count=1,
+            error_count=1,
+            warning_count=0,
+        )
+        result.add_issue(
+            "rec-1",
+            FieldIssue(
+                severity="error",
+                property_path="BirthDate",
+                message="Invalid format",
+                expected="YYYY-MM-DD",
+                actual="not-a-date",
+            ),
+        )
+        html = generate_html_report(result, shape="person")
+        assert "<th>Expected</th>" in html
+        assert "<th>Actual</th>" in html
+        assert "YYYY-MM-DD" in html
+        assert "not-a-date" in html
+
 
 class TestJSONReport:
     def test_generate_json_report_conforming(self) -> None:
@@ -97,6 +133,34 @@ class TestCSVReport:
         lines = csv_text.strip().split("\n")
         assert len(lines) == 1  # header only
         assert "record_id" in lines[0]
+
+    def test_csv_formula_injection_sanitized(self) -> None:
+        """Values starting with =, +, -, @ must be escaped in CSV output (#55)."""
+        from ceds_jsonld.report import generate_csv_report
+
+        result = ValidationResult(shape_name="person")
+        for payload in ["=CMD()", "+CMD()", "-CMD()", "@SUM(A1)"]:
+            result.add_issue(
+                "rec-1",
+                FieldIssue(
+                    property_path="field",
+                    message=payload,
+                    expected=payload,
+                    actual=payload,
+                ),
+            )
+        csv_text = generate_csv_report(result)
+        # No cell should start with a bare formula trigger character
+        import csv
+        import io
+
+        reader = csv.DictReader(io.StringIO(csv_text))
+        for row in reader:
+            for col in ("message", "expected", "actual"):
+                val = row[col]
+                assert not val.startswith(("=", "+", "-", "@")), (
+                    f"CSV cell {col}={val!r} still contains unescaped formula trigger"
+                )
 
 
 class TestParquetReport:
