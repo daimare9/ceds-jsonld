@@ -5,7 +5,7 @@ from __future__ import annotations
 from html import escape
 from pathlib import Path
 from string import Template
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ceds_jsonld.validator import ValidationResult
@@ -132,6 +132,7 @@ def generate_csv_report(result: ValidationResult, *, shape: str = "") -> str:
     if shape and not result.shape_name:
         result = _with_shape(result, shape)
     df = result.to_dataframe()
+    df = _sanitize_csv_dataframe(df)
     return str(df.to_csv(index=False))
 
 
@@ -159,3 +160,25 @@ def _with_shape(result: ValidationResult, shape: str) -> ValidationResult:
     from dataclasses import replace
 
     return replace(result, shape_name=shape)
+
+
+_CSV_FORMULA_TRIGGERS = frozenset("=+-@")
+
+
+def _sanitize_csv_value(value: str) -> str:
+    """Prefix values that start with formula trigger characters (CWE-1236)."""
+    if value and value[0] in _CSV_FORMULA_TRIGGERS:
+        return "'" + value
+    return value
+
+
+def _sanitize_csv_dataframe(df: Any) -> Any:
+    """Apply formula-injection escaping to all string columns in a DataFrame."""
+    import pandas as pd
+
+    for col in df.columns:
+        if pd.api.types.is_string_dtype(df[col]):
+            df[col] = df[col].map(
+                lambda v: _sanitize_csv_value(v) if isinstance(v, str) else v  # noqa: B023
+            )
+    return df
