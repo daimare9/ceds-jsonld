@@ -373,17 +373,23 @@ class TestNDJSONSinkModeOverwrite:
         assert len(lines) == 3
         assert json.loads(lines[0])["@id"] == "urn:test:0"
 
-    def test_overwrite_preserves_non_part_files(self, tmp_path: Path) -> None:
+    def test_overwrite_removes_entire_directory_contents(self, tmp_path: Path) -> None:
+        """Spark-style overwrite nukes everything, not just part files."""
         out = tmp_path / "out"
         out.mkdir()
         (out / "part-00000.ndjson").write_text('{"old":true}\n')
         (out / "metadata.json").write_text('{"info":"keep"}\n')
+        sub = out / "subdir"
+        sub.mkdir()
+        (sub / "nested.txt").write_text("nested\n")
 
         sink = NDJSONSink(out, mode="overwrite")
         sink.open()
 
+        # Everything should be gone — directory recreated empty
         assert not (out / "part-00000.ndjson").exists()
-        assert (out / "metadata.json").exists()
+        assert not (out / "metadata.json").exists()
+        assert not sub.exists()
 
 
 # ------------------------------------------------------------------
