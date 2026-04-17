@@ -10,12 +10,9 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-import pytest
-
 from ceds_jsonld.builder import JSONLDBuilder
 from ceds_jsonld.mapping import FieldMapper
 from ceds_jsonld.registry import ShapeDefinition
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -156,14 +153,18 @@ class TestIdIsUriWarnings:
         shape = _make_shape_def(id_is_uri=True)
         with caplog.at_level(logging.WARNING):
             _build_doc(shape, {"PersonURI": "https://example.org/person/1"})
-        uri_warnings = [r for r in caplog.records if "id_is_uri" in r.message or "does not look like a URI" in r.message]
+        uri_warnings = [
+            r for r in caplog.records if "id_is_uri" in r.message or "does not look like a URI" in r.message
+        ]
         assert len(uri_warnings) == 0
 
     def test_no_warning_on_urn(self, caplog):
         shape = _make_shape_def(id_is_uri=True)
         with caplog.at_level(logging.WARNING):
             _build_doc(shape, {"PersonURI": "urn:ceds:person:42"})
-        uri_warnings = [r for r in caplog.records if "id_is_uri" in r.message or "does not look like a URI" in r.message]
+        uri_warnings = [
+            r for r in caplog.records if "id_is_uri" in r.message or "does not look like a URI" in r.message
+        ]
         assert len(uri_warnings) == 0
 
 
