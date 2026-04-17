@@ -4,7 +4,7 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![CI](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml/badge.svg)](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml)
-[![Tests: 1055 passed](https://img.shields.io/badge/tests-1055%20passed-brightgreen.svg)](tests/)
+[![Tests: 1062 passed](https://img.shields.io/badge/tests-1062%20passed-brightgreen.svg)](tests/)
 [![Coverage: 88%](https://img.shields.io/badge/coverage-88%25-yellowgreen.svg)]()
 
 **Python library for converting education data into standards-compliant JSON-LD documents backed by the [CEDS ontology](https://ceds.ed.gov/).**
@@ -321,6 +321,30 @@ sink = NDJSONSink(path="output/persons", chunk_size=10_000, workers=4)
 ```
 
 When `workers=1` (the default), no thread pool is created — zero overhead for single-threaded use.
+
+#### Parallel pipeline processing (multiprocessing)
+
+For large datasets where the CPU-bound map → build → serialize loop is the bottleneck, pass `workers` to `Pipeline.to_sink()` to distribute processing across multiple cores:
+
+```python
+from ceds_jsonld import Pipeline, ShapeRegistry, CSVAdapter, NDJSONSink
+
+registry = ShapeRegistry()
+registry.load_shape("person")
+pipeline = Pipeline(source=CSVAdapter("students.csv"), shape="person", registry=registry)
+
+sink = NDJSONSink(path="output/persons", chunk_size=10_000, mode="overwrite")
+
+# Use 8 worker processes for map → build → serialize → write
+result = pipeline.to_sink(sink, workers=8)
+
+# Or auto-detect based on CPU count
+result = pipeline.to_sink(sink, workers="auto")
+```
+
+Each worker receives a chunk of raw rows, reconstructs the mapper and builder from config, and writes its own part file directly — bypassing Python's GIL entirely. With `workers=1` (default), the existing serial path is used with zero overhead.
+
+> **Note:** Custom transforms (lambdas/closures) cannot be pickled for multiprocessing. If `custom_transforms` is set, `workers` must be `1` or a `PipelineError` is raised.
 
 #### `_SUCCESS` marker
 
@@ -973,6 +997,7 @@ JSON serialization uses [orjson](https://github.com/ijl/orjson) (Rust-backed, ~1
 | 1.2.2 | ✅ Released | Report bug fixes: shape_name precedence, CSV formula injection whitespace bypass. |
 | 1.3.0 | ✅ Released | `id_is_uri` mapping flag, output sinks (`NDJSONSink`, `ADLSink`), `Pipeline.to_sink()`, chunked NDJSON streaming, ADLS Gen2 support. **1032 tests**. |
 | 1.3.1 | ✅ Released | Spark-style write modes (`error`/`overwrite`/`append`), parallel part-file writes (`workers`), `_SUCCESS` marker, `WriteMode` enum. **1055 tests**. |
+| 1.4.0 | ✅ Released | Multiprocessing parallel pipeline (`workers` param on `to_sink()`), `ProcessPoolExecutor`-based map→build→serialize, custom-transforms guard. **1062 tests**. |
 
 See [ROADMAP.md](ROADMAP.md) for the full plan.
 

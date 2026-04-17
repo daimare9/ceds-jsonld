@@ -373,17 +373,23 @@ class TestNDJSONSinkModeOverwrite:
         assert len(lines) == 3
         assert json.loads(lines[0])["@id"] == "urn:test:0"
 
-    def test_overwrite_preserves_non_part_files(self, tmp_path: Path) -> None:
+    def test_overwrite_removes_entire_directory_contents(self, tmp_path: Path) -> None:
+        """Spark-style overwrite nukes everything, not just part files."""
         out = tmp_path / "out"
         out.mkdir()
         (out / "part-00000.ndjson").write_text('{"old":true}\n')
         (out / "metadata.json").write_text('{"info":"keep"}\n')
+        sub = out / "subdir"
+        sub.mkdir()
+        (sub / "nested.txt").write_text("nested\n")
 
         sink = NDJSONSink(out, mode="overwrite")
         sink.open()
 
+        # Everything should be gone — directory recreated empty
         assert not (out / "part-00000.ndjson").exists()
-        assert (out / "metadata.json").exists()
+        assert not (out / "metadata.json").exists()
+        assert not sub.exists()
 
 
 # ------------------------------------------------------------------
@@ -549,3 +555,144 @@ class TestADLSinkModes:
 
         sink = ADLSink("abfss://c@a.dfs.core.windows.net/out")
         assert sink.workers == 1
+
+
+# ------------------------------------------------------------------
+# Pipeline.to_sink() — parallel workers (multiprocessing)
+# ------------------------------------------------------------------
+
+
+class TestPipelineToSinkParallel:
+    """Test Pipeline.to_sink(sink, workers=N) with multiprocessing."""
+
+    def test_parallel_produces_same_output_as_serial(self, tmp_path: Path) -> None:
+        """workers=2 should produce identical docs as workers=1."""
+        from ceds_jsonld import DictAdapter, Pipeline
+
+        rows = _sample_rows(20)
+        reg = _person_registry()
+
+        # Serial run
+        serial_dir = tmp_path / "serial"
+        pipe1 = Pipeline(source=DictAdapter(rows), shape="person", registry=reg)
+        sink1 = NDJSONSink(serial_dir, chunk_size=10)
+        r1 = pipe1.to_sink(sink1)
+
+        # Parallel run
+        parallel_dir = tmp_path / "parallel"
+        pipe2 = Pipeline(source=DictAdapter(rows), shape="person", registry=reg)
+        sink2 = NDJSONSink(parallel_dir, chunk_size=10)
+        r2 = pipe2.to_sink(sink2, workers=2)
+
+        assert r1.records_out == r2.records_out == 20
+        assert r1.records_in == r2.records_in == 20
+        assert r1.records_failed == r2.records_failed == 0
+
+        # Parse all docs from both runs and compare as sets of @ids
+        def _read_all_docs(out_dir: Path) -> list[dict]:
+            docs = []
+            for f in sorted(out_dir.glob("part-*.ndjson")):
+                for line in f.read_text().strip().split("\n"):
+                    if line:
+                        docs.append(json.loads(line))
+            return docs
+
+        serial_docs = _read_all_docs(serial_dir)
+        parallel_docs = _read_all_docs(parallel_dir)
+        assert len(serial_docs) == len(parallel_docs) == 20
+        assert {d["@id"] for d in serial_docs} == {d["@id"] for d in parallel_docs}
+
+    def test_parallel_result_bytes_written(self, tmp_path: Path) -> None:
+        """bytes_written in the result should reflect actual file sizes."""
+        from ceds_jsonld import DictAdapter, Pipeline
+
+        pipe = Pipeline(
+            source=DictAdapter(_sample_rows(15)),
+            shape="person",
+            registry=_person_registry(),
+        )
+        sink = NDJSONSink(tmp_path / "out", chunk_size=10)
+        result = pipe.to_sink(sink, workers=2)
+
+        assert result.records_out == 15
+        assert result.bytes_written > 0
+        actual = sum(f.stat().st_size for f in (tmp_path / "out").glob("part-*.ndjson"))
+        assert result.bytes_written == actual
+
+    def test_parallel_creates_success_marker(self, tmp_path: Path) -> None:
+        """_SUCCESS file should still be written in parallel mode."""
+        from ceds_jsonld import DictAdapter, Pipeline
+
+        pipe = Pipeline(
+            source=DictAdapter(_sample_rows(5)),
+            shape="person",
+            registry=_person_registry(),
+        )
+        out = tmp_path / "out"
+        sink = NDJSONSink(out, chunk_size=10)
+        pipe.to_sink(sink, workers=2)
+
+        assert (out / "_SUCCESS").exists()
+
+    def test_parallel_workers_auto(self, tmp_path: Path) -> None:
+        """workers='auto' should work without error."""
+        from ceds_jsonld import DictAdapter, Pipeline
+
+        pipe = Pipeline(
+            source=DictAdapter(_sample_rows(5)),
+            shape="person",
+            registry=_person_registry(),
+        )
+        sink = NDJSONSink(tmp_path / "out", chunk_size=10)
+        result = pipe.to_sink(sink, workers="auto")
+        assert result.records_out == 5
+
+    def test_parallel_dlq_collects_errors(self, tmp_path: Path) -> None:
+        """Poison rows should still go to DLQ in parallel mode."""
+        from ceds_jsonld import DictAdapter, Pipeline
+
+        good = _sample_rows(3)
+        bad = [{"FirstName": "Bad"}]  # missing required fields
+        data = good + bad + good
+
+        dlq = tmp_path / "dlq.ndjson"
+        pipe = Pipeline(
+            source=DictAdapter(data),
+            shape="person",
+            registry=_person_registry(),
+            dead_letter_path=dlq,
+        )
+        sink = NDJSONSink(tmp_path / "out", chunk_size=100)
+        result = pipe.to_sink(sink, workers=2)
+
+        assert result.records_out == 6
+        assert result.records_failed == 1
+        assert result.dead_letter_path is not None
+
+    def test_parallel_with_custom_transforms_raises(self, tmp_path: Path) -> None:
+        """custom_transforms + workers > 1 should raise a clear error."""
+        from ceds_jsonld import DictAdapter, Pipeline
+        from ceds_jsonld.exceptions import PipelineError
+
+        pipe = Pipeline(
+            source=DictAdapter(_sample_rows(3)),
+            shape="person",
+            registry=_person_registry(),
+            custom_transforms={"my_fn": lambda x: x},
+        )
+        sink = NDJSONSink(tmp_path / "out", chunk_size=10)
+        with pytest.raises(PipelineError, match="custom_transforms"):
+            pipe.to_sink(sink, workers=2)
+
+    def test_workers_one_uses_serial_path(self, tmp_path: Path) -> None:
+        """workers=1 (default) should use the existing serial path."""
+        from ceds_jsonld import DictAdapter, Pipeline
+
+        pipe = Pipeline(
+            source=DictAdapter(_sample_rows(5)),
+            shape="person",
+            registry=_person_registry(),
+        )
+        sink = NDJSONSink(tmp_path / "out", chunk_size=10)
+        result = pipe.to_sink(sink, workers=1)
+        assert result.records_out == 5
