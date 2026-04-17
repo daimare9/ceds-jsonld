@@ -160,6 +160,21 @@ When all tasks for a phase are complete and the full test suite passes:
   all code examples still work with the latest API.
 - Then suggest next steps to the user based on the upcoming phase.
 
+### 7a. Update README on Every Feature — Not Just Phases
+The README must be updated **as part of the feature branch work**, before merging.
+Do NOT treat README updates as a separate follow-up task. For every user-facing
+feature or enhancement:
+- **Test badge** — update the test count to match the latest suite run.
+- **Project Status table** — add a row for the new version if releasing.
+- **Feature documentation** — add or update the relevant README section with
+  descriptions, usage examples, and API reference.
+- **Code examples must run** — all imports, variables, and method calls must be
+  valid against the current codebase.
+
+This applies to feature branches, release branches, and any merge to `dev` or
+`main`. If you're about to merge and the README doesn't reflect the changes,
+**stop and update it first**.
+
 ### 8. Install Real Dependencies — No Fake Tests
 Never create mock-based or "fake" tests that substitute a stub for a real library
 when that library can simply be installed. Mocking a library you control the

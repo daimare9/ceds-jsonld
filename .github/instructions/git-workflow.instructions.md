@@ -186,6 +186,14 @@ python -m pytest tests/ -v --tb=short
 
 # 6. CHANGELOG — verify [Unreleased] section is empty and the new version
 #    section is complete with a Summary and all relevant Fixed/Added/Changed entries.
+
+# 7. README — verify README.md reflects ALL features in this release:
+#    • Test badge count matches the latest suite run.
+#    • Project Status table has a row for this version.
+#    • Any new user-facing features have documentation, examples, or API
+#      reference in the appropriate README section.
+#    • Code examples are runnable (imports exist, variables defined).
+#    If any are missing, add them before continuing.
 ```
 
 #### Performing the release
