@@ -4,7 +4,7 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![CI](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml/badge.svg)](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml)
-[![Tests: 1032 passed](https://img.shields.io/badge/tests-1032%20passed-brightgreen.svg)](tests/)
+[![Tests: 1055 passed](https://img.shields.io/badge/tests-1055%20passed-brightgreen.svg)](tests/)
 [![Coverage: 88%](https://img.shields.io/badge/coverage-88%25-yellowgreen.svg)]()
 
 **Python library for converting education data into standards-compliant JSON-LD documents backed by the [CEDS ontology](https://ceds.ed.gov/).**
@@ -288,6 +288,44 @@ print(f"Wrote {result.records_out} records in {result.elapsed_seconds:.2f}s")
 # output/persons/part-00002.ndjson  (remaining records)
 ```
 
+#### Write modes (Spark-style)
+
+Sinks accept a `mode` parameter that mirrors Spark's `DataFrameWriter.mode()`:
+
+| Mode | Behaviour |
+|------|----------|
+| `"error"` (default) | Raise `FileExistsError` if part files already exist |
+| `"overwrite"` | Delete existing part files, then write |
+| `"append"` | Continue numbering from the highest existing part index + 1 |
+
+```python
+from ceds_jsonld import NDJSONSink, WriteMode
+
+# Overwrite previous output
+sink = NDJSONSink(path="output/persons", chunk_size=10_000, mode="overwrite")
+
+# Or use the WriteMode enum for type safety
+sink = NDJSONSink(path="output/persons", chunk_size=10_000, mode=WriteMode.APPEND)
+```
+
+#### Parallel writes
+
+Set `workers` to enable concurrent part-file writing. This is useful for large datasets where I/O is the bottleneck. `orjson` releases the GIL, so threads can serialize and write in parallel:
+
+```python
+# Auto-detect core count
+sink = NDJSONSink(path="output/persons", chunk_size=10_000, mode="overwrite", workers="auto")
+
+# Or specify explicitly
+sink = NDJSONSink(path="output/persons", chunk_size=10_000, workers=4)
+```
+
+When `workers=1` (the default), no thread pool is created — zero overhead for single-threaded use.
+
+#### `_SUCCESS` marker
+
+After all part files are written, `close()` writes an empty `_SUCCESS` marker file to the output directory, following the Hadoop/Spark convention for job-complete signaling. In `"overwrite"` mode, any existing `_SUCCESS` file is removed when `open()` is called.
+
 For Azure Data Lake Storage (ADLS Gen2), use `ADLSink` with `fsspec` + `adlfs`:
 
 ```python
@@ -296,12 +334,14 @@ from ceds_jsonld import ADLSink
 sink = ADLSink(
     path="abfss://container@account.dfs.core.windows.net/ceds/persons",
     chunk_size=10_000,
+    mode="overwrite",
+    workers="auto",
     storage_options={"account_name": "mystorageaccount", "account_key": "..."},
 )
 result = pipeline.to_sink(sink)
 ```
 
-Both sinks produce `part-NNNNN.ndjson` files. The `SinkResult` returned by `close()` (or available on the `PipelineResult`) reports `total_records`, `total_bytes`, and `files_written`.
+Both sinks produce `part-NNNNN.ndjson` files and a `_SUCCESS` marker on completion. The `SinkResult` returned by `close()` (or available on the `PipelineResult`) reports `total_records`, `total_bytes`, and `files_written`.
 
 > **Tip:** Install ADLS support with `pip install ceds-jsonld[adls]`. The `NDJSONSink` requires no extra dependencies.
 
@@ -932,6 +972,7 @@ JSON serialization uses [orjson](https://github.com/ijl/orjson) (Rust-backed, ~1
 | 1.2.0 | ✅ Released | Structured validation reports (JSON, CSV, Parquet). Run metadata on `ValidationResult`. CLI `--report-format`. **993 tests**. |
 | 1.2.2 | ✅ Released | Report bug fixes: shape_name precedence, CSV formula injection whitespace bypass. |
 | 1.3.0 | ✅ Released | `id_is_uri` mapping flag, output sinks (`NDJSONSink`, `ADLSink`), `Pipeline.to_sink()`, chunked NDJSON streaming, ADLS Gen2 support. **1032 tests**. |
+| 1.3.1 | ✅ Released | Spark-style write modes (`error`/`overwrite`/`append`), parallel part-file writes (`workers`), `_SUCCESS` marker, `WriteMode` enum. **1055 tests**. |
 
 See [ROADMAP.md](ROADMAP.md) for the full plan.
 
