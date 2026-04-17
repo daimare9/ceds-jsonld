@@ -19,7 +19,7 @@ import os
 import re
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
@@ -32,7 +32,7 @@ _VALID_MODES = frozenset({"error", "overwrite", "append"})
 _PART_RE = re.compile(r"^part-(\d{5})\.ndjson$")
 
 
-class WriteMode(str, Enum):
+class WriteMode(StrEnum):
     """Write mode for output sinks, following Spark conventions.
 
     Attributes:
@@ -287,10 +287,7 @@ class ADLSink:
             all_files = self._fs.ls(self.path, detail=False)
         except FileNotFoundError:
             all_files = []
-        existing = [
-            f for f in all_files
-            if _PART_RE.match(f.rsplit("/", 1)[-1])
-        ]
+        existing = [f for f in all_files if _PART_RE.match(f.rsplit("/", 1)[-1])]
 
         if self.mode == "error" and existing:
             msg = (

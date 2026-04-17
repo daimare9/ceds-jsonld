@@ -452,7 +452,7 @@ class TestNDJSONSinkParallelWrites:
         out = tmp_path / "out"
         sink = NDJSONSink(out, chunk_size=10, workers=2, mode="overwrite")
         sink.open()
-        for i in range(4):
+        for _i in range(4):
             sink.write_chunk(_make_docs(10))
         result = sink.close()
 

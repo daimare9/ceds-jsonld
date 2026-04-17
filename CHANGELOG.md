@@ -17,6 +17,24 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ---
 
+## [1.3.1] — 2026-04-17
+
+### Added
+
+- **Spark-style write modes** — `NDJSONSink` and `ADLSink` now accept a
+  `mode` parameter with values `"error"` (default), `"overwrite"`, and
+  `"append"`, matching Spark’s `DataFrameWriter` semantics.
+- **Parallel part-file writes** — `workers` parameter (int or `"auto"`) on
+  both sinks enables concurrent part-file writing via `ThreadPoolExecutor`.
+  Single-threaded path (`workers=1`) has zero overhead (no executor created).
+- **`_SUCCESS` marker file** — Written by `close()` after all parts flush
+  successfully; cleared on `overwrite` mode `open()`. Follows the Hadoop/Spark
+  convention for job-complete signaling.
+- **`WriteMode` enum** — New `WriteMode(str, Enum)` exported from `ceds_jsonld`
+  for type-safe mode selection.
+
+---
+
 ## [1.3.0] — 2026-04-16
 
 ### Added
