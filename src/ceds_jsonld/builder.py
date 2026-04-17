@@ -37,10 +37,12 @@ class JSONLDBuilder:
         """
         self._shape = shape_def
         self._config = shape_def.mapping_config
+        self._id_is_uri: bool = bool(self._config.get("id_is_uri", False))
 
         # Validate base_uri early so malformed URIs fail at init, not per-row.
+        # Skip validation when id_is_uri is set — the source supplies the full @id.
         base_uri = self._config.get("base_uri", "")
-        if base_uri:
+        if base_uri and not self._id_is_uri:
             try:
                 validate_base_uri(base_uri)
             except ValueError as exc:
@@ -71,12 +73,24 @@ class JSONLDBuilder:
             msg = "Mapped row is missing '__id__' — was FieldMapper.map() used?"
             raise BuildError(msg)
 
-        # Sanitize the ID component to prevent IRI injection
-        safe_id = sanitize_iri_component(str(doc_id))
+        if self._id_is_uri:
+            # Source value is already a fully qualified URI — use verbatim.
+            id_str = str(doc_id).strip()
+            if "://" not in id_str and not id_str.startswith("urn:"):
+                _log.warning(
+                    "builder.id_is_uri_suspect",
+                    value=id_str,
+                    hint="id_is_uri is set but the value does not look like a URI",
+                )
+            at_id = id_str
+        else:
+            # Sanitize the ID component to prevent IRI injection
+            safe_id = sanitize_iri_component(str(doc_id))
+            at_id = f"{self._config['base_uri']}{safe_id}"
 
         doc: dict[str, Any] = {
             "@context": self._config.get("context_url", ""),
-            "@id": f"{self._config['base_uri']}{safe_id}",
+            "@id": at_id,
             "@type": self._config["type"],
         }
 

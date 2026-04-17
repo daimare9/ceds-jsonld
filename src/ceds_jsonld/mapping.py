@@ -44,8 +44,10 @@ class FieldMapper:
 
         # Validate base_uri early so malformed URIs are caught even when
         # FieldMapper is used without Builder (e.g. via compose()).
+        # Skip validation when id_is_uri — the source supplies complete URIs.
+        id_is_uri = mapping_config.get("id_is_uri", False)
         base_uri = mapping_config.get("base_uri", "")
-        if base_uri:
+        if base_uri and not id_is_uri:
             try:
                 validate_base_uri(base_uri)
             except ValueError as exc:

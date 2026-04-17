@@ -17,6 +17,8 @@ context_file: person_context.json     # Local context file path (relative to sha
 base_uri: "cepi:person/"              # URI prefix for @id values
 id_source: PersonIdentifiers          # Source field that provides the document ID
 id_transform: first_pipe_split        # Transform to extract ID from multi-value field
+id_is_uri: false                      # When true, id_source already contains a fully qualified URI
+                                      # (base_uri is ignored and the value is used verbatim as @id)
 
 # Top-level document type
 type: Person                          # JSON-LD @type value
@@ -62,6 +64,7 @@ data_collection_defaults:
 4. `transform` names must reference registered transform functions in the engine.
 5. `optional: true` fields are silently skipped if the source value is None or empty string.
 6. Required fields (default) cause a `MappingError` if the source value is missing.
+7. `id_is_uri: true` means the `id_source` field already contains a fully qualified URI. When set, `base_uri` is ignored and the value is used verbatim as `@id` (no sanitization or prefixing). A warning is logged if the value doesn't look like a URI.
 
 ### Naming Conventions
 - Property keys under `properties:` match the JSON-LD context term (e.g., `hasPersonBirth`, `hasPersonName`).
