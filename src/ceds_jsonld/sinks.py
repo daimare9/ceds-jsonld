@@ -146,7 +146,7 @@ class ADLSink:
     def open(self) -> None:
         """Initialize the fsspec filesystem and create the output directory."""
         try:
-            import fsspec
+            import fsspec  # type: ignore[import-untyped]
         except ImportError as exc:
             msg = (
                 "ADLSink requires fsspec and adlfs. "
