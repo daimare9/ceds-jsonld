@@ -291,3 +291,18 @@ class TestPipelineToSink:
         assert result.bytes_written > 0
         assert result.elapsed_seconds > 0
         assert result.records_per_second > 0
+
+
+# ------------------------------------------------------------------
+# Top-level exports
+# ------------------------------------------------------------------
+
+
+class TestSinkExports:
+    def test_importable_from_top_level(self) -> None:
+        from ceds_jsonld import ADLSink, NDJSONSink, Sink, SinkResult
+
+        assert Sink is not None
+        assert SinkResult is not None
+        assert NDJSONSink is not None
+        assert ADLSink is not None

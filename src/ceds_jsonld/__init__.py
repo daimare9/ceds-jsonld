@@ -34,6 +34,7 @@ from ceds_jsonld.report import (
     generate_parquet_report,
 )
 from ceds_jsonld.sanitize import sanitize_iri_component, sanitize_string_value, validate_base_uri
+from ceds_jsonld.sinks import ADLSink, NDJSONSink, Sink, SinkResult
 from ceds_jsonld.validator import (
     FieldIssue,
     PreBuildValidator,
@@ -45,6 +46,7 @@ from ceds_jsonld.wizard import MappingWizard
 
 __version__ = "1.2.2"
 __all__ = [
+    "ADLSink",
     "APIAdapter",
     "BigQueryAdapter",
     "CanvasAdapter",
@@ -64,6 +66,7 @@ __all__ = [
     "generate_parquet_report",
     "MappingWizard",
     "NDJSONAdapter",
+    "NDJSONSink",
     "NodeShapeInfo",
     "OneRosterAdapter",
     "ParquetAdapter",
@@ -75,6 +78,8 @@ __all__ = [
     "SHACLValidator",
     "ShapeDefinition",
     "ShapeRegistry",
+    "Sink",
+    "SinkResult",
     "SnowflakeAdapter",
     "SourceAdapter",
     "ValidationMode",
