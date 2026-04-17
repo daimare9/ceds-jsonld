@@ -298,3 +298,254 @@ class TestSinkExports:
         assert SinkResult is not None
         assert NDJSONSink is not None
         assert ADLSink is not None
+
+    def test_write_mode_importable(self) -> None:
+        from ceds_jsonld.sinks import WriteMode
+
+        assert WriteMode is not None
+
+
+# ------------------------------------------------------------------
+# WriteMode enum / literal
+# ------------------------------------------------------------------
+
+
+class TestWriteMode:
+    def test_valid_modes(self) -> None:
+        from ceds_jsonld.sinks import WriteMode
+
+        assert WriteMode.ERROR == "error"
+        assert WriteMode.OVERWRITE == "overwrite"
+        assert WriteMode.APPEND == "append"
+
+
+# ------------------------------------------------------------------
+# NDJSONSink — write mode: error (default)
+# ------------------------------------------------------------------
+
+
+class TestNDJSONSinkModeError:
+    def test_default_mode_is_error(self, tmp_path: Path) -> None:
+        sink = NDJSONSink(tmp_path / "out")
+        assert sink.mode == "error"
+
+    def test_error_mode_raises_on_existing_data(self, tmp_path: Path) -> None:
+        out = tmp_path / "out"
+        out.mkdir()
+        (out / "part-00000.ndjson").write_text('{"x":1}\n')
+
+        sink = NDJSONSink(out, mode="error")
+        with pytest.raises(FileExistsError, match="already contains"):
+            sink.open()
+
+    def test_error_mode_ok_on_empty_dir(self, tmp_path: Path) -> None:
+        out = tmp_path / "out"
+        out.mkdir()
+        sink = NDJSONSink(out, mode="error")
+        sink.open()  # should not raise
+
+    def test_error_mode_ok_on_new_dir(self, tmp_path: Path) -> None:
+        sink = NDJSONSink(tmp_path / "new_out", mode="error")
+        sink.open()  # should not raise
+
+
+# ------------------------------------------------------------------
+# NDJSONSink — write mode: overwrite
+# ------------------------------------------------------------------
+
+
+class TestNDJSONSinkModeOverwrite:
+    def test_overwrite_clears_existing_parts(self, tmp_path: Path) -> None:
+        out = tmp_path / "out"
+        out.mkdir()
+        (out / "part-00000.ndjson").write_text('{"old":true}\n')
+        (out / "part-00001.ndjson").write_text('{"old":true}\n')
+
+        sink = NDJSONSink(out, mode="overwrite")
+        sink.open()
+        sink.write_chunk(_make_docs(3))
+        sink.close()
+
+        files = sorted(out.glob("part-*.ndjson"))
+        assert len(files) == 1
+        assert files[0].name == "part-00000.ndjson"
+        lines = files[0].read_text().strip().split("\n")
+        assert len(lines) == 3
+        assert json.loads(lines[0])["@id"] == "urn:test:0"
+
+    def test_overwrite_preserves_non_part_files(self, tmp_path: Path) -> None:
+        out = tmp_path / "out"
+        out.mkdir()
+        (out / "part-00000.ndjson").write_text('{"old":true}\n')
+        (out / "metadata.json").write_text('{"info":"keep"}\n')
+
+        sink = NDJSONSink(out, mode="overwrite")
+        sink.open()
+
+        assert not (out / "part-00000.ndjson").exists()
+        assert (out / "metadata.json").exists()
+
+
+# ------------------------------------------------------------------
+# NDJSONSink — write mode: append
+# ------------------------------------------------------------------
+
+
+class TestNDJSONSinkModeAppend:
+    def test_append_continues_numbering(self, tmp_path: Path) -> None:
+        out = tmp_path / "out"
+        out.mkdir()
+        (out / "part-00000.ndjson").write_text('{"old":true}\n')
+        (out / "part-00002.ndjson").write_text('{"old":true}\n')
+
+        sink = NDJSONSink(out, mode="append")
+        sink.open()
+        sink.write_chunk(_make_docs(2))
+        sink.close()
+
+        files = sorted(out.glob("part-*.ndjson"))
+        assert len(files) == 3  # 2 old + 1 new
+        assert files[-1].name == "part-00003.ndjson"
+
+    def test_append_on_empty_dir_starts_at_zero(self, tmp_path: Path) -> None:
+        out = tmp_path / "out"
+        sink = NDJSONSink(out, mode="append")
+        sink.open()
+        sink.write_chunk(_make_docs(1))
+        sink.close()
+
+        files = list(out.glob("part-*.ndjson"))
+        assert len(files) == 1
+        assert files[0].name == "part-00000.ndjson"
+
+
+# ------------------------------------------------------------------
+# NDJSONSink — invalid mode
+# ------------------------------------------------------------------
+
+
+class TestNDJSONSinkInvalidMode:
+    def test_invalid_mode_raises(self, tmp_path: Path) -> None:
+        with pytest.raises(ValueError, match="mode must be"):
+            NDJSONSink(tmp_path / "out", mode="ignore")
+
+
+# ------------------------------------------------------------------
+# NDJSONSink — parallel writes (workers)
+# ------------------------------------------------------------------
+
+
+class TestNDJSONSinkParallelWrites:
+    def test_default_workers_is_one(self, tmp_path: Path) -> None:
+        sink = NDJSONSink(tmp_path / "out")
+        assert sink.workers == 1
+
+    def test_workers_auto_detects_cores(self, tmp_path: Path) -> None:
+        import os
+
+        sink = NDJSONSink(tmp_path / "out", workers="auto")
+        expected = os.cpu_count() or 4
+        assert sink.workers == expected
+
+    def test_parallel_writes_produce_correct_output(self, tmp_path: Path) -> None:
+        """4 chunks with workers=2 should produce 4 part files with all records."""
+        out = tmp_path / "out"
+        sink = NDJSONSink(out, chunk_size=10, workers=2, mode="overwrite")
+        sink.open()
+        for _i in range(4):
+            sink.write_chunk(_make_docs(10))
+        result = sink.close()
+
+        assert result.files_written == 4
+        assert result.records_written == 40
+        files = sorted(out.glob("part-*.ndjson"))
+        assert len(files) == 4
+
+        # All 40 records present across all files
+        all_lines = []
+        for f in files:
+            all_lines.extend(f.read_text().strip().split("\n"))
+        assert len(all_lines) == 40
+
+    def test_workers_invalid_zero(self, tmp_path: Path) -> None:
+        with pytest.raises(ValueError, match="workers must be"):
+            NDJSONSink(tmp_path / "out", workers=0)
+
+    def test_workers_invalid_negative(self, tmp_path: Path) -> None:
+        with pytest.raises(ValueError, match="workers must be"):
+            NDJSONSink(tmp_path / "out", workers=-1)
+
+    def test_single_worker_no_executor(self, tmp_path: Path) -> None:
+        """workers=1 should not create a ThreadPoolExecutor."""
+        sink = NDJSONSink(tmp_path / "out", workers=1)
+        sink.open()
+        sink.write_chunk(_make_docs(5))
+        result = sink.close()
+        assert result.files_written == 1
+        assert sink._executor is None
+
+
+# ------------------------------------------------------------------
+# NDJSONSink — _SUCCESS marker
+# ------------------------------------------------------------------
+
+
+class TestNDJSONSinkSuccessMarker:
+    def test_success_file_written_on_close(self, tmp_path: Path) -> None:
+        out = tmp_path / "out"
+        sink = NDJSONSink(out, mode="overwrite")
+        sink.open()
+        sink.write_chunk(_make_docs(3))
+        sink.close()
+
+        success_file = out / "_SUCCESS"
+        assert success_file.exists()
+
+    def test_success_file_not_written_if_no_records(self, tmp_path: Path) -> None:
+        """If no records were written, _SUCCESS should still be written (job succeeded)."""
+        out = tmp_path / "out"
+        sink = NDJSONSink(out, mode="overwrite")
+        sink.open()
+        sink.close()
+
+        assert (out / "_SUCCESS").exists()
+
+    def test_overwrite_clears_old_success(self, tmp_path: Path) -> None:
+        out = tmp_path / "out"
+        out.mkdir()
+        (out / "_SUCCESS").write_text("")
+        (out / "part-00000.ndjson").write_text('{"old":true}\n')
+
+        sink = NDJSONSink(out, mode="overwrite")
+        sink.open()
+        # Old _SUCCESS should be removed on open
+        assert not (out / "_SUCCESS").exists()
+        sink.write_chunk(_make_docs(1))
+        sink.close()
+        # New _SUCCESS written on close
+        assert (out / "_SUCCESS").exists()
+
+
+# ------------------------------------------------------------------
+# ADLSink — write mode support
+# ------------------------------------------------------------------
+
+
+class TestADLSinkModes:
+    def test_default_mode_is_error(self) -> None:
+        from ceds_jsonld.sinks import ADLSink
+
+        sink = ADLSink("abfss://c@a.dfs.core.windows.net/out")
+        assert sink.mode == "error"
+
+    def test_invalid_mode_raises(self) -> None:
+        from ceds_jsonld.sinks import ADLSink
+
+        with pytest.raises(ValueError, match="mode must be"):
+            ADLSink("abfss://c@a.dfs.core.windows.net/out", mode="ignore")
+
+    def test_default_workers_is_one(self) -> None:
+        from ceds_jsonld.sinks import ADLSink
+
+        sink = ADLSink("abfss://c@a.dfs.core.windows.net/out")
+        assert sink.workers == 1
