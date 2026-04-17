@@ -197,3 +197,97 @@ class TestADLSinkValidation:
 
         with pytest.raises(ValueError, match="chunk_size must be >= 1"):
             ADLSink("abfss://c@a.dfs.core.windows.net/out", chunk_size=0)
+
+
+# ------------------------------------------------------------------
+# Pipeline.to_sink() integration
+# ------------------------------------------------------------------
+
+
+def _person_registry():
+    """Create a ShapeRegistry with the Person shape loaded."""
+    from ceds_jsonld.registry import ShapeRegistry
+
+    reg = ShapeRegistry()
+    reg.load_shape("person")
+    return reg
+
+
+def _sample_rows(n: int) -> list[dict[str, Any]]:
+    """Generate *n* minimal Person source rows."""
+    return [
+        {
+            "FirstName": f"First{i}",
+            "MiddleName": "",
+            "LastName": f"Last{i}",
+            "GenerationCodeOrSuffix": "",
+            "Birthdate": "1990-01-15",
+            "Sex": "Female",
+            "RaceEthnicity": "White",
+            "PersonIdentifiers": f"ID{i}",
+            "IdentificationSystems": "PersonIdentificationSystem_SSN",
+            "PersonIdentifierTypes": "PersonIdentifierType_PersonIdentifier",
+        }
+        for i in range(n)
+    ]
+
+
+class TestPipelineToSink:
+    def test_end_to_end(self, tmp_path: Path) -> None:
+        """Full Pipeline.to_sink(NDJSONSink) with 15 records, chunk_size=10."""
+        from ceds_jsonld import DictAdapter, Pipeline
+
+        pipe = Pipeline(
+            source=DictAdapter(_sample_rows(15)),
+            shape="person",
+            registry=_person_registry(),
+        )
+        sink = NDJSONSink(tmp_path / "out", chunk_size=10)
+        result = pipe.to_sink(sink)
+
+        assert result.records_out == 15
+        assert result.records_in == 15
+        assert result.records_failed == 0
+        assert result.bytes_written > 0
+        files = sorted((tmp_path / "out").glob("part-*.ndjson"))
+        assert len(files) == 2  # 10 + 5
+
+    def test_dlq_integration(self, tmp_path: Path) -> None:
+        """Poison row goes to DLQ; good rows land in sink."""
+        from ceds_jsonld import DictAdapter, Pipeline
+
+        good = _sample_rows(1)
+        bad = [{"FirstName": "Bad"}]  # missing required fields
+        data = good + bad + good  # 3 records, 1 bad
+
+        dlq = tmp_path / "dlq.ndjson"
+        pipe = Pipeline(
+            source=DictAdapter(data),
+            shape="person",
+            registry=_person_registry(),
+            dead_letter_path=dlq,
+        )
+        sink = NDJSONSink(tmp_path / "out", chunk_size=100)
+        result = pipe.to_sink(sink)
+
+        assert result.records_out == 2
+        assert result.records_failed == 1
+        assert result.dead_letter_path is not None
+
+    def test_result_counts(self, tmp_path: Path) -> None:
+        """PipelineResult reflects sink's bytes_written."""
+        from ceds_jsonld import DictAdapter, Pipeline
+
+        pipe = Pipeline(
+            source=DictAdapter(_sample_rows(5)),
+            shape="person",
+            registry=_person_registry(),
+        )
+        sink = NDJSONSink(tmp_path / "out", chunk_size=100)
+        result = pipe.to_sink(sink)
+
+        assert result.records_in == 5
+        assert result.records_out == 5
+        assert result.bytes_written > 0
+        assert result.elapsed_seconds > 0
+        assert result.records_per_second > 0

@@ -695,6 +695,96 @@ class Pipeline:
             msg = f"Failed to write NDJSON to {path}: {exc}"
             raise PipelineError(msg) from exc
 
+    def to_sink(self, sink: Any) -> PipelineResult:
+        """Stream documents to an output sink with automatic chunking.
+
+        Iterates the source adapter, maps and builds each row, accumulates
+        documents into batches of ``sink.chunk_size``, and writes each
+        batch via ``sink.write_chunk()``.
+
+        Args:
+            sink: Any object satisfying the :class:`~ceds_jsonld.sinks.Sink`
+                protocol (e.g. :class:`~ceds_jsonld.sinks.NDJSONSink`,
+                :class:`~ceds_jsonld.sinks.ADLSink`).
+
+        Returns:
+            A :class:`PipelineResult` with timing, counts, and the sink's
+            byte total.
+
+        Raises:
+            PipelineError: On adapter, mapping, build, or sink failures.
+        """
+        t0 = time.perf_counter()
+        try:
+            sink.open()
+        except Exception as exc:
+            msg = f"Failed to open sink: {exc}"
+            raise PipelineError(msg) from exc
+
+        chunk: list[dict[str, Any]] = []
+        records_in = 0
+        records_out = 0
+        dead = _DeadLetterWriter(self._dead_letter_path)
+
+        try:
+            for raw_row in self._source.read():
+                records_in += 1
+                try:
+                    mapped = self._mapper.map(raw_row)
+                    doc = self._builder.build_one(mapped)
+                except Exception as exc:
+                    if self._dead_letter_path is not None:
+                        _log.warning("pipeline.row_failed", row=records_in, error=str(exc))
+                        dead.write(raw_row, str(exc))
+                        continue
+                    raise PipelineError(
+                        f"Pipeline to_sink failed at row {records_in}: {exc}"
+                    ) from exc
+
+                chunk.append(doc)
+                records_out += 1
+                if len(chunk) >= sink.chunk_size:
+                    sink.write_chunk(chunk)
+                    chunk = []
+
+            if chunk:
+                sink.write_chunk(chunk)
+
+        except PipelineError:
+            raise
+        except Exception as exc:
+            msg = f"Pipeline to_sink failed: {exc}"
+            raise PipelineError(msg) from exc
+        finally:
+            dead.close()
+
+        try:
+            sink_result = sink.close()
+        except Exception as exc:
+            msg = f"Failed to close sink: {exc}"
+            raise PipelineError(msg) from exc
+
+        elapsed = time.perf_counter() - t0
+        rps = records_out / elapsed if elapsed > 0 else 0.0
+        result = PipelineResult(
+            records_in=records_in,
+            records_out=records_out,
+            records_failed=dead.count,
+            elapsed_seconds=round(elapsed, 3),
+            records_per_second=round(rps, 1),
+            bytes_written=sink_result.bytes_written,
+            dead_letter_path=str(self._dead_letter_path) if dead.count > 0 else None,
+        )
+        _log.info(
+            "pipeline.to_sink",
+            sink=type(sink).__name__,
+            records=records_out,
+            files=sink_result.files_written,
+            bytes=sink_result.bytes_written,
+            elapsed=result.elapsed_seconds,
+        )
+        return result
+
     def to_cosmos(
         self,
         endpoint: str,
