@@ -118,3 +118,82 @@ class TestSinkProtocol:
     def test_ndjson_sink_satisfies_protocol(self, tmp_path: Path) -> None:
         sink = NDJSONSink(tmp_path / "out")
         assert isinstance(sink, Sink)
+
+    def test_adl_sink_satisfies_protocol(self) -> None:
+        from ceds_jsonld.sinks import ADLSink
+
+        sink = ADLSink("abfss://c@a.dfs.core.windows.net/out")
+        assert isinstance(sink, Sink)
+
+
+# ------------------------------------------------------------------
+# ADLSink
+# ------------------------------------------------------------------
+
+
+class TestADLSinkImportGuard:
+    def test_missing_fsspec_raises(self) -> None:
+        """If fsspec is not installed, opening raises ImportError."""
+        import sys
+        from unittest.mock import patch
+
+        from ceds_jsonld.sinks import ADLSink
+
+        sink = ADLSink("abfss://container@account.dfs.core.windows.net/out")
+        with patch.dict(sys.modules, {"fsspec": None}):
+            with pytest.raises(ImportError, match="fsspec"):
+                sink.open()
+
+
+class TestADLSinkWriteChunk:
+    def test_write_chunk_creates_part_files(self) -> None:
+        """Mock fsspec filesystem, verify part files written correctly."""
+        from unittest.mock import MagicMock
+
+        from ceds_jsonld.sinks import ADLSink
+
+        mock_fs = MagicMock()
+        mock_fh = MagicMock()
+        mock_fs.open.return_value.__enter__ = MagicMock(return_value=mock_fh)
+        mock_fs.open.return_value.__exit__ = MagicMock(return_value=False)
+
+        sink = ADLSink("abfss://c@a.dfs.core.windows.net/out", chunk_size=5)
+        sink._fs = mock_fs  # inject mock
+
+        docs = _make_docs(3)
+        sink.write_chunk(docs)
+
+        mock_fs.open.assert_called_once_with(
+            "abfss://c@a.dfs.core.windows.net/out/part-00000.ndjson", "wb"
+        )
+        assert mock_fh.write.call_count == 3
+        assert sink._part_index == 1
+
+    def test_sink_result(self) -> None:
+        """Verify SinkResult after writing."""
+        from unittest.mock import MagicMock
+
+        from ceds_jsonld.sinks import ADLSink
+
+        mock_fs = MagicMock()
+        mock_fh = MagicMock()
+        mock_fs.open.return_value.__enter__ = MagicMock(return_value=mock_fh)
+        mock_fs.open.return_value.__exit__ = MagicMock(return_value=False)
+
+        sink = ADLSink("abfss://c@a.dfs.core.windows.net/out")
+        sink._fs = mock_fs
+
+        sink.write_chunk(_make_docs(2))
+        result = sink.close()
+
+        assert result.files_written == 1
+        assert result.records_written == 2
+        assert result.bytes_written > 0
+
+
+class TestADLSinkValidation:
+    def test_chunk_size_zero(self) -> None:
+        from ceds_jsonld.sinks import ADLSink
+
+        with pytest.raises(ValueError, match="chunk_size must be >= 1"):
+            ADLSink("abfss://c@a.dfs.core.windows.net/out", chunk_size=0)
