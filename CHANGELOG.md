@@ -13,7 +13,17 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ## [Unreleased]
 
-*Nothing yet.*
+### Added
+
+- **Parallel pipeline processing** — `Pipeline.to_sink()` now accepts a
+  `workers` parameter (int or `"auto"`) to distribute the CPU-bound
+  map → build → serialize loop across multiple processes using
+  `ProcessPoolExecutor`.  Each worker writes its own part file directly,
+  bypassing the GIL.  `workers=1` (default) uses the existing serial path
+  with zero overhead.
+- **Custom transforms guard** — Raises `PipelineError` with a clear message
+  when `custom_transforms` is used with `workers > 1` (lambdas are not
+  pickle-safe).
 
 ---
 

@@ -6,8 +6,10 @@ JSONLDBuilder → serializer chain, providing both streaming and batch APIs.
 
 from __future__ import annotations
 
+import os
 import time
 from collections.abc import Callable, Iterator
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -17,7 +19,7 @@ from ceds_jsonld.builder import JSONLDBuilder
 from ceds_jsonld.exceptions import PipelineError, ValidationError
 from ceds_jsonld.logging import get_logger
 from ceds_jsonld.mapping import FieldMapper
-from ceds_jsonld.registry import ShapeRegistry
+from ceds_jsonld.registry import ShapeDefinition, ShapeRegistry
 from ceds_jsonld.sanitize import validate_base_uri
 from ceds_jsonld.serializer import dumps
 from ceds_jsonld.validator import (
@@ -28,6 +30,73 @@ from ceds_jsonld.validator import (
 )
 
 _log = get_logger(__name__)
+
+
+# ------------------------------------------------------------------
+# Multiprocessing worker (module-level for pickle)
+# ------------------------------------------------------------------
+
+
+def _pipeline_worker(
+    chunk: list[dict[str, Any]],
+    part_index: int,
+    output_path: str,
+    mapping_config: dict[str, Any],
+    shape_name: str,
+) -> tuple[int, int, list[dict[str, Any]]]:
+    """Process one chunk: map → build → serialize → write part file.
+
+    Runs in a child process. Reconstructs FieldMapper and JSONLDBuilder
+    from pickle-safe config dicts (no filesystem or Path objects needed).
+
+    Returns:
+        (records_written, bytes_written, dead_letters) where dead_letters
+        is a list of ``{"_error": ..., "_record": ...}`` dicts for rows
+        that failed mapping or building.
+    """
+    mapper = FieldMapper(mapping_config)
+    # Build a minimal ShapeDefinition for JSONLDBuilder — it only reads
+    # mapping_config and name from the shape.
+    shape_def = ShapeDefinition(
+        name=shape_name,
+        base_dir=Path("."),
+        shacl_path=Path("."),
+        context={},
+        mapping_config=mapping_config,
+    )
+    builder = JSONLDBuilder(shape_def)
+
+    part_file = Path(output_path) / f"part-{part_index:05d}.ndjson"
+    total_bytes = 0
+    records_written = 0
+    dead_letters: list[dict[str, Any]] = []
+
+    with part_file.open("wb") as fh:
+        for raw_row in chunk:
+            try:
+                mapped = mapper.map(raw_row)
+                doc = builder.build_one(mapped)
+                line = dumps(doc, pretty=False) + b"\n"
+                fh.write(line)
+                total_bytes += len(line)
+                records_written += 1
+            except Exception as exc:
+                dead_letters.append({"_error": str(exc), "_record": raw_row})
+
+    return records_written, total_bytes, dead_letters
+
+
+def _resolve_pipeline_workers(workers: int | str) -> int:
+    """Convert *workers* parameter to a concrete int."""
+    if isinstance(workers, str):
+        if workers != "auto":
+            msg = f"workers must be a positive int or 'auto', got {workers!r}"
+            raise ValueError(msg)
+        return os.cpu_count() or 4
+    if workers < 1:
+        msg = f"workers must be >= 1, got {workers}"
+        raise ValueError(msg)
+    return workers
 
 
 # ------------------------------------------------------------------
@@ -695,17 +764,28 @@ class Pipeline:
             msg = f"Failed to write NDJSON to {path}: {exc}"
             raise PipelineError(msg) from exc
 
-    def to_sink(self, sink: Any) -> PipelineResult:
+    def to_sink(self, sink: Any, *, workers: int | str = 1) -> PipelineResult:
         """Stream documents to an output sink with automatic chunking.
 
         Iterates the source adapter, maps and builds each row, accumulates
         documents into batches of ``sink.chunk_size``, and writes each
         batch via ``sink.write_chunk()``.
 
+        When *workers* > 1, the CPU-bound map → build → serialize loop
+        is distributed across child processes using
+        ``concurrent.futures.ProcessPoolExecutor``.  Each worker writes
+        its own part file directly, bypassing the sink's ``write_chunk``.
+        The sink still handles ``open()`` / ``close()`` / ``_SUCCESS``
+        semantics.
+
         Args:
             sink: Any object satisfying the :class:`~ceds_jsonld.sinks.Sink`
                 protocol (e.g. :class:`~ceds_jsonld.sinks.NDJSONSink`,
                 :class:`~ceds_jsonld.sinks.ADLSink`).
+            workers: Number of child processes for parallel map/build.
+                ``1`` (default) uses the serial path.  ``"auto"`` uses
+                ``os.cpu_count()``.  Custom transforms are not supported
+                with ``workers > 1``.
 
         Returns:
             A :class:`PipelineResult` with timing, counts, and the sink's
@@ -714,6 +794,17 @@ class Pipeline:
         Raises:
             PipelineError: On adapter, mapping, build, or sink failures.
         """
+        n_workers = _resolve_pipeline_workers(workers)
+        if n_workers > 1:
+            return self._to_sink_parallel(sink, n_workers)
+        return self._to_sink_serial(sink)
+
+    # ------------------------------------------------------------------
+    # Serial to_sink (workers=1, identical to previous behaviour)
+    # ------------------------------------------------------------------
+
+    def _to_sink_serial(self, sink: Any) -> PipelineResult:
+        """Serial path — single-process map → build → write."""
         t0 = time.perf_counter()
         try:
             sink.open()
@@ -776,6 +867,116 @@ class Pipeline:
         _log.info(
             "pipeline.to_sink",
             sink=type(sink).__name__,
+            records=records_out,
+            files=sink_result.files_written,
+            bytes=sink_result.bytes_written,
+            elapsed=result.elapsed_seconds,
+        )
+        return result
+
+    # ------------------------------------------------------------------
+    # Parallel to_sink (workers > 1, multiprocessing)
+    # ------------------------------------------------------------------
+
+    def _to_sink_parallel(self, sink: Any, n_workers: int) -> PipelineResult:
+        """Parallel path — distribute map/build/write across processes."""
+        if self._custom_transforms:
+            msg = (
+                "custom_transforms cannot be used with workers > 1 because "
+                "lambda/closure objects are not pickle-safe for multiprocessing. "
+                "Use workers=1 or register transforms by name."
+            )
+            raise PipelineError(msg)
+
+        t0 = time.perf_counter()
+
+        # Open sink for directory creation / mode handling only.
+        # Workers write part files directly; we just need the directory.
+        try:
+            sink.open()
+        except Exception as exc:
+            msg = f"Failed to open sink: {exc}"
+            raise PipelineError(msg) from exc
+
+        output_path = str(sink.path)
+        mapping_config = self._shape_def.mapping_config
+        shape_name = self._shape_def.name
+
+        # Read all rows from source and batch into chunks.
+        chunks: list[list[dict[str, Any]]] = []
+        current_chunk: list[dict[str, Any]] = []
+        records_in = 0
+        for raw_row in self._source.read():
+            records_in += 1
+            current_chunk.append(raw_row)
+            if len(current_chunk) >= sink.chunk_size:
+                chunks.append(current_chunk)
+                current_chunk = []
+        if current_chunk:
+            chunks.append(current_chunk)
+
+        # Submit chunks to worker pool
+        records_out = 0
+        total_bytes = 0
+        dead = _DeadLetterWriter(self._dead_letter_path)
+
+        try:
+            with ProcessPoolExecutor(max_workers=n_workers) as pool:
+                futures = []
+                for i, chunk in enumerate(chunks):
+                    # Use sink's starting part_index offset for correct numbering
+                    part_idx = sink._part_index + i
+                    future = pool.submit(
+                        _pipeline_worker,
+                        chunk,
+                        part_idx,
+                        output_path,
+                        mapping_config,
+                        shape_name,
+                    )
+                    futures.append(future)
+
+                for future in futures:
+                    written, chunk_bytes, dead_letters = future.result()
+                    records_out += written
+                    total_bytes += chunk_bytes
+                    for dl in dead_letters:
+                        dead.write(dl["_record"], dl["_error"])
+
+            # Update sink's internal counters so close() produces correct totals
+            sink._part_index += len(chunks)
+            sink._total_records += records_out
+            sink._total_bytes += total_bytes
+
+        except PipelineError:
+            raise
+        except Exception as exc:
+            msg = f"Pipeline parallel to_sink failed: {exc}"
+            raise PipelineError(msg) from exc
+        finally:
+            dead.close()
+
+        try:
+            sink_result = sink.close()
+        except Exception as exc:
+            msg = f"Failed to close sink: {exc}"
+            raise PipelineError(msg) from exc
+
+        elapsed = time.perf_counter() - t0
+        rps = records_out / elapsed if elapsed > 0 else 0.0
+        result = PipelineResult(
+            records_in=records_in,
+            records_out=records_out,
+            records_failed=dead.count,
+            elapsed_seconds=round(elapsed, 3),
+            records_per_second=round(rps, 1),
+            bytes_written=sink_result.bytes_written,
+            dead_letter_path=str(self._dead_letter_path) if dead.count > 0 else None,
+        )
+        _log.info(
+            "pipeline.to_sink_parallel",
+            sink=type(sink).__name__,
+            workers=n_workers,
             records=records_out,
             files=sink_result.files_written,
             bytes=sink_result.bytes_written,
