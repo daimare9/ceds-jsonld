@@ -9,7 +9,7 @@ Provides a :class:`Sink` protocol and two concrete implementations:
 Write modes (modelled after Spark's ``DataFrameWriter.mode()``):
 
 - ``"error"`` — raise if the output directory already contains part files (default).
-- ``"overwrite"`` — delete existing part files, then write.
+- ``"overwrite"`` — delete the entire output directory and recreate it fresh.
 - ``"append"`` — continue numbering from the highest existing part index.
 """
 
@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import os
 import re
+import shutil
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field
 from enum import StrEnum
@@ -38,7 +39,8 @@ class WriteMode(StrEnum):
     Attributes:
         ERROR: Raise ``FileExistsError`` if the output directory already
             contains part files. This is the safe default.
-        OVERWRITE: Delete existing part files before writing.
+        OVERWRITE: Delete the entire output directory and recreate it,
+            matching Spark's ``mode("overwrite")`` behaviour.
         APPEND: Continue numbering from the highest existing part index + 1.
     """
 
@@ -148,12 +150,9 @@ class NDJSONSink:
             raise FileExistsError(msg)
 
         if self.mode == "overwrite":
-            for f in existing:
-                f.unlink()
-            # Also remove old _SUCCESS marker
-            success = self.path / "_SUCCESS"
-            if success.exists():
-                success.unlink()
+            # Spark-style: nuke the entire directory and recreate it fresh
+            shutil.rmtree(self.path)
+            self.path.mkdir(parents=True, exist_ok=True)
 
         if self.mode == "append" and existing:
             max_idx = max(
@@ -297,12 +296,12 @@ class ADLSink:
             raise FileExistsError(msg)
 
         if self.mode == "overwrite":
-            for f in existing:
-                self._fs.rm(f)
+            # Spark-style: nuke the entire remote directory and recreate
             try:
-                self._fs.rm(f"{self.path}/_SUCCESS")
+                self._fs.rm(self.path, recursive=True)
             except FileNotFoundError:
                 pass
+            self._fs.mkdirs(self.path, exist_ok=True)
 
         if self.mode == "append" and existing:
             max_idx = max(
