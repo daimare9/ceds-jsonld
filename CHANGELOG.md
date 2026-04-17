@@ -17,6 +17,28 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ---
 
+## [1.3.0] — 2026-04-16
+
+### Added
+
+- **`id_is_uri` mapping flag** — When `id_is_uri: true` is set in a mapping
+  YAML config, the source value for `id_source` is used verbatim as `@id`
+  instead of being prefixed with `base_uri`. A warning is logged if the value
+  doesn't look like a URI (no `://` or `:` prefix).
+- **Output sinks** — New `Sink` protocol with two implementations:
+  - `NDJSONSink` — writes chunked `part-NNNNN.ndjson` files to local disk.
+  - `ADLSink` — writes chunked `part-NNJSON` files to Azure Data Lake Storage
+    Gen2 via `fsspec` + `adlfs`.
+- **`Pipeline.to_sink()`** — New method that streams JSON-LD documents through
+  any `Sink` implementation with automatic chunking, dead-letter queue support,
+  and `PipelineResult` metrics.
+- **`[adls]` optional dependency** — `pip install ceds-jsonld[adls]` installs
+  `fsspec` and `adlfs` for ADLS Gen2 support.
+- All sink types are importable from `ceds_jsonld` directly: `Sink`,
+  `SinkResult`, `NDJSONSink`, `ADLSink`.
+
+---
+
 ## [1.2.2] — 2026-04-13
 
 ### Fixed

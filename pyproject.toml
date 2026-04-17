@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ceds-jsonld"
-version = "1.2.2"
+version = "1.3.0"
 description = "Python library for ingesting education data, mapping to CEDS/CEPI ontology SHACL shapes, and outputting conformant JSON-LD"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -60,6 +60,7 @@ cosmos = ["azure-cosmos>=4.7", "azure-identity>=1.15"]
 validation = ["pyshacl>=0.26"]
 api = ["httpx>=0.27"]
 database = ["sqlalchemy>=2.0"]
+adls = ["fsspec>=2023.1.0", "adlfs>=2023.1.0"]
 sheets = ["gspread>=6.0"]
 canvas = ["canvasapi>=3.0"]
 oneroster = ["httpx>=0.27"]
@@ -176,6 +177,10 @@ module = [
     "canvasapi",
     "canvasapi.*",
     "snowflake.*",
+    "fsspec",
+    "fsspec.*",
+    "adlfs",
+    "adlfs.*",
     "google.cloud.*",
     "google.oauth2.*",
     "databricks.*",

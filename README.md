@@ -4,7 +4,7 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![CI](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml/badge.svg)](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml)
-[![Tests: 993 passed](https://img.shields.io/badge/tests-993%20passed-brightgreen.svg)](tests/)
+[![Tests: 1032 passed](https://img.shields.io/badge/tests-1032%20passed-brightgreen.svg)](tests/)
 [![Coverage: 88%](https://img.shields.io/badge/coverage-88%25-yellowgreen.svg)]()
 
 **Python library for converting education data into standards-compliant JSON-LD documents backed by the [CEDS ontology](https://ceds.ed.gov/).**
@@ -17,11 +17,14 @@ CSV / Excel / API / DB / Sheets / SIS / Warehouse
         ▼
   ┌───────────┐     ┌───────────┐     ┌───────────┐
   │  Source    │────▶│  Field    │────▶│  JSON-LD  │────▶  .json / .ndjson / Cosmos DB
-  │  Adapter   │     │  Mapper   │     │  Builder  │
-  └───────────┘     └───────────┘     └───────────┘
-        ▲                 ▲                 ▲
-        │                 │                 │
-        └─────── Pipeline orchestrates ─────┘
+  │  Adapter   │     │  Mapper   │     │  Builder  │           │
+  └───────────┘     └───────────┘     └───────────┘           ▼
+        ▲                 ▲                 ▲           ┌───────────┐
+        │                 │                 │           │  Output   │
+        └─────── Pipeline orchestrates ─────┘           │  Sink     │
+                                                        └───────────┘
+                                                          NDJSONSink
+                                                          ADLSink
 ```
 
 ---
@@ -43,6 +46,9 @@ pip install ceds-jsonld[database]
 
 # With fast JSON serialization (recommended for production)
 pip install ceds-jsonld[fast]
+
+# With Azure Data Lake Storage output sink
+pip install ceds-jsonld[adls]
 
 # Everything for development
 pip install ceds-jsonld[dev]
@@ -261,6 +267,43 @@ pipeline.to_json("output/persons.json")
 # NDJSON (one document per line — ideal for streaming ingestion)
 pipeline.to_ndjson("output/persons.ndjson")
 ```
+
+### Output sinks (chunked streaming)
+
+For large datasets or Azure Spark notebook workflows, use **output sinks** to stream JSON-LD documents into chunked part files — similar to how Spark writes partitioned output.
+
+```python
+from ceds_jsonld import Pipeline, ShapeRegistry, CSVAdapter, NDJSONSink
+
+registry = ShapeRegistry()
+registry.load_shape("person")
+pipeline = Pipeline(source=CSVAdapter("students.csv"), shape="person", registry=registry)
+
+# Write chunked NDJSON part files to local disk
+sink = NDJSONSink(path="output/persons", chunk_size=10_000)
+result = pipeline.to_sink(sink)
+print(f"Wrote {result.records_out} records in {result.elapsed_seconds:.2f}s")
+# output/persons/part-00000.ndjson  (10,000 records)
+# output/persons/part-00001.ndjson  (10,000 records)
+# output/persons/part-00002.ndjson  (remaining records)
+```
+
+For Azure Data Lake Storage (ADLS Gen2), use `ADLSink` with `fsspec` + `adlfs`:
+
+```python
+from ceds_jsonld import ADLSink
+
+sink = ADLSink(
+    path="abfss://container@account.dfs.core.windows.net/ceds/persons",
+    chunk_size=10_000,
+    storage_options={"account_name": "mystorageaccount", "account_key": "..."},
+)
+result = pipeline.to_sink(sink)
+```
+
+Both sinks produce `part-NNNNN.ndjson` files. The `SinkResult` returned by `close()` (or available on the `PipelineResult`) reports `total_records`, `total_bytes`, and `files_written`.
+
+> **Tip:** Install ADLS support with `pip install ceds-jsonld[adls]`. The `NDJSONSink` requires no extra dependencies.
 
 ### Production features
 
@@ -598,6 +641,29 @@ registry = ShapeRegistry()
 registry.load_shape("person", path="my_shapes/person")
 ```
 
+### URI-based identifiers (`id_is_uri`)
+
+If your source data already contains fully qualified URIs for record identifiers (e.g., from a linked-data system), set `id_is_uri: true` in the mapping YAML. The builder will use the value verbatim as `@id` instead of prefixing it with `base_uri`:
+
+```yaml
+# person_mapping.yaml
+shape: PersonShape
+id_source: PersonURI
+id_is_uri: true        # use the source value as-is for @id
+base_uri: ""           # ignored when id_is_uri is true
+```
+
+```python
+from ceds_jsonld import DictAdapter
+
+records = [{"PersonURI": "https://example.org/person/12345", "FirstName": "Jane", ...}]
+pipeline = Pipeline(source=DictAdapter(records), shape="person", registry=registry)
+doc = list(pipeline.stream())[0]
+print(doc["@id"])  # "https://example.org/person/12345"
+```
+
+A warning is logged if the value doesn't look like a URI (no `://` or `:` prefix).
+
 ### Custom transforms
 
 If your data needs custom transformations beyond the built-in ones, pass them to the pipeline:
@@ -864,6 +930,8 @@ JSON serialization uses [orjson](https://github.com/ijl/orjson) (Rust-backed, ~1
 | 1.1.0 | ✅ Released | `ParquetAdapter` for reading Parquet files. **976 tests**. |
 | 1.1.1 | ✅ Released | mypy CI fix for pyarrow imports. |
 | 1.2.0 | ✅ Released | Structured validation reports (JSON, CSV, Parquet). Run metadata on `ValidationResult`. CLI `--report-format`. **993 tests**. |
+| 1.2.2 | ✅ Released | Report bug fixes: shape_name precedence, CSV formula injection whitespace bypass. |
+| 1.3.0 | ✅ Released | `id_is_uri` mapping flag, output sinks (`NDJSONSink`, `ADLSink`), `Pipeline.to_sink()`, chunked NDJSON streaming, ADLS Gen2 support. **1032 tests**. |
 
 See [ROADMAP.md](ROADMAP.md) for the full plan.
 
@@ -883,6 +951,7 @@ See [ROADMAP.md](ROADMAP.md) for the full plan.
 | `databricks` | databricks-sql-connector | Databricks SQL adapter |
 | `canvas` | canvasapi | Canvas LMS adapter |
 | `oneroster` | httpx | OneRoster 1.1 SIS adapter |
+| `adls` | fsspec, adlfs | Azure Data Lake Storage output sink |
 | `sis` | canvasapi, httpx | All SIS adapters (Canvas + OneRoster) |
 | `warehouse` | snowflake + bigquery + databricks | All cloud warehouse adapters |
 | `all-adapters` | all adapter deps | Every adapter extra combined |
