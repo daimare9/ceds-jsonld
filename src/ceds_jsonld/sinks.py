@@ -148,10 +148,7 @@ class ADLSink:
         try:
             import fsspec  # type: ignore[import-untyped]
         except ImportError as exc:
-            msg = (
-                "ADLSink requires fsspec and adlfs. "
-                "Install with: pip install ceds-jsonld[adls]"
-            )
+            msg = "ADLSink requires fsspec and adlfs. Install with: pip install ceds-jsonld[adls]"
             raise ImportError(msg) from exc
         self._fs = fsspec.filesystem("abfss", **self.storage_options)
         self._fs.mkdirs(self.path, exist_ok=True)

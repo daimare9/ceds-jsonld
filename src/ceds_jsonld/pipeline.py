@@ -737,9 +737,7 @@ class Pipeline:
                         _log.warning("pipeline.row_failed", row=records_in, error=str(exc))
                         dead.write(raw_row, str(exc))
                         continue
-                    raise PipelineError(
-                        f"Pipeline to_sink failed at row {records_in}: {exc}"
-                    ) from exc
+                    raise PipelineError(f"Pipeline to_sink failed at row {records_in}: {exc}") from exc
 
                 chunk.append(doc)
                 records_out += 1

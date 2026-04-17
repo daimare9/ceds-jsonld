@@ -13,10 +13,7 @@ from ceds_jsonld.sinks import NDJSONSink, Sink, SinkResult
 
 def _make_docs(n: int) -> list[dict[str, Any]]:
     """Generate *n* minimal JSON-LD-like documents."""
-    return [
-        {"@id": f"urn:test:{i}", "@type": "Person", "name": f"Person {i}"}
-        for i in range(n)
-    ]
+    return [{"@id": f"urn:test:{i}", "@type": "Person", "name": f"Person {i}"} for i in range(n)]
 
 
 # ------------------------------------------------------------------
@@ -98,9 +95,7 @@ class TestNDJSONSinkBasic:
         assert result.files_written == 1
         assert result.bytes_written > 0
         # bytes_written should match actual file size
-        actual_size = sum(
-            f.stat().st_size for f in (tmp_path / "out").glob("part-*.ndjson")
-        )
+        actual_size = sum(f.stat().st_size for f in (tmp_path / "out").glob("part-*.ndjson"))
         assert result.bytes_written == actual_size
 
 
@@ -140,9 +135,8 @@ class TestADLSinkImportGuard:
         from ceds_jsonld.sinks import ADLSink
 
         sink = ADLSink("abfss://container@account.dfs.core.windows.net/out")
-        with patch.dict(sys.modules, {"fsspec": None}):
-            with pytest.raises(ImportError, match="fsspec"):
-                sink.open()
+        with patch.dict(sys.modules, {"fsspec": None}), pytest.raises(ImportError, match="fsspec"):
+            sink.open()
 
 
 class TestADLSinkWriteChunk:
@@ -163,9 +157,7 @@ class TestADLSinkWriteChunk:
         docs = _make_docs(3)
         sink.write_chunk(docs)
 
-        mock_fs.open.assert_called_once_with(
-            "abfss://c@a.dfs.core.windows.net/out/part-00000.ndjson", "wb"
-        )
+        mock_fs.open.assert_called_once_with("abfss://c@a.dfs.core.windows.net/out/part-00000.ndjson", "wb")
         assert mock_fh.write.call_count == 3
         assert sink._part_index == 1
 

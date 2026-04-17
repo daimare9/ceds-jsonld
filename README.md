@@ -930,8 +930,8 @@ JSON serialization uses [orjson](https://github.com/ijl/orjson) (Rust-backed, ~1
 | 1.1.0 | ✅ Released | `ParquetAdapter` for reading Parquet files. **976 tests**. |
 | 1.1.1 | ✅ Released | mypy CI fix for pyarrow imports. |
 | 1.2.0 | ✅ Released | Structured validation reports (JSON, CSV, Parquet). Run metadata on `ValidationResult`. CLI `--report-format`. **993 tests**. |
-| 1.2.1 | ✅ Released | `id_is_uri` mapping flag for source data with fully qualified URIs. **1015 tests**. |
-| 1.2.2 | ✅ Released | Output sinks (`NDJSONSink`, `ADLSink`), `Pipeline.to_sink()`, chunked NDJSON streaming, ADLS Gen2 support. **1032 tests**. |
+| 1.2.2 | ✅ Released | Report bug fixes: shape_name precedence, CSV formula injection whitespace bypass. |
+| 1.3.0 | ✅ Released | `id_is_uri` mapping flag, output sinks (`NDJSONSink`, `ADLSink`), `Pipeline.to_sink()`, chunked NDJSON streaming, ADLS Gen2 support. **1032 tests**. |
 
 See [ROADMAP.md](ROADMAP.md) for the full plan.
 
