@@ -997,6 +997,7 @@ JSON serialization uses [orjson](https://github.com/ijl/orjson) (Rust-backed, ~1
 | 1.2.2 | ✅ Released | Report bug fixes: shape_name precedence, CSV formula injection whitespace bypass. |
 | 1.3.0 | ✅ Released | `id_is_uri` mapping flag, output sinks (`NDJSONSink`, `ADLSink`), `Pipeline.to_sink()`, chunked NDJSON streaming, ADLS Gen2 support. **1032 tests**. |
 | 1.3.1 | ✅ Released | Spark-style write modes (`error`/`overwrite`/`append`), parallel part-file writes (`workers`), `_SUCCESS` marker, `WriteMode` enum. **1055 tests**. |
+| 1.4.0 | ✅ Released | Multiprocessing parallel pipeline (`workers` param on `to_sink()`), `ProcessPoolExecutor`-based map→build→serialize, custom-transforms guard. **1062 tests**. |
 
 See [ROADMAP.md](ROADMAP.md) for the full plan.
 

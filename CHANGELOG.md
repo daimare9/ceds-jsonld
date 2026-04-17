@@ -13,6 +13,12 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ## [Unreleased]
 
+*No unreleased changes.*
+
+---
+
+## [1.4.0] — 2026-04-17
+
 ### Added
 
 - **Parallel pipeline processing** — `Pipeline.to_sink()` now accepts a

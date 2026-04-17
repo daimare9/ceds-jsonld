@@ -44,7 +44,7 @@ from ceds_jsonld.validator import (
 )
 from ceds_jsonld.wizard import MappingWizard
 
-__version__ = "1.3.1"
+__version__ = "1.4.0"
 __all__ = [
     "ADLSink",
     "APIAdapter",
