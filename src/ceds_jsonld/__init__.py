@@ -34,7 +34,7 @@ from ceds_jsonld.report import (
     generate_parquet_report,
 )
 from ceds_jsonld.sanitize import sanitize_iri_component, sanitize_string_value, validate_base_uri
-from ceds_jsonld.sinks import ADLSink, NDJSONSink, Sink, SinkResult
+from ceds_jsonld.sinks import ADLSink, NDJSONSink, Sink, SinkResult, WriteMode
 from ceds_jsonld.validator import (
     FieldIssue,
     PreBuildValidator,
@@ -84,6 +84,7 @@ __all__ = [
     "SourceAdapter",
     "ValidationMode",
     "ValidationResult",
+    "WriteMode",
     "blackbaud_adapter",
     "get_logger",
     "powerschool_adapter",
