@@ -17,6 +17,26 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ---
 
+## [1.5.0] — 2026-05-05
+
+### Added
+
+- **`RelationalAdapter`** — New adapter that joins a primary `SourceAdapter`
+  with N satellite adapters, enabling star-schema data (e.g., separate Parquet
+  files per relationship) to produce embedded one-to-many arrays in JSON-LD
+  output without any pre-join ETL. Satellite tables are loaded eagerly into a
+  memory dict index keyed by the foreign-key column; each primary row is
+  enriched with a `__related__` dict containing the matching satellite rows.
+- **`source_table` YAML mapping key** — New property-level key that directs
+  `FieldMapper` to read field values from a named satellite table (injected by
+  `RelationalAdapter`) rather than from the flat primary row. Supports
+  `optional`, `transform`, and `multi_value_split` on satellite fields.
+  Gracefully returns `[]` when called with a non-relational adapter (no crash).
+- **`RelationalAdapter` exported** from both `ceds_jsonld.adapters` and the
+  top-level `ceds_jsonld` namespace.
+
+---
+
 ## [1.4.0] — 2026-04-17
 
 ### Added

@@ -81,6 +81,50 @@ PersonIdentifiers: "123456789|EDU001|MI999"
 IdentificationSystems: "SSN|EducatorIdentificationNumber|State|CEPI"
 ```
 
+### Multi-Table / Relational Sources (Star Schema)
+
+When source data lives in separate relational tables (e.g., multiple Parquet files), use
+`source_table` instead of `split_on`. The `source_table` value must match a key in the
+`satellites` dict passed to `RelationalAdapter`.
+
+```yaml
+properties:
+  hasIdentification:
+    type: Identification
+    cardinality: multiple
+    source_table: identifications   # matches satellites={"identifications": adapter}
+    fields:
+      IdentifierValue:
+        source: id_value            # column in the satellite table
+        target: IdentifierValue
+      IdentifierType:
+        source: id_type
+        target: IdentifierType
+        optional: true
+```
+
+Python wiring:
+```python
+from ceds_jsonld import RelationalAdapter, ParquetAdapter
+
+adapter = RelationalAdapter(
+    primary=ParquetAdapter("students.parquet"),
+    join_key="student_id",
+    satellites={
+        "identifications": ParquetAdapter("student_ids.parquet"),
+        "races": ParquetAdapter("student_races.parquet"),
+    },
+)
+```
+
+**Rules for `source_table`:**
+- `source_table` and `split_on` are mutually exclusive. `source_table` takes precedence when both are present.
+- Each satellite row becomes one instance of the sub-shape. `cardinality` is effectively always `multiple`.
+- Fields under a `source_table` property reference **satellite table columns**, not primary table columns.
+- If no satellite rows exist for a primary entity, the property is omitted from the JSON-LD output — not an error.
+- When used with a flat (non-relational) adapter, the property is silently omitted (graceful degradation).
+- `satellite_join_key` on `RelationalAdapter` allows different FK column names in primary vs. satellite tables.
+
 ### Transforms
 Built-in transforms are referenced by name:
 - `sex_prefix` — Adds "Sex_" prefix (e.g., "Female" → "Sex_Female")

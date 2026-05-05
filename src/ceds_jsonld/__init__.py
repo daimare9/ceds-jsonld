@@ -15,6 +15,7 @@ from ceds_jsonld.adapters import (
     NDJSONAdapter,
     OneRosterAdapter,
     ParquetAdapter,
+    RelationalAdapter,
     SnowflakeAdapter,
     SourceAdapter,
     blackbaud_adapter,
@@ -44,7 +45,7 @@ from ceds_jsonld.validator import (
 )
 from ceds_jsonld.wizard import MappingWizard
 
-__version__ = "1.4.0"
+__version__ = "1.5.0"
 __all__ = [
     "ADLSink",
     "APIAdapter",
@@ -70,6 +71,7 @@ __all__ = [
     "NodeShapeInfo",
     "OneRosterAdapter",
     "ParquetAdapter",
+    "RelationalAdapter",
     "Pipeline",
     "PipelineResult",
     "PreBuildValidator",

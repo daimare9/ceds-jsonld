@@ -4,7 +4,7 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![CI](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml/badge.svg)](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml)
-[![Tests: 1062 passed](https://img.shields.io/badge/tests-1062%20passed-brightgreen.svg)](tests/)
+[![Tests: 1081 passed](https://img.shields.io/badge/tests-1081%20passed-brightgreen.svg)](tests/)
 [![Coverage: 88%](https://img.shields.io/badge/coverage-88%25-yellowgreen.svg)]()
 
 **Python library for converting education data into standards-compliant JSON-LD documents backed by the [CEDS ontology](https://ceds.ed.gov/).**
@@ -153,6 +153,7 @@ Adapters are how data gets into the pipeline. Pick the one that matches your dat
 | `DatabricksAdapter` | Databricks SQL warehouses | `pip install ceds-jsonld[databricks]` |
 | `CanvasAdapter` | Canvas LMS (users, enrollments, etc.) | `pip install ceds-jsonld[canvas]` |
 | `OneRosterAdapter` | OneRoster 1.1 SIS (Infinite Campus, ClassLink, etc.) | `pip install ceds-jsonld[oneroster]` |
+| `RelationalAdapter` | Star-schema multi-table joins (Parquet, CSV, etc.) | included |
 | `powerschool_adapter()` | PowerSchool SIS (factory function) | `pip install ceds-jsonld[api]` |
 | `blackbaud_adapter()` | Blackbaud SKY API (factory function) | `pip install ceds-jsonld[api]` |
 
@@ -597,6 +598,54 @@ pipeline = Pipeline(
 )
 ```
 
+### Reading from star-schema / relational Parquet files
+
+If your data lives in multiple related tables — e.g., a star schema of Parquet files
+where students, their identifiers, and their races are in separate files — use
+`RelationalAdapter` to join them at the adapter layer without any pre-join ETL:
+
+```python
+from ceds_jsonld import RelationalAdapter, ParquetAdapter
+
+pipeline = Pipeline(
+    source=RelationalAdapter(
+        primary=ParquetAdapter("students.parquet"),
+        join_key="student_id",
+        satellites={
+            "identifications": ParquetAdapter("student_ids.parquet"),
+            "races": ParquetAdapter("student_races.parquet"),
+        },
+    ),
+    shape="person",
+    registry=registry,
+)
+```
+
+In your mapping YAML, reference satellite rows with `source_table` instead of `split_on`:
+
+```yaml
+properties:
+  hasIdentification:
+    type: Identification
+    cardinality: multiple
+    source_table: identifications   # matches the key in satellites={}
+    fields:
+      IdentifierValue:
+        source: id_value
+        target: IdentifierValue
+      IdentifierType:
+        source: id_type
+        target: IdentifierType
+        optional: true
+```
+
+Satellite tables are loaded into memory once at initialization, keyed by the join column.
+Each satellite row becomes one instance of the sub-shape in the JSON-LD output. If a
+primary entity has no matching satellite rows, the property is omitted — not an error.
+The adapter works with any `SourceAdapter` (Parquet, CSV, database, dict, etc.).
+
+---
+
 ### Reading from PowerSchool or Blackbaud
 
 ```python
@@ -998,6 +1047,7 @@ JSON serialization uses [orjson](https://github.com/ijl/orjson) (Rust-backed, ~1
 | 1.3.0 | ✅ Released | `id_is_uri` mapping flag, output sinks (`NDJSONSink`, `ADLSink`), `Pipeline.to_sink()`, chunked NDJSON streaming, ADLS Gen2 support. **1032 tests**. |
 | 1.3.1 | ✅ Released | Spark-style write modes (`error`/`overwrite`/`append`), parallel part-file writes (`workers`), `_SUCCESS` marker, `WriteMode` enum. **1055 tests**. |
 | 1.4.0 | ✅ Released | Multiprocessing parallel pipeline (`workers` param on `to_sink()`), `ProcessPoolExecutor`-based map→build→serialize, custom-transforms guard. **1062 tests**. |
+| 1.5.0 | ✅ Released | `RelationalAdapter` for star-schema multi-table joins; `source_table` YAML key for satellite table mapping; graceful degradation for flat adapters. **1081 tests**. |
 
 See [ROADMAP.md](ROADMAP.md) for the full plan.
 

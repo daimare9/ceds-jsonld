@@ -237,7 +237,11 @@ class FieldMapper:
         prop_name: str,
         prop_def: dict[str, Any],
     ) -> list[dict[str, Any]]:
-        """Map a single property, respecting cardinality."""
+        """Map a single property, respecting cardinality and source_table."""
+        # Satellite table mode: delegate to relational mapper when source_table
+        # is declared — takes precedence over cardinality/split_on.
+        if "source_table" in prop_def:
+            return self._map_from_table(raw_row, prop_name, prop_def)
         cardinality = prop_def.get("cardinality", "single")
 
         if cardinality == "multiple":
@@ -586,6 +590,111 @@ class FieldMapper:
             )
             raise MappingError(msg)
         return value
+
+    def _map_from_table(
+        self,
+        raw_row: dict[str, Any],
+        prop_name: str,
+        prop_def: dict[str, Any],
+    ) -> list[dict[str, Any]]:
+        """Map a property from satellite rows injected by RelationalAdapter.
+
+        Each satellite row in ``raw_row["__related__"][source_table]`` becomes
+        one instance of the sub-shape, using the same field-mapping logic as
+        ``_map_single`` but applied per satellite row rather than per
+        pipe-delimited segment.
+
+        Args:
+            raw_row: The enriched primary row from RelationalAdapter, which
+                carries a ``__related__`` key with satellite data.
+            prop_name: YAML property name (used in error messages).
+            prop_def: The property definition dict from the mapping config.
+
+        Returns:
+            List of mapped instance dicts, one per satellite row. Returns an
+            empty list when no satellite rows exist for this entity — the
+            property is then omitted from the JSON-LD output. Also returns
+            an empty list when called with a non-relational (flat) row,
+            ensuring backwards-compatible graceful degradation.
+        """
+        from ceds_jsonld.adapters.relational_adapter import RELATED_KEY
+
+        source_table = prop_def["source_table"]
+        related = raw_row.get(RELATED_KEY)
+        if not related or source_table not in related:
+            # Flat adapter or table not registered — silently skip.
+            return []
+
+        satellite_rows: list[dict[str, Any]] = related[source_table]
+        if not satellite_rows:
+            return []
+
+        fields = prop_def.get("fields", {})
+        instances: list[dict[str, Any]] = []
+
+        for sat_row in satellite_rows:
+            instance: dict[str, Any] = {}
+            skip_instance = False
+
+            for _field_key, field_def in fields.items():
+                target = field_def.get("target", _field_key)
+                source = field_def["source"]
+                value = sat_row.get(source)
+
+                if self._is_empty(value):
+                    if not field_def.get("optional", False):
+                        _log.warning(
+                            "mapper.satellite_missing_required",
+                            property=prop_name,
+                            field=source,
+                            table=source_table,
+                        )
+                        skip_instance = True
+                        break
+                    continue
+
+                self._ensure_scalar(value, source, prop_name)
+                value = sanitize_string_value(str(value))
+
+                transform_name = field_def.get("transform")
+                if transform_name:
+                    transform_fn = get_transform(transform_name, self._custom_transforms)
+                    try:
+                        raw_result = transform_fn(value)
+                    except Exception as exc:
+                        msg = (
+                            f"Transform '{transform_name}' raised {type(exc).__name__} "
+                            f"on field '{source}' in satellite table '{source_table}' "
+                            f"for property '{prop_name}': {exc}"
+                        )
+                        raise MappingError(msg) from exc
+                    value = self._validate_transform_result(
+                        raw_result, value, transform_name, source, prop_name
+                    )
+
+                if value is None:
+                    if not field_def.get("optional", False):
+                        msg = (
+                            f"Transform on required field '{source}' in satellite table "
+                            f"'{source_table}' for property '{prop_name}' produced None. "
+                            f"Mark the field as 'optional: true' if this is intentional."
+                        )
+                        raise MappingError(msg)
+                    continue
+
+                # Handle multi_value_split within a satellite field
+                multi_split = field_def.get("multi_value_split")
+                if multi_split:
+                    sub_values = [v.strip() for v in value.split(multi_split) if v.strip()]
+                    if sub_values:
+                        instance[target] = sub_values
+                else:
+                    instance[target] = value
+
+            if not skip_instance and instance:
+                instances.append(instance)
+
+        return instances
 
     @staticmethod
     def _is_empty(value: Any) -> bool:
