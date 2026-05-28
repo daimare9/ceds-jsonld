@@ -77,15 +77,19 @@ FULL_MAPPING: dict = {
 
 
 def test_relational_adapter_basic_join():
-    primary = DictAdapter([
-        {"student_id": "1", "first_name": "Alice"},
-        {"student_id": "2", "first_name": "Bob"},
-    ])
-    ids_sat = DictAdapter([
-        {"student_id": "1", "id_type": "SSN", "id_value": "111-11-1111"},
-        {"student_id": "1", "id_type": "State", "id_value": "MI001"},
-        {"student_id": "2", "id_type": "SSN", "id_value": "222-22-2222"},
-    ])
+    primary = DictAdapter(
+        [
+            {"student_id": "1", "first_name": "Alice"},
+            {"student_id": "2", "first_name": "Bob"},
+        ]
+    )
+    ids_sat = DictAdapter(
+        [
+            {"student_id": "1", "id_type": "SSN", "id_value": "111-11-1111"},
+            {"student_id": "1", "id_type": "State", "id_value": "MI001"},
+            {"student_id": "2", "id_type": "SSN", "id_value": "222-22-2222"},
+        ]
+    )
     adapter = RelationalAdapter(
         primary=primary,
         join_key="student_id",
@@ -163,11 +167,13 @@ def test_relational_adapter_custom_satellite_join_key():
 def test_relational_adapter_satellite_missing_fk_skipped():
     """Satellite rows with no FK value are skipped."""
     primary = DictAdapter([{"id": "1", "name": "Alice"}])
-    sat = DictAdapter([
-        {"id": "1", "code": "SSN"},
-        {"id": "", "code": "BAD"},
-        {"id": None, "code": "ALSO_BAD"},
-    ])
+    sat = DictAdapter(
+        [
+            {"id": "1", "code": "SSN"},
+            {"id": "", "code": "BAD"},
+            {"id": None, "code": "ALSO_BAD"},
+        ]
+    )
     adapter = RelationalAdapter(primary=primary, join_key="id", satellites={"ids": sat})
     rows = list(adapter.read())
     # Only the one valid satellite row is linked
@@ -204,6 +210,7 @@ def test_relational_adapter_empty_primary():
 
 def test_relational_adapter_importable_from_top_level():
     from ceds_jsonld import RelationalAdapter as RA  # noqa: F401
+
     assert RA is RelationalAdapter
 
 
@@ -214,10 +221,12 @@ def test_relational_adapter_importable_from_top_level():
 
 def test_field_mapper_source_table():
     primary = DictAdapter([{"student_id": "1", "name": "Alice"}])
-    sat = DictAdapter([
-        {"student_id": "1", "id_value": "MI001", "id_type": "State"},
-        {"student_id": "1", "id_value": "SSN123", "id_type": "SSN"},
-    ])
+    sat = DictAdapter(
+        [
+            {"student_id": "1", "id_value": "MI001", "id_type": "State"},
+            {"student_id": "1", "id_value": "SSN123", "id_type": "SSN"},
+        ]
+    )
     adapter = RelationalAdapter(
         primary=primary,
         join_key="student_id",
@@ -239,9 +248,7 @@ def test_field_mapper_source_table_no_satellite_rows():
     """Property is absent from output when there are no satellite rows."""
     primary = DictAdapter([{"student_id": "99", "name": "Ghost"}])
     sat = DictAdapter([{"student_id": "1", "id_value": "X", "id_type": "Y"}])
-    adapter = RelationalAdapter(
-        primary=primary, join_key="student_id", satellites={"identifications": sat}
-    )
+    adapter = RelationalAdapter(primary=primary, join_key="student_id", satellites={"identifications": sat})
     mapper = FieldMapper(RELATIONAL_MAPPING)
     rows = list(adapter.read())
     mapped = mapper.map(rows[0])
@@ -327,16 +334,18 @@ def test_field_mapper_source_table_flat_adapter_graceful_degradation():
 
 def test_full_pipeline_relational():
     """Primary + satellite → JSON-LD with embedded typed array."""
-    primary = DictAdapter([
-        {"student_id": "1", "first_name": "Alice", "last_name": "Smith"},
-    ])
-    sat = DictAdapter([
-        {"student_id": "1", "id_value": "MI001", "id_type": "State"},
-        {"student_id": "1", "id_value": "SSN123", "id_type": "SSN"},
-    ])
-    adapter = RelationalAdapter(
-        primary=primary, join_key="student_id", satellites={"identifications": sat}
+    primary = DictAdapter(
+        [
+            {"student_id": "1", "first_name": "Alice", "last_name": "Smith"},
+        ]
     )
+    sat = DictAdapter(
+        [
+            {"student_id": "1", "id_value": "MI001", "id_type": "State"},
+            {"student_id": "1", "id_value": "SSN123", "id_type": "SSN"},
+        ]
+    )
+    adapter = RelationalAdapter(primary=primary, join_key="student_id", satellites={"identifications": sat})
     shape_def = ShapeDefinition(
         name="StudentShape",
         base_dir=Path("."),
@@ -364,14 +373,14 @@ def test_full_pipeline_relational():
 
 def test_full_pipeline_mixed_flat_and_relational():
     """A shape can mix flat primary fields and satellite source_table properties."""
-    primary = DictAdapter([
-        {"student_id": "1", "first_name": "Bob", "last_name": "Jones"},
-    ])
+    primary = DictAdapter(
+        [
+            {"student_id": "1", "first_name": "Bob", "last_name": "Jones"},
+        ]
+    )
     # No satellite rows for this student — hasIdentification should be absent
     sat = DictAdapter([])
-    adapter = RelationalAdapter(
-        primary=primary, join_key="student_id", satellites={"identifications": sat}
-    )
+    adapter = RelationalAdapter(primary=primary, join_key="student_id", satellites={"identifications": sat})
     shape_def = ShapeDefinition(
         name="StudentShape",
         base_dir=Path("."),
@@ -392,18 +401,20 @@ def test_full_pipeline_mixed_flat_and_relational():
 
 def test_full_pipeline_multiple_primary_rows():
     """Multiple primary rows each get their own satellite data."""
-    primary = DictAdapter([
-        {"student_id": "1", "first_name": "Alice", "last_name": "Smith"},
-        {"student_id": "2", "first_name": "Bob", "last_name": "Jones"},
-    ])
-    sat = DictAdapter([
-        {"student_id": "1", "id_value": "MI001", "id_type": "State"},
-        {"student_id": "2", "id_value": "MI002", "id_type": "State"},
-        {"student_id": "2", "id_value": "SSN999", "id_type": "SSN"},
-    ])
-    adapter = RelationalAdapter(
-        primary=primary, join_key="student_id", satellites={"identifications": sat}
+    primary = DictAdapter(
+        [
+            {"student_id": "1", "first_name": "Alice", "last_name": "Smith"},
+            {"student_id": "2", "first_name": "Bob", "last_name": "Jones"},
+        ]
     )
+    sat = DictAdapter(
+        [
+            {"student_id": "1", "id_value": "MI001", "id_type": "State"},
+            {"student_id": "2", "id_value": "MI002", "id_type": "State"},
+            {"student_id": "2", "id_value": "SSN999", "id_type": "SSN"},
+        ]
+    )
+    adapter = RelationalAdapter(primary=primary, join_key="student_id", satellites={"identifications": sat})
     shape_def = ShapeDefinition(
         name="StudentShape",
         base_dir=Path("."),

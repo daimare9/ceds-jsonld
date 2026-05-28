@@ -126,8 +126,7 @@ class RelationalAdapter(SourceAdapter):
             pk_str = "" if pk_value is None else str(pk_value)
 
             related: dict[str, list[dict[str, Any]]] = {
-                table_name: index.get(pk_str, [])
-                for table_name, index in self._satellite_index.items()
+                table_name: index.get(pk_str, []) for table_name, index in self._satellite_index.items()
             }
 
             enriched = dict(primary_row)

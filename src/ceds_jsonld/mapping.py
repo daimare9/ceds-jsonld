@@ -618,7 +618,9 @@ class FieldMapper:
             ensuring backwards-compatible graceful degradation.
         """
         from ceds_jsonld.adapters.relational_adapter import RELATED_KEY
+        from ceds_jsonld.logging import get_logger
 
+        log = get_logger(__name__)
         source_table = prop_def["source_table"]
         related = raw_row.get(RELATED_KEY)
         if not related or source_table not in related:
@@ -643,7 +645,7 @@ class FieldMapper:
 
                 if self._is_empty(value):
                     if not field_def.get("optional", False):
-                        _log.warning(
+                        log.warning(
                             "mapper.satellite_missing_required",
                             property=prop_name,
                             field=source,
@@ -668,9 +670,7 @@ class FieldMapper:
                             f"for property '{prop_name}': {exc}"
                         )
                         raise MappingError(msg) from exc
-                    value = self._validate_transform_result(
-                        raw_result, value, transform_name, source, prop_name
-                    )
+                    value = self._validate_transform_result(raw_result, value, transform_name, source, prop_name)
 
                 if value is None:
                     if not field_def.get("optional", False):
