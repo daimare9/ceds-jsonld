@@ -16,6 +16,7 @@ from typing import Any
 
 from ceds_jsonld.adapters.base import SourceAdapter
 from ceds_jsonld.builder import JSONLDBuilder
+from ceds_jsonld.cosmos.prepare import sanitize_cosmos_id
 from ceds_jsonld.exceptions import PipelineError, ValidationError
 from ceds_jsonld.logging import get_logger
 from ceds_jsonld.mapping import FieldMapper
@@ -230,6 +231,7 @@ class Pipeline:
         id_transform: str | None = None,
         progress: bool | ProgressCallback = False,
         dead_letter_path: str | Path | None = None,
+        inject_cosmos_id: bool = False,
     ) -> None:
         """Initialize the pipeline.
 
@@ -255,6 +257,12 @@ class Pipeline:
             dead_letter_path: If set, records that fail mapping or building
                 are written to this NDJSON file instead of raising.  The
                 pipeline continues processing remaining records.
+            inject_cosmos_id: If ``True``, each document produced by this
+                pipeline will have a Cosmos DB-safe ``id`` field injected,
+                derived from the document's ``@id`` with ``/`` replaced by
+                ``|``.  Useful when consuming the JSON-LD output outside of
+                :class:`CosmosLoader` (e.g. a custom upload script or another
+                sink).
         """
         self._source = source
         self._shape_name = shape
@@ -262,6 +270,7 @@ class Pipeline:
         self._custom_transforms = custom_transforms
         self._progress = progress
         self._dead_letter_path = Path(dead_letter_path) if dead_letter_path else None
+        self._inject_cosmos_id = inject_cosmos_id
 
         # Resolve shape artifacts eagerly so config errors surface early.
         try:
@@ -493,6 +502,9 @@ class Pipeline:
                             user_cb(count, total)
                         continue
                     raise PipelineError(f"Pipeline stream failed at row {count}: {exc}") from exc
+
+                if self._inject_cosmos_id and "@id" in doc:
+                    doc["id"] = sanitize_cosmos_id(doc["@id"])
 
                 if pbar is not None:
                     pbar.update(1)

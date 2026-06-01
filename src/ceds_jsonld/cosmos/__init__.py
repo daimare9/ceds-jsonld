@@ -8,9 +8,10 @@ JSON-LD documents to Cosmos requirements.
 from __future__ import annotations
 
 from ceds_jsonld.cosmos.loader import CosmosLoader
-from ceds_jsonld.cosmos.prepare import prepare_for_cosmos
+from ceds_jsonld.cosmos.prepare import prepare_for_cosmos, sanitize_cosmos_id
 
 __all__ = [
     "CosmosLoader",
     "prepare_for_cosmos",
+    "sanitize_cosmos_id",
 ]

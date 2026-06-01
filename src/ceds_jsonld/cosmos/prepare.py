@@ -11,6 +11,45 @@ from typing import Any
 
 from ceds_jsonld.exceptions import CosmosError
 
+# Characters that Cosmos DB does not permit in the ``id`` field.
+_COSMOS_INVALID_CHARS = "/\\?#"
+_COSMOS_REPLACEMENT = "|"
+
+
+def sanitize_cosmos_id(uri: str) -> str:
+    """Derive a Cosmos DB-safe ``id`` from a URI or IRI string.
+
+    Replaces every ``/`` character with ``|``, preserving the full URI so
+    that the resulting ``id`` is unique across entity types.
+
+    Args:
+        uri: The source URI (typically the JSON-LD ``@id`` value).
+
+    Returns:
+        The sanitized string with ``/`` replaced by ``|``.
+
+    Raises:
+        CosmosError: If the resulting ``id`` is empty.
+
+    Example::
+
+        >>> from ceds_jsonld.cosmos import sanitize_cosmos_id
+        >>> sanitize_cosmos_id("cepi:person/12345")
+        'cepi:person|12345'
+        >>> sanitize_cosmos_id("https://cepi.org/person/12345")
+        'https:|cepi.org|person|12345'
+        >>> sanitize_cosmos_id("plain-id-no-slash")
+        'plain-id-no-slash'
+    """
+    result = uri.replace("/", _COSMOS_REPLACEMENT)
+    if not result:
+        msg = (
+            f"Cannot derive Cosmos 'id' from URI {uri!r}. "
+            "The value is empty. Ensure every document has a non-empty @id."
+        )
+        raise CosmosError(msg)
+    return result
+
 
 def prepare_for_cosmos(
     doc: dict[str, Any],
@@ -24,28 +63,32 @@ def prepare_for_cosmos(
     from an explicit ``partitionKey`` field.  This function copies the
     original document (no mutation) and injects both fields.
 
+    The ``id`` is derived from the full value of *id_field* with ``/``
+    replaced by ``|`` via :func:`sanitize_cosmos_id`.  This preserves
+    the complete URI (avoiding ID collisions between entity types) while
+    producing a Cosmos-safe string.
+
     Args:
         doc: A JSON-LD document dict (must contain *id_field*).
         partition_value: Value for the ``partitionKey`` field.  Defaults to
             the document's ``@type`` if not provided.
         id_field: The key in *doc* that holds the document identifier.
-            Defaults to ``"@id"``.  The URI prefix is stripped automatically
-            (everything up to and including the last ``/`` or ``#``).
+            Defaults to ``"@id"``.
 
     Returns:
         A deep copy of *doc* with ``id`` and ``partitionKey`` injected.
 
     Raises:
         KeyError: If *id_field* is missing from *doc*.
-        CosmosError: If the derived ``id`` is empty.
+        CosmosError: If the sanitized ``id`` is empty.
 
     Example::
 
         >>> from ceds_jsonld.cosmos import prepare_for_cosmos
-        >>> doc = {"@id": "cepi:person/12345", "@type": "Person", ...}
+        >>> doc = {"@id": "cepi:person/12345", "@type": "Person"}
         >>> cosmos_doc = prepare_for_cosmos(doc)
         >>> cosmos_doc["id"]
-        '12345'
+        'cepi:person|12345'
         >>> cosmos_doc["partitionKey"]
         'Person'
     """
@@ -53,25 +96,17 @@ def prepare_for_cosmos(
         msg = f"Document is missing '{id_field}'. Cannot prepare for Cosmos DB. Available keys: {sorted(doc.keys())}"
         raise KeyError(msg)
 
-    cosmos_doc = copy.deepcopy(doc)
-
-    # Extract the trailing identifier from the URI.
-    # Split on both '/' and '#' separators — URIs may use either as the
-    # namespace delimiter (e.g. "cepi:person/12345" or "cepi:person#12345").
     raw_id = str(doc[id_field])
-    # First split on '#' (fragment), then on '/' (path), taking the last segment.
-    last_segment = raw_id.rsplit("#", 1)[-1] if "#" in raw_id else raw_id
-    derived_id = last_segment.rsplit("/", 1)[-1] if "/" in last_segment else last_segment
 
-    if not derived_id:
+    if not raw_id:
         msg = (
             f"Cannot derive Cosmos 'id' from {id_field}={raw_id!r}. "
-            "The value is empty or ends with '/' yielding an empty identifier. "
-            "Ensure every document has a non-empty @id with a meaningful trailing segment."
+            "The value is empty. Ensure every document has a non-empty @id."
         )
         raise CosmosError(msg)
 
-    cosmos_doc["id"] = derived_id
+    cosmos_doc = copy.deepcopy(doc)
+    cosmos_doc["id"] = sanitize_cosmos_id(raw_id)
 
     # Partition key: explicit value, or fall back to @type.
     if partition_value is not None:
