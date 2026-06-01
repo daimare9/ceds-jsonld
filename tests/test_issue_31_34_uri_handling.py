@@ -1,6 +1,7 @@
 """Tests for URI handling fixes — issues #31 and #34.
 
-#31: prepare_for_cosmos ignores ``#`` separator → wrong Cosmos id.
+#31: prepare_for_cosmos now uses full-URI sanitization (/ → |) instead of
+     trailing-segment extraction. Hash characters are preserved as-is.
 #34: validate_base_uri accepts whitespace, file://, percent-encoded traversal;
      validate_base_uri never called by Builder.
 """
@@ -13,7 +14,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from ceds_jsonld.cosmos.prepare import prepare_for_cosmos
-from ceds_jsonld.exceptions import BuildError, CosmosError
+from ceds_jsonld.exceptions import BuildError
 from ceds_jsonld.sanitize import validate_base_uri
 
 # =====================================================================
@@ -22,37 +23,37 @@ from ceds_jsonld.sanitize import validate_base_uri
 
 
 class TestCosmosHashSeparator:
-    """Cosmos id extraction must handle ``#`` as a namespace separator."""
+    """Cosmos id uses full-URI sanitization (/ → |). Hash separators are preserved as-is."""
 
     def test_hash_only_separator(self) -> None:
-        """``cepi:person#12345`` → id should be ``'12345'``."""
+        """``cepi:person#12345`` has no slash → id is the full value unchanged."""
         doc: dict[str, Any] = {"@id": "cepi:person#12345", "@type": "Person"}
         result = prepare_for_cosmos(doc)
-        assert result["id"] == "12345"
+        assert result["id"] == "cepi:person#12345"
 
     def test_mixed_slash_and_hash(self) -> None:
-        """``https://example.org/person#99`` → id should be ``'99'``."""
+        """``https://example.org/person#99`` → slashes replaced with ``|``."""
         doc: dict[str, Any] = {"@id": "https://example.org/person#99", "@type": "Person"}
         result = prepare_for_cosmos(doc)
-        assert result["id"] == "99"
+        assert result["id"] == "https:||example.org|person#99"
 
     def test_urn_with_hash(self) -> None:
-        """``urn:ceds:person#ABC`` → id should be ``'ABC'``."""
+        """``urn:ceds:person#ABC`` has no slash → id is the full value unchanged."""
         doc: dict[str, Any] = {"@id": "urn:ceds:person#ABC", "@type": "Person"}
         result = prepare_for_cosmos(doc)
-        assert result["id"] == "ABC"
+        assert result["id"] == "urn:ceds:person#ABC"
 
-    def test_hash_at_end_raises(self) -> None:
-        """URI ending with ``#`` yields empty id → must raise."""
+    def test_hash_at_end_does_not_raise(self) -> None:
+        """URI ending with ``#`` sanitizes to a non-empty string — does not raise."""
         doc: dict[str, Any] = {"@id": "cepi:person#", "@type": "Person"}
-        with pytest.raises(CosmosError, match="Cannot derive Cosmos 'id'"):
-            prepare_for_cosmos(doc)
+        result = prepare_for_cosmos(doc)
+        assert result["id"] == "cepi:person#"
 
     def test_slash_separator_still_works(self) -> None:
-        """Existing slash-based URIs must remain unaffected."""
+        """Slash-based URIs are sanitized: ``cepi:person/12345`` → ``cepi:person|12345``."""
         doc: dict[str, Any] = {"@id": "cepi:person/12345", "@type": "Person"}
         result = prepare_for_cosmos(doc)
-        assert result["id"] == "12345"
+        assert result["id"] == "cepi:person|12345"
 
     def test_no_separator_returns_whole_value(self) -> None:
         """Plain identifiers with no separator return the full value."""
@@ -60,17 +61,17 @@ class TestCosmosHashSeparator:
         result = prepare_for_cosmos(doc)
         assert result["id"] == "plain-id"
 
-    def test_multiple_hashes_uses_last(self) -> None:
-        """``a#b#c`` → id should be ``'c'`` (last segment after #)."""
+    def test_multiple_hashes_uses_full_uri(self) -> None:
+        """``a#b#c`` has no slash → full value returned unchanged."""
         doc: dict[str, Any] = {"@id": "a#b#c", "@type": "Person"}
         result = prepare_for_cosmos(doc)
-        assert result["id"] == "c"
+        assert result["id"] == "a#b#c"
 
     def test_slash_then_hash(self) -> None:
-        """``http://example.org/ns/person#42`` → id should be ``'42'``."""
+        """``http://example.org/ns/person#42`` → slashes replaced with ``|``."""
         doc: dict[str, Any] = {"@id": "http://example.org/ns/person#42", "@type": "Person"}
         result = prepare_for_cosmos(doc)
-        assert result["id"] == "42"
+        assert result["id"] == "http:||example.org|ns|person#42"
 
 
 # =====================================================================

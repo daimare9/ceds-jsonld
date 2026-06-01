@@ -22,7 +22,7 @@ from ceds_jsonld.adapters import (
     powerschool_adapter,
 )
 from ceds_jsonld.builder import JSONLDBuilder
-from ceds_jsonld.cosmos import CosmosLoader, prepare_for_cosmos
+from ceds_jsonld.cosmos import CosmosLoader, prepare_for_cosmos, sanitize_cosmos_id
 from ceds_jsonld.introspector import NodeShapeInfo, PropertyInfo, SHACLIntrospector
 from ceds_jsonld.logging import get_logger
 from ceds_jsonld.mapping import FieldMapper
@@ -91,6 +91,7 @@ __all__ = [
     "get_logger",
     "powerschool_adapter",
     "prepare_for_cosmos",
+    "sanitize_cosmos_id",
     "sanitize_iri_component",
     "sanitize_string_value",
     "validate_base_uri",
