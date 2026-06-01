@@ -18,8 +18,36 @@ from ceds_jsonld.cosmos.loader import (
     CosmosLoader,
     UpsertResult,
 )
-from ceds_jsonld.cosmos.prepare import prepare_for_cosmos
+from ceds_jsonld.cosmos.prepare import prepare_for_cosmos, sanitize_cosmos_id
 from ceds_jsonld.exceptions import CosmosError
+
+# =====================================================================
+# sanitize_cosmos_id — pure function, real tests
+# =====================================================================
+
+
+class TestSanitizeCosmosId:
+    """Test the sanitize_cosmos_id utility function."""
+
+    def test_replaces_slash_with_pipe(self) -> None:
+        assert sanitize_cosmos_id("cepi:person/12345") == "cepi:person|12345"
+
+    def test_replaces_multiple_slashes(self) -> None:
+        assert sanitize_cosmos_id("https://cepi.org/person/12345") == "https:||cepi.org|person|12345"
+
+    def test_no_slash_unchanged(self) -> None:
+        assert sanitize_cosmos_id("plain-id-no-slash") == "plain-id-no-slash"
+
+    def test_empty_string_raises(self) -> None:
+        with pytest.raises(CosmosError, match="Cannot derive Cosmos 'id'"):
+            sanitize_cosmos_id("")
+
+    def test_preserves_other_characters(self) -> None:
+        assert sanitize_cosmos_id("cepi:person/ABC-123_test") == "cepi:person|ABC-123_test"
+
+    def test_colon_preserved(self) -> None:
+        assert sanitize_cosmos_id("urn:uuid:abc-123") == "urn:uuid:abc-123"
+
 
 # =====================================================================
 # prepare_for_cosmos — pure function, real tests
@@ -32,7 +60,7 @@ class TestPrepareForCosmos:
     def test_injects_id_from_at_id(self) -> None:
         doc = {"@id": "cepi:person/12345", "@type": "Person"}
         result = prepare_for_cosmos(doc)
-        assert result["id"] == "12345"
+        assert result["id"] == "cepi:person|12345"
 
     def test_injects_partition_key_from_at_type(self) -> None:
         doc = {"@id": "cepi:person/12345", "@type": "Person"}
@@ -65,7 +93,7 @@ class TestPrepareForCosmos:
     def test_strips_uri_prefix(self) -> None:
         doc = {"@id": "http://example.org/person/ABC-123", "@type": "Person"}
         result = prepare_for_cosmos(doc)
-        assert result["id"] == "ABC-123"
+        assert result["id"] == "http:||example.org|person|ABC-123"
 
     def test_no_slash_in_id_uses_whole_value(self) -> None:
         doc = {"@id": "plain-id-no-slash", "@type": "Person"}
@@ -75,7 +103,7 @@ class TestPrepareForCosmos:
     def test_missing_at_type_falls_back_to_id(self) -> None:
         doc = {"@id": "cepi:person/555"}
         result = prepare_for_cosmos(doc)
-        assert result["partitionKey"] == "555"
+        assert result["partitionKey"] == "cepi:person|555"
 
     def test_missing_id_field_raises(self) -> None:
         doc = {"@type": "Person", "name": "No ID"}
@@ -85,7 +113,7 @@ class TestPrepareForCosmos:
     def test_custom_id_field(self) -> None:
         doc = {"customId": "cepi:org/789", "@type": "Organization"}
         result = prepare_for_cosmos(doc, id_field="customId")
-        assert result["id"] == "789"
+        assert result["id"] == "cepi:org|789"
 
     def test_deep_copy_isolates_nested_objects(self) -> None:
         """Regression: mutating result must not corrupt original (issue #12)."""
@@ -101,16 +129,16 @@ class TestPrepareForCosmos:
             prepare_for_cosmos(doc)
 
     def test_slash_only_at_id_raises(self) -> None:
-        """Regression: slash-only @id must raise CosmosError (issue #13)."""
+        """Regression: slash-only @id produces all-pipe string, not empty — no longer raises."""
         doc = {"@id": "////", "@type": "Person"}
-        with pytest.raises(CosmosError, match="Cannot derive Cosmos 'id'"):
-            prepare_for_cosmos(doc)
+        result = prepare_for_cosmos(doc)
+        assert result["id"] == "||||"
 
     def test_trailing_slash_at_id_raises(self) -> None:
-        """URI ending with slash yields empty id segment (issue #13)."""
+        """URI ending with slash sanitizes to trailing pipe — does not raise."""
         doc = {"@id": "cepi:person/", "@type": "Person"}
-        with pytest.raises(CosmosError, match="Cannot derive Cosmos 'id'"):
-            prepare_for_cosmos(doc)
+        result = prepare_for_cosmos(doc)
+        assert result["id"] == "cepi:person|"
 
 
 # =====================================================================
@@ -219,7 +247,7 @@ class TestCosmosLoaderUpsert:
         doc = _sample_doc()
         result = asyncio.run(loader_with_mock.upsert_one(doc))
         assert result.status == "success"
-        assert result.document_id == "12345"
+        assert result.document_id == "cepi:person|12345"
         mock_container.upsert_item.assert_awaited_once()
 
     def test_upsert_one_failure(self, loader_with_mock: CosmosLoader, mock_container: AsyncMock) -> None:

@@ -515,3 +515,43 @@ class TestDuplicateIdWarning:
         assert len(docs) == 2
         assert len(set(d["@id"] for d in docs)) == 2
         assert not any("duplicate_ids" in r.message for r in caplog.records)
+
+
+# =====================================================================
+# inject_cosmos_id
+# =====================================================================
+
+
+class TestInjectCosmosId:
+    """Pipeline(inject_cosmos_id=True) injects a Cosmos-safe 'id' field."""
+
+    def test_inject_cosmos_id_adds_id_field(self, registry: ShapeRegistry, sample_rows: list[dict]) -> None:
+        source = DictAdapter(sample_rows)
+        pipeline = Pipeline(source=source, shape="person", registry=registry, inject_cosmos_id=True)
+        docs = pipeline.build_all()
+        for doc in docs:
+            assert "id" in doc
+            assert "/" not in doc["id"]
+            assert "|" in doc["id"] or doc["id"] == doc["@id"]  # @id with no slash is unchanged
+
+    def test_inject_cosmos_id_derives_from_at_id(self, registry: ShapeRegistry, sample_rows: list[dict]) -> None:
+        source = DictAdapter(sample_rows)
+        pipeline = Pipeline(source=source, shape="person", registry=registry, inject_cosmos_id=True)
+        docs = pipeline.build_all()
+        for doc in docs:
+            expected = doc["@id"].replace("/", "|")
+            assert doc["id"] == expected
+
+    def test_no_inject_means_no_id_field(self, registry: ShapeRegistry, sample_rows: list[dict]) -> None:
+        source = DictAdapter(sample_rows)
+        pipeline = Pipeline(source=source, shape="person", registry=registry, inject_cosmos_id=False)
+        docs = pipeline.build_all()
+        for doc in docs:
+            assert "id" not in doc
+
+    def test_inject_cosmos_id_default_is_false(self, registry: ShapeRegistry, sample_rows: list[dict]) -> None:
+        source = DictAdapter(sample_rows)
+        pipeline = Pipeline(source=source, shape="person", registry=registry)
+        docs = pipeline.build_all()
+        for doc in docs:
+            assert "id" not in doc
