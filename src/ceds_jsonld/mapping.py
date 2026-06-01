@@ -643,6 +643,9 @@ class FieldMapper:
 
                 if self._is_empty(value):
                     if not field_def.get("optional", False):
+                        from ceds_jsonld.logging import get_logger
+
+                        _log = get_logger(__name__)
                         _log.warning(
                             "mapper.satellite_missing_required",
                             property=prop_name,
@@ -668,9 +671,7 @@ class FieldMapper:
                             f"for property '{prop_name}': {exc}"
                         )
                         raise MappingError(msg) from exc
-                    value = self._validate_transform_result(
-                        raw_result, value, transform_name, source, prop_name
-                    )
+                    value = self._validate_transform_result(raw_result, value, transform_name, source, prop_name)
 
                 if value is None:
                     if not field_def.get("optional", False):

@@ -17,6 +17,31 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ---
 
+## [1.6.0] — 2026-06-01
+
+### Added
+
+- **`sanitize_cosmos_id(uri)`** — New public utility function that produces a
+  Cosmos DB–safe `id` string from any URI by replacing all `/` characters with
+  `|`. Exported from both `ceds_jsonld` and `ceds_jsonld.cosmos`.
+- **`inject_cosmos_id` pipeline parameter** — `Pipeline(inject_cosmos_id=True)`
+  automatically injects a sanitized `id` field into every output document
+  (derived from `@id`), enabling direct use with `CosmosLoader` or any
+  Cosmos-aware sink without an extra post-processing step.
+
+### Changed
+
+- **`prepare_for_cosmos()` full-URI sanitization** *(breaking)*  — The Cosmos
+  `id` field now contains the entire sanitized URI (e.g.
+  `https:||cepi.org|person|12345`) instead of only the trailing path segment
+  (`12345`). This prevents `id` collisions across different entity types that
+  share the same local identifier and aligns with the Cosmos DB best practice
+  of globally unique document IDs. **Existing containers will have different
+  `id` values for the same documents after upgrading; a data migration may be
+  required if you query by `id` directly.**
+
+---
+
 ## [1.5.0] — 2026-05-05
 
 ### Added
