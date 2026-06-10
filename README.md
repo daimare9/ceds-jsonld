@@ -4,7 +4,7 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![CI](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml/badge.svg)](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml)
-[![Tests: 1091 passed](https://img.shields.io/badge/tests-1091%20passed-brightgreen.svg)](tests/)
+[![Tests: 1103 passed](https://img.shields.io/badge/tests-1103%20passed-brightgreen.svg)](tests/)
 [![Coverage: 88%](https://img.shields.io/badge/coverage-88%25-yellowgreen.svg)]()
 
 **Python library for converting education data into standards-compliant JSON-LD documents backed by the [CEDS ontology](https://ceds.ed.gov/).**
@@ -1049,6 +1049,7 @@ JSON serialization uses [orjson](https://github.com/ijl/orjson) (Rust-backed, ~1
 | 1.4.0 | ✅ Released | Multiprocessing parallel pipeline (`workers` param on `to_sink()`), `ProcessPoolExecutor`-based map→build→serialize, custom-transforms guard. **1062 tests**. |
 | 1.5.0 | ✅ Released | `RelationalAdapter` for star-schema multi-table joins; `source_table` YAML key for satellite table mapping; graceful degradation for flat adapters. **1081 tests**. |
 | 1.6.0 | ✅ Released | `sanitize_cosmos_id()` utility; `inject_cosmos_id` Pipeline parameter; full-URI Cosmos ID sanitization (breaking: `id` now preserves full URI with `/`→`\|`). **1091 tests**. |
+| 1.7.0 | ✅ Released | `wrapper_field` / `inner_type` YAML mapping keys for intermediate container nodes in property graphs. **1103 tests**. |
 
 See [ROADMAP.md](ROADMAP.md) for the full plan.
 

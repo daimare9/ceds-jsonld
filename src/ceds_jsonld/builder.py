@@ -165,10 +165,44 @@ class JSONLDBuilder:
         instances: list[dict[str, Any]],
         prop_def: dict[str, Any],
     ) -> list[dict[str, Any]]:
-        """Build typed sub-shape nodes from mapped instances."""
+        """Build typed sub-shape nodes from mapped instances.
+
+        Supports an optional two-level wrapper pattern via ``wrapper_field`` and
+        ``inner_type``.  When both keys are present the mapped fields are placed
+        on an inner node (``@type = inner_type``) which is then nested under
+        ``wrapper_field`` inside an outer node (``@type = type``).  This
+        satisfies SHACL shapes that require an intermediate container node, e.g.
+        ``Organization → hasLocation → Location → hasLocationAddress →
+        LocationAddress``.
+
+        YAML example::
+
+            hasLocation:
+              source_table: addresses
+              type: Location          # outer node @type
+              wrapper_field: hasLocationAddress
+              inner_type: LocationAddress   # inner node @type
+              fields:
+                street:
+                  source: AddressStreetNumberAndName
+                  target: AddressStreetNumberAndName
+                  optional: true
+        """
+        wrapper_field: str | None = prop_def.get("wrapper_field")
+        inner_type: str | None = prop_def.get("inner_type")
+        use_wrapper = bool(wrapper_field and inner_type)
+
         nodes: list[dict[str, Any]] = []
 
         for instance in instances:
+            # When wrapper_field + inner_type are set, fields are placed on the
+            # inner node; the outer node only carries @type and wrapper_field.
+            if use_wrapper:
+                inner_node: dict[str, Any] = {"@type": inner_type}
+                field_target = inner_node
+            else:
+                field_target = {}
+
             node: dict[str, Any] = {"@type": prop_def["type"]}
 
             # Add mapped fields with optional typed literals
@@ -183,17 +217,17 @@ class JSONLDBuilder:
                 if datatype:
                     typed = self._typed_literal(value, datatype)
                     if typed is not None:
-                        node[target] = typed
+                        field_target[target] = typed
                 else:
                     # Plain value — unwrap single-element lists
                     if isinstance(value, list):
                         if not value:
                             continue
-                        node[target] = value if len(value) > 1 else value[0]
+                        field_target[target] = value if len(value) > 1 else value[0]
                     else:
-                        node[target] = value
+                        field_target[target] = value
 
-            # Recursively build nested sub-properties
+            # Recursively build nested sub-properties (on the field target node)
             for nested_name, nested_def in prop_def.get("properties", {}).items():
                 nested_instances = instance.get(nested_name)
                 if not nested_instances:
@@ -201,17 +235,27 @@ class JSONLDBuilder:
                 nested_nodes = self._build_sub_nodes(nested_instances, nested_def)
                 if not nested_nodes:
                     continue
-                node[nested_name] = nested_nodes if len(nested_nodes) > 1 else nested_nodes[0]
+                field_target[nested_name] = nested_nodes if len(nested_nodes) > 1 else nested_nodes[0]
 
-            # Inject record status
-            if prop_def.get("include_record_status") and self._record_status_template:
-                node["hasRecordStatus"] = self._copy_template(self._record_status_template)
+            if use_wrapper:
+                # Only emit the outer node when the inner node has real content
+                # beyond just its @type.
+                if len(inner_node) > 1:
+                    node[wrapper_field] = inner_node  # type: ignore[index]
+                    nodes.append(node)
+            else:
+                # Flat mode: merge field_target into node
+                node.update(field_target)
 
-            # Inject data collection
-            if prop_def.get("include_data_collection") and self._data_collection_template:
-                node["hasDataCollection"] = self._copy_template(self._data_collection_template)
+                # Inject record status
+                if prop_def.get("include_record_status") and self._record_status_template:
+                    node["hasRecordStatus"] = self._copy_template(self._record_status_template)
 
-            nodes.append(node)
+                # Inject data collection
+                if prop_def.get("include_data_collection") and self._data_collection_template:
+                    node["hasDataCollection"] = self._copy_template(self._data_collection_template)
+
+                nodes.append(node)
 
         return nodes
 

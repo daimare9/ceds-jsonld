@@ -17,6 +17,23 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ---
 
+## [1.7.0] — 2026-06-10
+
+### Added
+
+- **`wrapper_field` / `inner_type` YAML mapping keys** — Property definitions
+  now support an optional two-level node pattern: `wrapper_field` names the
+  predicate on the outer node and `inner_type` sets the `@type` of an inner
+  container node. Fields and nested `properties:` blocks are placed on the
+  inner node, allowing intermediate containers such as
+  `Organization → hasLocation → Location → hasLocationAddress → LocationAddress`
+  to be expressed declaratively in the mapping YAML without any custom code.
+  Empty inner nodes (no fields resolved) are suppressed so no stub objects
+  appear in the output. Works with both `source_table` (relational) and flat
+  field sources.
+
+---
+
 ## [1.6.0] — 2026-06-01
 
 ### Added

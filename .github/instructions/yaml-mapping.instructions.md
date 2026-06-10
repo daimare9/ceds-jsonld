@@ -125,6 +125,51 @@ adapter = RelationalAdapter(
 - When used with a flat (non-relational) adapter, the property is silently omitted (graceful degradation).
 - `satellite_join_key` on `RelationalAdapter` allows different FK column names in primary vs. satellite tables.
 
+### Intermediate Container Nodes (`wrapper_field` / `inner_type`)
+
+Some SHACL shapes require an intermediate container node between the subject property and the actual
+data node.  For example `Organization → hasLocation → Location → hasLocationAddress → LocationAddress`
+cannot be expressed with a single `type:` key.  Use `wrapper_field` and `inner_type` together:
+
+```yaml
+hasLocation:
+  source_table: addresses     # or use cardinality: multiple / split_on for flat sources
+  type: Location              # @type of the OUTER (container) node
+  wrapper_field: hasLocationAddress   # property name on the outer node
+  inner_type: LocationAddress # @type of the INNER (data) node
+  fields:
+    city:
+      source: AddressCity
+      target: AddressCity
+      optional: true
+    street:
+      source: AddressStreetNumberAndName
+      target: AddressStreetNumberAndName
+      optional: true
+```
+
+This produces:
+
+```json
+"hasLocation": {
+  "@type": "Location",
+  "hasLocationAddress": {
+    "@type": "LocationAddress",
+    "AddressCity": "GRAND RAPIDS",
+    "AddressStreetNumberAndName": "100 Main St"
+  }
+}
+```
+
+**Rules for `wrapper_field` / `inner_type`:**
+- Both keys must be present together; using only one is a configuration error.
+- All `fields` are placed on the **inner** node (`inner_type`), never on the outer node (`type`).
+- If all inner fields are optional and all are missing for a row, that row is suppressed (no empty outer node emitted).
+- `properties:` (recursive nested sub-shapes) are also placed on the inner node when a wrapper is active.
+- `include_record_status` and `include_data_collection` are only injected in the **non-wrapper** (flat) path;
+  for wrapper shapes, add those fields directly in `fields:` if required.
+- Works with both `source_table` (relational) and flat pipe-delimited (`cardinality: multiple`) sources.
+
 ### Transforms
 Built-in transforms are referenced by name:
 - `sex_prefix` — Adds "Sex_" prefix (e.g., "Female" → "Sex_Female")
