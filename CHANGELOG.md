@@ -17,6 +17,23 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ---
 
+## [1.8.0] — 2026-07-28
+
+### Added
+
+- **`id_ref` / `iri_ref` property type** — A property can now be declared with
+  `type: id_ref` (alias `iri_ref`) so each value serializes as the node-object
+  form `{"@id": <source value>}` with **no** `@type` key. This supports SHACL
+  object-property references declared `sh:nodeKind sh:IRI`, such as
+  `OrganizationRelationship → hasOrganizationRelationshipSubject` /
+  `hasOrganizationRelationshipObject`. The value is taken from the field mapped
+  to the `@id` target, and both `cardinality: single` (one reference node) and
+  `cardinality: multiple` (an array of reference nodes) are supported. Handled
+  as a first-class case in `JSONLDBuilder.build_one`, mirroring the existing
+  `named_individual` flattening path.
+
+---
+
 ## [1.7.0] — 2026-06-10
 
 ### Added
