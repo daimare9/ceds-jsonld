@@ -4,7 +4,7 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![CI](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml/badge.svg)](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml)
-[![Tests: 1103 passed](https://img.shields.io/badge/tests-1103%20passed-brightgreen.svg)](tests/)
+[![Tests: 1108 passed](https://img.shields.io/badge/tests-1108%20passed-brightgreen.svg)](tests/)
 [![Coverage: 88%](https://img.shields.io/badge/coverage-88%25-yellowgreen.svg)]()
 
 **Python library for converting education data into standards-compliant JSON-LD documents backed by the [CEDS ontology](https://ceds.ed.gov/).**
@@ -646,6 +646,41 @@ The adapter works with any `SourceAdapter` (Parquet, CSV, database, dict, etc.).
 
 ---
 
+### IRI reference properties (`sh:nodeKind sh:IRI`)
+
+Some SHACL object properties are plain references to another node — they must
+serialize as the node-object form `{"@id": "https://..."}` with **no** `@type`.
+Declare such a property with `type: id_ref` (or the alias `iri_ref`) and map the
+source column to the `@id` target:
+
+```yaml
+properties:
+  hasOrganizationRelationshipSubject:
+    type: id_ref
+    cardinality: single
+    fields:
+      orgId:
+        source: hasOrganizationRelationshipSubject.@id
+        target: "@id"
+```
+
+For a row containing
+`{"hasOrganizationRelationshipSubject.@id": "https://cepi-dev.state.mi.us/organization/03040"}`
+this emits:
+
+```json
+{
+  "hasOrganizationRelationshipSubject": {
+    "@id": "https://cepi-dev.state.mi.us/organization/03040"
+  }
+}
+```
+
+Use `cardinality: multiple` (with `split_on`) to emit an array of `{"@id": ...}`
+reference nodes. No `@type` key is ever emitted for these properties.
+
+---
+
 ### Reading from PowerSchool or Blackbaud
 
 ```python
@@ -1050,6 +1085,7 @@ JSON serialization uses [orjson](https://github.com/ijl/orjson) (Rust-backed, ~1
 | 1.5.0 | ✅ Released | `RelationalAdapter` for star-schema multi-table joins; `source_table` YAML key for satellite table mapping; graceful degradation for flat adapters. **1081 tests**. |
 | 1.6.0 | ✅ Released | `sanitize_cosmos_id()` utility; `inject_cosmos_id` Pipeline parameter; full-URI Cosmos ID sanitization (breaking: `id` now preserves full URI with `/`→`\|`). **1091 tests**. |
 | 1.7.0 | ✅ Released | `wrapper_field` / `inner_type` YAML mapping keys for intermediate container nodes in property graphs. **1103 tests**. |
+| 1.8.0 | ✅ Released | `id_ref` / `iri_ref` property type for `sh:nodeKind sh:IRI` references — emits `{"@id": ...}` with no `@type` (single & multiple cardinality). **1108 tests**. |
 
 See [ROADMAP.md](ROADMAP.md) for the full plan.
 
