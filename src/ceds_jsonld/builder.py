@@ -105,6 +105,12 @@ class JSONLDBuilder:
                 if not values:
                     continue
                 doc[prop_name] = values if len(values) > 1 else values[0]
+            elif prop_def.get("type") in ("id_ref", "iri_ref"):
+                # IRI reference (sh:nodeKind sh:IRI): emit {"@id": value} with NO @type
+                refs = self._build_id_refs(instances, prop_def)
+                if not refs:
+                    continue
+                doc[prop_name] = refs if len(refs) > 1 else refs[0]
             else:
                 nodes = self._build_sub_nodes(instances, prop_def)
                 if not nodes:
@@ -159,6 +165,36 @@ class JSONLDBuilder:
                     values.append(str(instance[target]))
                     break  # one value per instance
         return values
+
+    @staticmethod
+    def _build_id_refs(
+        instances: list[dict[str, Any]],
+        prop_def: dict[str, Any],
+    ) -> list[dict[str, Any]]:
+        """Build ``@id``-only reference nodes for ``sh:nodeKind sh:IRI`` properties.
+
+        Object-property references (e.g. ``OrganizationRelationship →
+        hasOrganizationRelationshipSubject``) must serialize as the node-object
+        form ``{"@id": <value>}`` with **no** ``@type`` key.  The source value is
+        an absolute IRI that maps to the ``@id`` target field.  Supports both
+        single and multiple cardinality (an array of reference nodes).
+        """
+        refs: list[dict[str, Any]] = []
+        fields = prop_def.get("fields", {})
+        for instance in instances:
+            # Prefer the field explicitly targeting @id; fall back to first
+            # populated field value.
+            value: Any = instance.get("@id")
+            if value is None:
+                for _fk, fdef in fields.items():
+                    target = fdef.get("target", _fk)
+                    if target in instance and instance[target] is not None:
+                        value = instance[target]
+                        break
+            if value is None:
+                continue
+            refs.append({"@id": str(value)})
+        return refs
 
     def _build_sub_nodes(
         self,
