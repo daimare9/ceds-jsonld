@@ -4,7 +4,7 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![CI](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml/badge.svg)](https://github.com/daimare9/ceds-jsonld/actions/workflows/ci.yml)
-[![Tests: 1108 passed](https://img.shields.io/badge/tests-1108%20passed-brightgreen.svg)](tests/)
+[![Tests: 1111 passed](https://img.shields.io/badge/tests-1111%20passed-brightgreen.svg)](tests/)
 [![Coverage: 88%](https://img.shields.io/badge/coverage-88%25-yellowgreen.svg)]()
 
 **Python library for converting education data into standards-compliant JSON-LD documents backed by the [CEDS ontology](https://ceds.ed.gov/).**
@@ -677,7 +677,10 @@ this emits:
 ```
 
 Use `cardinality: multiple` (with `split_on`) to emit an array of `{"@id": ...}`
-reference nodes. No `@type` key is ever emitted for these properties.
+reference nodes. No `@type` key is ever emitted for these properties. The
+`id_ref` / `iri_ref` type also works when nested inside another shape's
+`properties:` block (e.g. `Organization → hasOrganizationRelationship →
+hasOrganizationRelationshipSubject`).
 
 ---
 
@@ -1086,6 +1089,7 @@ JSON serialization uses [orjson](https://github.com/ijl/orjson) (Rust-backed, ~1
 | 1.6.0 | ✅ Released | `sanitize_cosmos_id()` utility; `inject_cosmos_id` Pipeline parameter; full-URI Cosmos ID sanitization (breaking: `id` now preserves full URI with `/`→`\|`). **1091 tests**. |
 | 1.7.0 | ✅ Released | `wrapper_field` / `inner_type` YAML mapping keys for intermediate container nodes in property graphs. **1103 tests**. |
 | 1.8.0 | ✅ Released | `id_ref` / `iri_ref` property type for `sh:nodeKind sh:IRI` references — emits `{"@id": ...}` with no `@type` (single & multiple cardinality). **1108 tests**. |
+| 1.9.0 | ✅ Released | Nested `id_ref` / `iri_ref` support — reference type honoured inside sub-node `properties:` blocks at any depth. **1111 tests**. |
 
 See [ROADMAP.md](ROADMAP.md) for the full plan.
 

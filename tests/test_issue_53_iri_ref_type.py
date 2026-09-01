@@ -76,6 +76,50 @@ MULTIPLE_REF = {
 }
 
 
+NESTED_REF = {
+    "type": "Organization",
+    "base_uri": "urn:test/",
+    "context_url": "https://example.org/ctx",
+    "id_source": "Id",
+    "properties": {
+        "hasOrganizationRelationship": {
+            "type": "OrganizationRelationship",
+            "cardinality": "single",
+            "fields": {
+                "relType": {
+                    "source": "relType",
+                    "target": "relationshipType",
+                    "optional": True,
+                },
+            },
+            "properties": {
+                "hasOrganizationRelationshipSubject": {
+                    "type": "id_ref",
+                    "cardinality": "single",
+                    "fields": {
+                        "orgId": {
+                            "source": "subject.@id",
+                            "target": "@id",
+                        },
+                    },
+                },
+                "hasOrganizationRelationshipObject": {
+                    "type": "iri_ref",
+                    "cardinality": "multiple",
+                    "split_on": "|",
+                    "fields": {
+                        "orgId": {
+                            "source": "object.@id",
+                            "target": "@id",
+                        },
+                    },
+                },
+            },
+        },
+    },
+}
+
+
 class TestSingleIriRef:
     """cardinality: single → a single {"@id": ...} node."""
 
@@ -135,3 +179,53 @@ class TestMultipleIriRef:
         for node in doc["hasOrganizationRelationshipObject"]:
             assert "@type" not in node
             assert list(node.keys()) == ["@id"]
+
+
+class TestNestedIriRef:
+    """id_ref / iri_ref declared inside a sub-node's ``properties:`` block."""
+
+    def test_nested_single_ref_is_id_only(self) -> None:
+        shape = _make_shape(NESTED_REF)
+        mapper = FieldMapper(shape.mapping_config)
+        builder = JSONLDBuilder(shape)
+        row = {
+            "Id": "1",
+            "relType": "parent",
+            "subject.@id": SUBJECT_URI,
+            "object.@id": OBJECT_URI,
+        }
+        doc = builder.build_one(mapper.map(row))
+        rel = doc["hasOrganizationRelationship"]
+        assert rel["@type"] == "OrganizationRelationship"
+        assert rel["hasOrganizationRelationshipSubject"] == {"@id": SUBJECT_URI}
+
+    def test_nested_ref_has_no_type_key(self) -> None:
+        shape = _make_shape(NESTED_REF)
+        mapper = FieldMapper(shape.mapping_config)
+        builder = JSONLDBuilder(shape)
+        row = {
+            "Id": "1",
+            "relType": "parent",
+            "subject.@id": SUBJECT_URI,
+            "object.@id": OBJECT_URI,
+        }
+        doc = builder.build_one(mapper.map(row))
+        subject = doc["hasOrganizationRelationship"]["hasOrganizationRelationshipSubject"]
+        assert "@type" not in subject
+        assert list(subject.keys()) == ["@id"]
+
+    def test_nested_multiple_ref_is_array_of_id_nodes(self) -> None:
+        shape = _make_shape(NESTED_REF)
+        mapper = FieldMapper(shape.mapping_config)
+        builder = JSONLDBuilder(shape)
+        row = {
+            "Id": "1",
+            "relType": "parent",
+            "subject.@id": SUBJECT_URI,
+            "object.@id": f"{SUBJECT_URI}|{OBJECT_URI}",
+        }
+        doc = builder.build_one(mapper.map(row))
+        objects = doc["hasOrganizationRelationship"]["hasOrganizationRelationshipObject"]
+        assert objects == [{"@id": SUBJECT_URI}, {"@id": OBJECT_URI}]
+        for node in objects:
+            assert "@type" not in node
