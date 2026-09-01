@@ -268,7 +268,11 @@ class JSONLDBuilder:
                 nested_instances = instance.get(nested_name)
                 if not nested_instances:
                     continue
-                nested_nodes = self._build_sub_nodes(nested_instances, nested_def)
+                if nested_def.get("type") in ("id_ref", "iri_ref"):
+                    # Nested IRI reference: emit {"@id": value} with NO @type
+                    nested_nodes = self._build_id_refs(nested_instances, nested_def)
+                else:
+                    nested_nodes = self._build_sub_nodes(nested_instances, nested_def)
                 if not nested_nodes:
                     continue
                 field_target[nested_name] = nested_nodes if len(nested_nodes) > 1 else nested_nodes[0]
