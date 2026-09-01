@@ -17,6 +17,21 @@ Release cadence: **monthly** (first week of each month), with ad-hoc patch relea
 
 ---
 
+## [1.9.0] — 2026-09-01
+
+### Added
+
+- **Nested `id_ref` / `iri_ref` support** — The `id_ref` / `iri_ref` reference
+  type is now honoured when declared inside a sub-node's `properties:` block,
+  not just at the top level. Nested reference properties emit the node-object
+  form `{"@id": <source value>}` with **no** `@type` key (previously they were
+  routed through `_build_sub_nodes` and incorrectly received an `@type`). Both
+  `cardinality: single` and `cardinality: multiple` are supported at any depth,
+  enabling shapes such as `Organization → hasOrganizationRelationship →
+  hasOrganizationRelationshipSubject` / `hasOrganizationRelationshipObject`.
+
+---
+
 ## [1.8.0] — 2026-07-28
 
 ### Added
